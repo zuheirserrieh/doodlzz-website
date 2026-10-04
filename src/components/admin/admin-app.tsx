@@ -52,11 +52,11 @@ export function AdminApp() {
         <EmailSignIn
           redirectPath="/admin"
           texts={{
-            intro: "Sign in with the admin email. We'll send you a one-time code.",
+            intro: "Sign in with the admin email. We'll email you a sign-in link.",
             email: "Admin email",
-            sendCode: "Send code",
+            sendCode: "Send sign-in link",
             sending: "Please wait…",
-            codeSent: (e) => `We sent a code to ${e}. Check the inbox (and spam).`,
+            codeSent: (e) => `We sent an email to ${e}. Open the link in it to sign in (check spam too). If the email shows a code, enter it below.`,
             code: "Code",
             verify: "Sign in",
             changeEmail: "Use another email",

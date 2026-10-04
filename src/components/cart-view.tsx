@@ -1,28 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { MinusIcon, PlusIcon, WhatsAppIcon } from "@/components/icons";
-import { ProductImage } from "@/components/product-card";
+import { useCatalog } from "@/components/catalog-provider";
+import { ArrowIcon, MinusIcon, PlusIcon } from "@/components/icons";
+import { ProductImage, productHref } from "@/components/product-card";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
-import { getProductById, type Product } from "@/data/products";
-import { whatsappLink } from "@/lib/site";
+import type { Product } from "@/data/products";
 
-export function CartView() {
-  const { locale, cart, setQty, removeFromCart } = useStore();
-  const t = useDict();
-  const price = usePrice();
-
+/** Cart lines joined with their products (lines whose product was removed are skipped). */
+export function useCartLines() {
+  const { cart } = useStore();
+  const { getById, ready } = useCatalog();
   const lines = cart.flatMap((l) => {
-    const product = getProductById(l.id);
+    const product = getById(l.id);
     return product ? [{ product, qty: l.qty }] : [];
   });
   const subtotal = lines.reduce((sum, l) => sum + l.product.priceUsd * l.qty, 0);
+  return { lines, subtotal, ready };
+}
 
-  const orderMessage = [
-    t.cart.orderIntro,
-    ...lines.map((l) => `• ${l.qty} × ${l.product.name[locale]} (${price(l.product.priceUsd)})`),
-    `${t.cart.orderTotal}: ${price(subtotal)}`,
-  ].join("\n");
+export function CartView() {
+  const { locale, setQty, removeFromCart } = useStore();
+  const t = useDict();
+  const price = usePrice();
+  const { lines, subtotal, ready } = useCartLines();
+
+  if (!ready) return <div className="min-h-[50vh]" />;
 
   if (lines.length === 0) {
     return (
@@ -54,15 +57,13 @@ export function CartView() {
           <span>{price(subtotal)}</span>
         </div>
         <p className="text-sm text-muted">{t.cart.deliveryNote}</p>
-        <a
-          href={whatsappLink(orderMessage)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex h-14 items-center justify-center gap-2.5 rounded-2xl bg-whatsapp text-[15px] font-extrabold text-white hover:text-white hover:brightness-110"
+        <Link
+          href={`/${locale}/checkout`}
+          className="flex h-14 items-center justify-center gap-2.5 rounded-2xl bg-accent text-[15px] font-extrabold text-white hover:bg-accent-dark hover:text-white"
         >
-          <WhatsAppIcon />
-          {t.cart.checkout}
-        </a>
+          {t.checkout.title}
+          <ArrowIcon className="rtl:rotate-180" />
+        </Link>
         <Link href={`/${locale}/shop`} className="text-center text-sm font-bold text-accent">
           {t.cart.keepShopping}
         </Link>
@@ -74,11 +75,11 @@ export function CartView() {
     const stepper = "flex size-10 cursor-pointer items-center justify-center rounded-full hover:bg-white";
     return (
       <li key={product.id} className="flex gap-3 border-b border-line py-4">
-        <Link href={`/${locale}/product/${product.slug}`} className="w-24 flex-none">
+        <Link href={productHref(locale, product.slug)} className="w-24 flex-none">
           <ProductImage product={product} iconSize={40} className="aspect-square rounded-2xl" />
         </Link>
         <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <Link href={`/${locale}/product/${product.slug}`} className="text-sm font-bold leading-snug">
+          <Link href={productHref(locale, product.slug)} className="text-sm font-bold leading-snug">
             {product.name[locale]}
           </Link>
           <span className="text-base font-extrabold">{price(product.priceUsd * qty)}</span>

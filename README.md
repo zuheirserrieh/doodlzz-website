@@ -1,18 +1,23 @@
 # Doodlzz
 
 Mobile-first e-commerce site for Doodlzz, a baby & kids store in Lebanon.
-Built with Next.js (App Router), TypeScript and Tailwind CSS v4.
+Built with Next.js (App Router), TypeScript and Tailwind CSS v4, exported as a static site
+and hosted on Cloudflare. Products, orders and sign-in use [Supabase](https://supabase.com).
 
-See [docs/BRIEF.md](docs/BRIEF.md) for the project brief and visual style.
+- [docs/BRIEF.md](docs/BRIEF.md): project brief and visual style
+- [docs/SETUP.md](docs/SETUP.md): connecting the database, the admin panel, and how orders work
 
 ## Run it
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000 → redirects to /en
-npm run build    # production build
+cp .env.example .env.local   # then fill in the Supabase URL and key (optional, see SETUP.md)
+npm run dev                  # open http://localhost:3000/en
+npm run build                # static site in out/
 npm run lint
 ```
+
+Without the Supabase values the site still runs on the sample products in `src/data/products.ts`.
 
 ## What's here
 
@@ -21,19 +26,22 @@ npm run lint
 | `/en`, `/ar` | Home page (Arabic is fully right-to-left) |
 | `/[locale]/shop` | All products; supports `?q=` search, `?age=0-6m`, `?category=strollers`, `?tab=best\|new` |
 | `/[locale]/category/[slug]` | Category listing |
-| `/[locale]/product/[slug]` | Product page with "Order on WhatsApp" |
-| `/[locale]/cart` | Cart; checkout sends the order as a WhatsApp message |
+| `/[locale]/product?slug=…` | Product page (a query string, so new products need no rebuild) |
+| `/[locale]/cart` → `/[locale]/checkout` | Delivery details, Cash on delivery or Whish Money. **Buy** saves the order and opens WhatsApp |
+| `/[locale]/account` | Customer sign-in (email code) and their orders |
 | `/[locale]/favorites` | Saved (hearted) products |
+| `/admin` | Admin panel: products (with photo upload) and orders. Admin email only |
 
-- **Menu drawer** opens from the header (menu and sign-in buttons) with the catalog and the language switch.
-- **Cart and favorites** are saved in the browser (`localStorage`). Prices are in US dollars only.
-- **Text** for both languages is in `src/lib/i18n.ts`.
+- **Products** are loaded in the browser from Supabase and cached, so the pages stay static.
+- **Orders** go through the `place_order` database function, which uses the database prices.
+- **Security** comes from the row-level security rules in `supabase/schema.sql`. Admins are listed in the `admins` table.
+- **Cart, favorites and checkout details** are saved in the browser (`localStorage`). Prices are in US dollars only.
 
 ## Where to edit content
 
-| What | File |
+| What | Where |
 | --- | --- |
-| Products, prices, photos | `src/data/products.ts` (photos go in `public/products/`) |
+| Products, prices, photos | `/admin` → Products |
 | Categories, age groups | `src/data/catalog.ts` |
 | WhatsApp, phone, email, social links | `src/lib/site.ts` |
 | Hero slides, all wording (EN + AR) | `src/lib/i18n.ts` |
@@ -43,7 +51,6 @@ Search the code for `TODO(owner)` to find every placeholder that still needs rea
 
 ## Not built yet
 
-- Accounts / sign-in (favorites are saved in the browser for now)
-- Online payment (orders currently go through WhatsApp)
-- An admin panel for products. They live in a code file for now, and moving them to Shopify (headless) or a CMS is the planned next step.
+- Online payment (by design: orders are confirmed and paid on delivery or via Whish over WhatsApp)
 - Delivery, exchange policy and "our story" pages
+- Managing categories from the admin panel (they're in code for now)

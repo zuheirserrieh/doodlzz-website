@@ -10,14 +10,55 @@ export type Product = {
   /** Age group slugs from catalog.ts. */
   ages: string[];
   priceUsd: number;
+  /** Old price shown crossed out when the product is on sale. */
+  compareAtUsd?: number | null;
   bestSeller?: boolean;
   isNew?: boolean;
-  /** Path under /public, e.g. "/products/travel-system.jpg". Missing = placeholder tile. */
-  image?: string;
+  /** Photo URLs; the first one is the main photo. Empty = placeholder tile. */
+  images?: string[];
 };
 
-// TODO(owner): replace these SAMPLE products and prices with the real catalogue.
-export const products: Product[] = [
+/** A row of the `products` table (see supabase/schema.sql). */
+export type ProductRow = {
+  id: string;
+  slug: string;
+  name_en: string;
+  name_ar: string;
+  description_en: string;
+  description_ar: string;
+  category: string;
+  ages: string[];
+  price_usd: number | string;
+  compare_at_usd: number | string | null;
+  images: string[];
+  best_seller: boolean;
+  is_new: boolean;
+  active: boolean;
+  sort: number;
+};
+
+export function fromRow(row: ProductRow): Product {
+  return {
+    id: row.id,
+    slug: row.slug,
+    // Fall back to English where the Arabic text hasn't been entered yet.
+    name: { en: row.name_en, ar: row.name_ar || row.name_en },
+    description: { en: row.description_en, ar: row.description_ar || row.description_en },
+    category: row.category,
+    ages: row.ages ?? [],
+    priceUsd: Number(row.price_usd),
+    compareAtUsd: row.compare_at_usd == null ? null : Number(row.compare_at_usd),
+    bestSeller: row.best_seller,
+    isNew: row.is_new,
+    images: row.images ?? [],
+  };
+}
+
+/**
+ * Shown when the database isn't connected yet (local development, or before
+ * Supabase is set up). The admin panel can also import these as a starting point.
+ */
+export const sampleProducts: Product[] = [
   {
     id: "p1",
     slug: "3-in-1-travel-system-stroller",
@@ -172,18 +213,10 @@ export const products: Product[] = [
   },
 ];
 
-export function getProduct(slug: string) {
-  return products.find((p) => p.slug === slug);
-}
-
-export function getProductById(id: string) {
-  return products.find((p) => p.id === id);
-}
-
-export function searchProducts(query: string) {
+export function searchProducts(list: Product[], query: string) {
   const q = query.trim().toLowerCase();
-  if (!q) return products;
-  return products.filter((p) => {
+  if (!q) return list;
+  return list.filter((p) => {
     const category = getCategory(p.category);
     const haystack = [p.name.en, p.name.ar, category?.name.en, category?.name.ar]
       .join(" ")

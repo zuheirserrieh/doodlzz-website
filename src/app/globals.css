@@ -39,11 +39,13 @@ html[lang="ar"] {
   --font-display: var(--font-arabic), sans-serif;
 }
 
-body {
-  background: #ffffff;
-  color: var(--color-navy);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
+@layer base {
+  body {
+    background: #ffffff;
+    color: var(--color-navy);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
 }
 
 a:hover {

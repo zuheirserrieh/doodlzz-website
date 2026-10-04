@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useCatalog } from "@/components/catalog-provider";
 import { Listing } from "@/components/listing";
 import { SearchForm } from "@/components/search-form";
 import { useDict, useStore } from "@/components/store-provider";
@@ -12,12 +13,13 @@ export function ShopView() {
   const { locale } = useStore();
   const t = useDict();
   const params = useSearchParams();
+  const { products } = useCatalog();
   const q = params.get("q")?.trim() ?? "";
   const age = getAgeGroup(params.get("age") ?? "");
   const category = getCategory(params.get("category") ?? "");
   const tab = params.get("tab");
 
-  let list = searchProducts(q);
+  let list = searchProducts(products, q);
   if (age) list = list.filter((p) => p.ages.includes(age.slug));
   if (category) list = list.filter((p) => p.category === category.slug);
   if (tab === "best") list = list.filter((p) => p.bestSeller);

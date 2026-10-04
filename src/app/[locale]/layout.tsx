@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Fredoka, Nunito, Tajawal } from "next/font/google";
 import { notFound } from "next/navigation";
+import { CatalogProvider } from "@/components/catalog-provider";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
 import { MenuDrawer } from "@/components/menu-drawer";
@@ -46,6 +47,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       className={`${fredoka.variable} ${nunito.variable} ${tajawal.variable}`}
     >
       <body className="min-h-dvh">
+        <CatalogProvider>
         <StoreProvider locale={locale}>
           <div className="flex min-h-dvh flex-col">
             <Header />
@@ -55,6 +57,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
           <MenuDrawer />
           <WhatsAppFab />
         </StoreProvider>
+        </CatalogProvider>
       </body>
     </html>
   );

@@ -3,16 +3,16 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { AgeIcon, ArrowIcon, BagIcon } from "@/components/icons";
-import { ProductImage } from "@/components/product-card";
-import { useDict, usePrice, useStore } from "@/components/store-provider";
+import { useCatalog } from "@/components/catalog-provider";
+import { PriceTag, ProductImage, productHref } from "@/components/product-card";
+import { useDict, useStore } from "@/components/store-provider";
 import { ageGroups, getCategory } from "@/data/catalog";
-import { products } from "@/data/products";
 
 /** Blue tabbed panel: pick an age, swipe through the matching products. */
 export function ShopByAge({ title }: { title?: string }) {
   const { locale, addToCart } = useStore();
   const t = useDict();
-  const price = usePrice();
+  const { products, ready } = useCatalog();
   const [active, setActive] = useState(ageGroups[0].slug);
   const [slide, setSlide] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -80,7 +80,7 @@ export function ShopByAge({ title }: { title?: string }) {
           aria-labelledby={`age-tab-${active}`}
           className={`rounded-[22px] bg-white p-3 ${active === ageGroups[0].slug ? "rounded-ss-none" : ""}`}
         >
-          {list.length === 0 ? (
+          {ready && list.length === 0 ? (
             <p className="px-2 py-10 text-center text-sm text-muted">{t.age.empty}</p>
           ) : (
             <div ref={trackRef} onScroll={onScroll} className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto">
@@ -89,15 +89,15 @@ export function ShopByAge({ title }: { title?: string }) {
                   key={p.id}
                   className="flex w-[calc(50%-6px)] flex-none snap-start flex-col rounded-[18px] border border-line p-3 md:w-[calc(25%-9px)]"
                 >
-                  <Link href={`/${locale}/product/${p.slug}`} tabIndex={-1} aria-hidden>
+                  <Link href={productHref(locale, p.slug)} tabIndex={-1} aria-hidden>
                     <ProductImage product={p} iconSize={56} className="aspect-square rounded-xl" />
                   </Link>
                   <span className="mt-3 text-xs text-muted">{getCategory(p.category)?.shortName[locale]}</span>
-                  <Link href={`/${locale}/product/${p.slug}`} className="mt-1 line-clamp-2 min-h-[2.6em] text-sm leading-[1.3] font-extrabold">
+                  <Link href={productHref(locale, p.slug)} className="mt-1 line-clamp-2 min-h-[2.6em] text-sm leading-[1.3] font-extrabold">
                     {p.name[locale]}
                   </Link>
                   <div className="mt-2 flex items-center justify-between gap-1">
-                    <span className="text-base font-extrabold">{price(p.priceUsd)}</span>
+                    <PriceTag product={p} className="text-base" />
                     <button
                       type="button"
                       aria-label={`${t.product.addToCart}: ${p.name[locale]}`}

@@ -6,14 +6,21 @@ import { useState } from "react";
 import { getCategory } from "@/data/catalog";
 import type { Product } from "@/data/products";
 import { CategoryIcon, HeartIcon } from "@/components/icons";
+import { useCatalog } from "@/components/catalog-provider";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
+import type { Locale } from "@/lib/i18n";
+
+/** Product pages use a query string so new products work without rebuilding the static site. */
+export function productHref(locale: Locale, slug: string) {
+  return `/${locale}/product?slug=${encodeURIComponent(slug)}`;
+}
 
 export function ProductImage({ product, className = "", iconSize = 72 }: { product: Product; className?: string; iconSize?: number }) {
   const category = getCategory(product.category);
   return (
     <div className={`relative overflow-hidden ${category?.tint ?? "bg-surface"} ${className}`}>
-      {product.image ? (
-        <Image src={product.image} alt="" fill sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
+      {product.images?.[0] ? (
+        <Image src={product.images[0]} alt="" fill unoptimized sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
       ) : (
         // Placeholder until the owner sends real photos.
         <div className="flex size-full items-center justify-center text-navy/25">
@@ -57,6 +64,18 @@ export function Price({ usd }: { usd: number }) {
   return <>{usePrice()(usd)}</>;
 }
 
+/** Price, plus the old price crossed out when the product is on sale. */
+export function PriceTag({ product, className = "" }: { product: Product; className?: string }) {
+  const price = usePrice();
+  const onSale = product.compareAtUsd != null && product.compareAtUsd > product.priceUsd;
+  return (
+    <span className={`flex flex-wrap items-baseline gap-x-2 font-extrabold ${className}`}>
+      <span className={onSale ? "text-accent" : ""}>{price(product.priceUsd)}</span>
+      {onSale && <s className="text-[0.85em] font-bold text-muted">{price(product.compareAtUsd!)}</s>}
+    </span>
+  );
+}
+
 export function AddToCartButton({ productId, className = "" }: { productId: string; className?: string }) {
   const { addToCart } = useStore();
   const t = useDict();
@@ -78,9 +97,8 @@ export function AddToCartButton({ productId, className = "" }: { productId: stri
 
 export function ProductCard({ product }: { product: Product }) {
   const { locale } = useStore();
-  const price = usePrice();
   const category = getCategory(product.category);
-  const href = `/${locale}/product/${product.slug}`;
+  const href = productHref(locale, product.slug);
 
   return (
     <article className="flex min-w-0 flex-col gap-1.5">
@@ -97,18 +115,30 @@ export function ProductCard({ product }: { product: Product }) {
         {product.name[locale]}
       </Link>
       <div className="text-xs text-muted">{category?.name[locale]}</div>
-      <div className="text-base font-extrabold">{price(product.priceUsd)}</div>
+      <PriceTag product={product} className="text-base" />
       <AddToCartButton productId={product.id} className="mt-1 h-11 text-sm" />
     </article>
   );
 }
 
-export function ProductGrid({ products }: { products: Product[] }) {
+export function ProductGrid({ products, skeletons = 4 }: { products: Product[]; skeletons?: number }) {
+  const { ready } = useCatalog();
   return (
     <div className="grid grid-cols-2 gap-x-3.5 gap-y-6 md:grid-cols-3 lg:grid-cols-4">
-      {products.map((p) => (
-        <ProductCard key={p.id} product={p} />
-      ))}
+      {ready
+        ? products.map((p) => <ProductCard key={p.id} product={p} />)
+        : Array.from({ length: skeletons }, (_, i) => <ProductSkeleton key={i} />)}
+    </div>
+  );
+}
+
+function ProductSkeleton() {
+  return (
+    <div aria-hidden className="flex animate-pulse flex-col gap-2">
+      <div className="aspect-square rounded-[18px] bg-surface" />
+      <div className="h-4 w-4/5 rounded bg-surface" />
+      <div className="h-3 w-1/2 rounded bg-surface" />
+      <div className="h-11 rounded-xl bg-surface" />
     </div>
   );
 }

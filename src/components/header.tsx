@@ -60,10 +60,9 @@ export function Header() {
           <Link href={`/${locale}`} aria-label={t.nav.home} className="flex-1 hover:text-navy">
             <Logo className="text-[28px]" />
           </Link>
-          {/* TODO: accounts aren't built yet — sign-in opens the menu for now. */}
-          <button type="button" aria-label={t.nav.signIn} onClick={() => setMenuOpen(true)} className={iconButton}>
+          <Link href={`/${locale}/account`} aria-label={t.account.title} className={iconButton}>
             <UserIcon />
-          </button>
+          </Link>
           <Link href={`/${locale}/favorites`} aria-label={t.nav.favorites(wishlist.length)} className={iconButton}>
             <HeartIcon size={22} />
             <CountBadge count={wishlist.length} />

@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Listing } from "@/components/listing";
+import { CategoryView } from "@/components/category-view";
 import { categories, getCategory } from "@/data/catalog";
-import { products } from "@/data/products";
 import { isLocale, locales } from "@/lib/i18n";
 
-// Only the pages generated at build time exist; anything else is a 404.
+// Categories are fixed in code (src/data/catalog.ts); products load in the browser.
 export const dynamicParams = false;
 
 export function generateStaticParams() {
@@ -21,15 +20,6 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/category
 
 export default async function CategoryPage({ params }: PageProps<"/[locale]/category/[slug]">) {
   const { locale, slug } = await params;
-  const category = getCategory(slug);
-  if (!isLocale(locale) || !category) notFound();
-
-  return (
-    <Listing
-      locale={locale}
-      title={category.name[locale]}
-      products={products.filter((p) => p.category === category.slug)}
-      activeCategory={category.slug}
-    />
-  );
+  if (!isLocale(locale) || !getCategory(slug)) notFound();
+  return <CategoryView slug={slug} />;
 }

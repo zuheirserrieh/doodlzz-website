@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { categories } from "@/data/catalog";
+import { useAuth } from "@/components/catalog-provider";
 import { ChevronIcon, CategoryIcon, CloseIcon, WhatsAppIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { useDict, useStore } from "@/components/store-provider";
@@ -45,6 +46,7 @@ function Segment<T extends string>({
 
 export function MenuDrawer() {
   const { locale, menuOpen, setMenuOpen } = useStore();
+  const { email } = useAuth();
   const t = useDict();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -100,17 +102,42 @@ export function MenuDrawer() {
           </button>
         </div>
 
-        {/* TODO: wire to real accounts once a backend is chosen. */}
         <div className="mx-4 mt-4 flex flex-col gap-3 rounded-[20px] bg-pastel-blue p-[18px]">
-          <div className="text-[15px] font-bold">{t.menu.pitch}</div>
-          <div className="flex gap-2.5">
-            <a href="#" className="flex h-[46px] flex-1 items-center justify-center rounded-full bg-accent text-sm font-extrabold text-white hover:bg-accent-dark hover:text-white">
-              {t.menu.signIn}
-            </a>
-            <a href="#" className="flex h-[46px] flex-1 items-center justify-center rounded-full border-2 border-navy text-sm font-extrabold">
-              {t.menu.createAccount}
-            </a>
-          </div>
+          {email ? (
+            <>
+              <div className="truncate text-[15px] font-bold" dir="auto">
+                {t.account.signedInAs(email)}
+              </div>
+              <Link
+                href={`/${locale}/account`}
+                onClick={() => setMenuOpen(false)}
+                className="flex h-[46px] items-center justify-center rounded-full bg-accent text-sm font-extrabold text-white hover:bg-accent-dark hover:text-white"
+              >
+                {t.account.title}
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="text-[15px] font-bold">{t.menu.pitch}</div>
+              {/* One email sign-in flow creates the account on first use, so both go to the same page. */}
+              <div className="flex gap-2.5">
+                <Link
+                  href={`/${locale}/account`}
+                  onClick={() => setMenuOpen(false)}
+                  className="flex h-[46px] flex-1 items-center justify-center rounded-full bg-accent text-sm font-extrabold text-white hover:bg-accent-dark hover:text-white"
+                >
+                  {t.menu.signIn}
+                </Link>
+                <Link
+                  href={`/${locale}/account`}
+                  onClick={() => setMenuOpen(false)}
+                  className="flex h-[46px] flex-1 items-center justify-center rounded-full border-2 border-navy text-sm font-extrabold"
+                >
+                  {t.menu.createAccount}
+                </Link>
+              </div>
+            </>
+          )}
         </div>
 
         <nav aria-label={t.menu.catalog} className="flex flex-col px-4 pt-6">

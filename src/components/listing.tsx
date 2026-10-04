@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { categories } from "@/data/catalog";
 import type { Product } from "@/data/products";
+import { useCatalog } from "@/components/catalog-provider";
 import { ProductGrid } from "@/components/product-card";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
@@ -17,6 +20,7 @@ export function Listing({
   activeCategory?: string;
 }) {
   const t = getDictionary(locale);
+  const { ready } = useCatalog();
   const chip = "flex h-10 flex-none items-center rounded-full px-4 text-sm font-bold whitespace-nowrap";
 
   return (
@@ -45,9 +49,9 @@ export function Listing({
       </nav>
       <div className="px-4 pt-6">
         <h1 className="font-display text-[28px] leading-tight font-semibold">{title}</h1>
-        <p className="mt-1 text-sm text-muted">{t.listing.results(products.length)}</p>
+        <p className="mt-1 h-5 text-sm text-muted">{ready && t.listing.results(products.length)}</p>
         <div className="mt-5">
-          {products.length > 0 ? (
+          {!ready || products.length > 0 ? (
             <ProductGrid products={products} />
           ) : (
             <p className="rounded-2xl bg-surface p-6 text-center text-ink-soft">{t.listing.empty}</p>

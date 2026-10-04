@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useCatalog } from "@/components/catalog-provider";
 import { ProductGrid } from "@/components/product-card";
 import { useDict, useStore } from "@/components/store-provider";
-import { products } from "@/data/products";
 
 type Tab = "best" | "new";
 
 export function PickedByParents() {
   const { locale } = useStore();
   const t = useDict();
+  const { products } = useCatalog();
   const [tab, setTab] = useState<Tab>("best");
   const list = products.filter((p) => (tab === "best" ? p.bestSeller : p.isNew)).slice(0, 4);
 

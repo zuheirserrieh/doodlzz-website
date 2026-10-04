@@ -5,9 +5,12 @@ import { useState, type ReactNode } from "react";
 import { AdminOrders } from "@/components/admin/admin-orders";
 import { AdminProducts } from "@/components/admin/admin-products";
 import { useAuth } from "@/components/catalog-provider";
-import { EmailSignIn } from "@/components/email-sign-in";
+import { AuthForm, NewPasswordForm } from "@/components/auth-form";
 import { Logo } from "@/components/logo";
+import { getDictionary } from "@/lib/i18n";
 import { supabaseConfigured } from "@/lib/supabase";
+
+const authTexts = getDictionary("en").account.auth;
 
 type Tab = "orders" | "products";
 
@@ -24,7 +27,7 @@ function Card({ children }: { children: ReactNode }) {
 }
 
 export function AdminApp() {
-  const { session, email, isAdmin, adminChecked, authReady, signOut } = useAuth();
+  const { session, email, isAdmin, adminChecked, authReady, recovery, signOut } = useAuth();
   const [tab, setTab] = useState<Tab>("orders");
 
   if (!supabaseConfigured) {
@@ -49,20 +52,18 @@ export function AdminApp() {
   if (!session) {
     return (
       <Card>
-        <EmailSignIn
-          redirectPath="/admin"
-          texts={{
-            intro: "Sign in with the admin email. We'll email you a sign-in link.",
-            email: "Admin email",
-            sendCode: "Send sign-in link",
-            sending: "Please wait…",
-            codeSent: (e) => `We sent an email to ${e}. Open the link in it to sign in (check spam too). If the email shows a code, enter it below.`,
-            code: "Code",
-            verify: "Sign in",
-            changeEmail: "Use another email",
-            error: "That code didn't work. Try again or request a new one.",
-          }}
-        />
+        <p className="text-sm text-ink-soft">
+          First time here? Tap <strong>Forgot password?</strong> and enter the admin email to choose your password.
+        </p>
+        <AuthForm texts={authTexts} redirectPath="/admin" allowSignUp={false} />
+      </Card>
+    );
+  }
+
+  if (recovery) {
+    return (
+      <Card>
+        <NewPasswordForm texts={authTexts} />
       </Card>
     );
   }

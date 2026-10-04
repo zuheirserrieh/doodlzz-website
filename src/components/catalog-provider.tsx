@@ -22,6 +22,9 @@ type Auth = {
   adminChecked: boolean;
   /** False until the stored session (if any) has been checked. */
   authReady: boolean;
+  /** True after opening a password-reset link: the user should now choose a new password. */
+  recovery: boolean;
+  endRecovery: () => void;
   signOut: () => Promise<void>;
 };
 
@@ -55,6 +58,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   // null = still checking with the database
   const [isAdmin, setIsAdmin] = useState<boolean | null>(false);
   const [authReady, setAuthReady] = useState(!supabaseConfigured);
+  const [recovery, setRecovery] = useState(false);
 
   const reload = useCallback(async () => {
     const supabase = getSupabase();
@@ -90,7 +94,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     /* eslint-enable react-hooks/set-state-in-effect */
     void reload();
 
-    const { data } = supabase.auth.onAuthStateChange((_event, next) => {
+    const { data } = supabase.auth.onAuthStateChange((event, next) => {
+      if (event === "PASSWORD_RECOVERY") setRecovery(true);
       setSession(next);
       setAuthReady(true);
     });
@@ -134,11 +139,13 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       isAdmin: isAdmin === true,
       adminChecked: isAdmin !== null,
       authReady,
+      recovery,
+      endRecovery: () => setRecovery(false),
       signOut: async () => {
         await getSupabase()?.auth.signOut();
       },
     }),
-    [session, isAdmin, authReady],
+    [session, isAdmin, authReady, recovery],
   );
 
   return (

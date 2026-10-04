@@ -1,7 +1,9 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useAuth } from "@/components/catalog-provider";
 import { getDictionary, type Locale } from "@/lib/i18n";
+import { getSupabase } from "@/lib/supabase";
 
 export type CartLine = { id: string; qty: number };
 
@@ -64,6 +66,58 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
   useEffect(() => {
     if (hydrated) writeStorage(WISHLIST_KEY, wishlist);
   }, [wishlist, hydrated]);
+
+  // ── Signed-in customers: cart & favorites are also kept in their account ──
+  const userId = useAuth().session?.user.id;
+  const [syncedUser, setSyncedUser] = useState<string | null>(null);
+
+  // On sign-in, merge what's saved in the account with what's in this browser.
+  useEffect(() => {
+    const supabase = getSupabase();
+    if (!supabase || !hydrated || !userId) {
+      setSyncedUser(null); // eslint-disable-line react-hooks/set-state-in-effect
+      return;
+    }
+    let cancelled = false;
+    supabase
+      .from("user_data")
+      .select("cart, wishlist")
+      .eq("user_id", userId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) {
+          console.error("Could not load saved cart/favorites", error);
+          return;
+        }
+        if (data) {
+          const saved = data as { cart: CartLine[]; wishlist: string[] };
+          setCart((local) => {
+            const merged = new Map(local.map((l) => [l.id, l.qty]));
+            for (const l of saved.cart ?? []) merged.set(l.id, Math.max(merged.get(l.id) ?? 0, l.qty));
+            return [...merged].map(([id, qty]) => ({ id, qty }));
+          });
+          setWishlist((local) => [...new Set([...local, ...(saved.wishlist ?? [])])]);
+        }
+        setSyncedUser(userId);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, hydrated]);
+
+  // After that, save every change to the account (debounced).
+  useEffect(() => {
+    const supabase = getSupabase();
+    if (!supabase || !userId || syncedUser !== userId) return;
+    const timer = setTimeout(() => {
+      supabase
+        .from("user_data")
+        .upsert({ user_id: userId, cart, wishlist, updated_at: new Date().toISOString() })
+        .then(({ error }) => error && console.error("Could not save cart/favorites", error));
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [cart, wishlist, userId, syncedUser]);
 
   const addToCart = useCallback((id: string, qty = 1) => {
     setCart((lines) => {

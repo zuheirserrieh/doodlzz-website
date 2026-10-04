@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useCartLines } from "@/components/cart-view";
+import { useAuth } from "@/components/catalog-provider";
 import { WhatsAppIcon } from "@/components/icons";
 import { ProductImage } from "@/components/product-card";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
@@ -37,6 +38,7 @@ export function CheckoutView() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ id: number | null; link: string } | null>(null);
+  const { session } = useAuth();
 
   // Prefill with the details used last time on this device.
   useEffect(() => {
@@ -47,6 +49,13 @@ export function CheckoutView() {
       // ignore
     }
   }, []);
+
+  // Signed-in customers: fill name and phone from their account if still empty.
+  useEffect(() => {
+    const meta = session?.user.user_metadata as { full_name?: string; phone?: string } | undefined;
+    if (!meta) return;
+    setForm((f) => ({ ...f, name: f.name || meta.full_name || "", phone: f.phone || meta.phone || "" })); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [session]);
 
   const set = <K extends keyof Customer>(key: K, value: Customer[K]) => setForm((f) => ({ ...f, [key]: value }));
 

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { useAuth } from "@/components/catalog-provider";
-import { EmailSignIn } from "@/components/email-sign-in";
+import { AuthForm, NewPasswordForm } from "@/components/auth-form";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
 import { getSupabase, supabaseConfigured } from "@/lib/supabase";
 
@@ -19,7 +19,7 @@ export function AccountView() {
   const { locale } = useStore();
   const t = useDict();
   const price = usePrice();
-  const { session, email, isAdmin, authReady, signOut } = useAuth();
+  const { session, email, isAdmin, authReady, recovery, signOut } = useAuth();
   const [orders, setOrders] = useState<OrderSummary[] | null>(null);
 
   useEffect(() => {
@@ -44,31 +44,27 @@ export function AccountView() {
   if (!authReady) return shell(<div className="h-40 animate-pulse rounded-2xl bg-surface" />);
 
   if (!session) {
-    return shell(
-      <EmailSignIn
-        redirectPath={`/${locale}/account`}
-        texts={{
-          intro: t.account.signInText,
-          email: t.account.email,
-          sendCode: t.account.sendCode,
-          sending: t.account.sending,
-          codeSent: t.account.codeSent,
-          code: t.account.code,
-          verify: t.account.verify,
-          changeEmail: t.account.changeEmail,
-          error: t.account.error,
-        }}
-      />,
-    );
+    return shell(<AuthForm texts={t.account.auth} redirectPath={`/${locale}/account`} />);
   }
+  if (recovery) return shell(<NewPasswordForm texts={t.account.auth} />);
+
+  const meta = session.user.user_metadata as { full_name?: string; phone?: string };
 
   const dateFormat = new Intl.DateTimeFormat(locale === "ar" ? "ar-LB-u-nu-latn" : "en-GB", { dateStyle: "medium" });
 
   return shell(
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-surface p-4">
-        <span className="text-sm font-bold" dir="auto">
-          {t.account.signedInAs(email ?? "")}
+        <span className="flex min-w-0 flex-col text-sm">
+          {meta.full_name && <span className="text-base font-extrabold">{meta.full_name}</span>}
+          <span className="truncate font-bold" dir="auto">
+            {t.account.signedInAs(email ?? "")}
+          </span>
+          {meta.phone && (
+            <span dir="ltr" className="text-muted rtl:text-end">
+              {meta.phone}
+            </span>
+          )}
         </span>
         <button type="button" onClick={signOut} className="min-h-10 cursor-pointer text-sm font-bold text-accent underline">
           {t.account.signOut}

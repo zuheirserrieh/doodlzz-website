@@ -4,6 +4,9 @@
   "$schema": "https://unpkg.com/wrangler/config-schema.json",
   "name": "doodlzz-website",
   "compatibility_date": "2026-10-01",
+  // Publish on the free https://doodlzz-website.<account>.workers.dev address.
+  "workers_dev": true,
+  "preview_urls": true,
   "assets": {
     "directory": "./out",
     // Unknown URLs get out/404.html; "/" → "/en" comes from public/_redirects.

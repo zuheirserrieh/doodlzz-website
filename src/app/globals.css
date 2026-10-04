@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #1e2742;
+  --color-ink-soft: #3b4257;
+  --color-muted: #5a6072;
+  --color-faint: #8a90a0;
+  --color-line: #eef1f6;
+  --color-surface: #f3f5f8;
+  --color-cream: #f6f3ee;
+  --color-accent: #c8462a;
+  --color-accent-dark: #a8381f;
+  --color-whatsapp: #158f45;
+  --color-badge: #ffe08a;
+  --color-star: #d9930d;
+
+  --color-pastel-blue: #e6f1fa;
+  --color-pastel-peach: #fce7de;
+  --color-pastel-yellow: #fff2c7;
+  --color-pastel-mint: #e2f3ea;
+  --color-pastel-lilac: #ede7f8;
+
+  --font-sans: var(--font-nunito), var(--font-arabic), system-ui, sans-serif;
+  --font-display: var(--font-fredoka), var(--font-arabic), var(--font-nunito), sans-serif;
+
+  --animate-marquee: dz-marquee 22s linear infinite;
+
+  @keyframes dz-marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+}
+
+html[lang="ar"] {
+  --font-sans: var(--font-arabic), system-ui, sans-serif;
+  --font-display: var(--font-arabic), sans-serif;
+}
+
+body {
+  background: #ffffff;
+  color: var(--color-navy);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a:hover {
+  color: var(--color-accent);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none;
+  }
+}

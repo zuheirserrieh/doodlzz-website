@@ -1,0 +1,105 @@
+"use client";
+
+import Link from "next/link";
+import { MinusIcon, PlusIcon, WhatsAppIcon } from "@/components/icons";
+import { ProductImage } from "@/components/product-card";
+import { useDict, usePrice, useStore } from "@/components/store-provider";
+import { getProductById, type Product } from "@/data/products";
+import { whatsappLink } from "@/lib/site";
+
+export function CartView() {
+  const { locale, cart, setQty, removeFromCart } = useStore();
+  const t = useDict();
+  const price = usePrice();
+
+  const lines = cart.flatMap((l) => {
+    const product = getProductById(l.id);
+    return product ? [{ product, qty: l.qty }] : [];
+  });
+  const subtotal = lines.reduce((sum, l) => sum + l.product.priceUsd * l.qty, 0);
+
+  const orderMessage = [
+    t.cart.orderIntro,
+    ...lines.map((l) => `• ${l.qty} × ${l.product.name[locale]} (${price(l.product.priceUsd)})`),
+    `${t.cart.orderTotal}: ${price(subtotal)}`,
+  ].join("\n");
+
+  if (lines.length === 0) {
+    return (
+      <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-20 text-center">
+        <h1 className="font-display text-3xl font-semibold">{t.cart.title}</h1>
+        <p className="text-muted">{t.cart.empty}</p>
+        <Link
+          href={`/${locale}/shop`}
+          className="flex h-12 items-center rounded-full bg-accent px-6 font-extrabold text-white hover:text-white"
+        >
+          {t.cart.keepShopping}
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-6 md:grid-cols-[1fr_340px]">
+      <div>
+        <h1 className="font-display text-[28px] font-semibold">{t.cart.title}</h1>
+        <ul className="mt-4 flex flex-col">
+          {lines.map(({ product, qty }) => renderLine(product, qty))}
+        </ul>
+      </div>
+
+      <aside className="flex h-fit flex-col gap-3 rounded-3xl bg-surface p-5 md:sticky md:top-28">
+        <div className="flex items-baseline justify-between text-lg font-extrabold">
+          <span>{t.cart.subtotal}</span>
+          <span>{price(subtotal)}</span>
+        </div>
+        <p className="text-sm text-muted">{t.cart.deliveryNote}</p>
+        <a
+          href={whatsappLink(orderMessage)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex h-14 items-center justify-center gap-2.5 rounded-2xl bg-whatsapp text-[15px] font-extrabold text-white hover:text-white hover:brightness-110"
+        >
+          <WhatsAppIcon />
+          {t.cart.checkout}
+        </a>
+        <Link href={`/${locale}/shop`} className="text-center text-sm font-bold text-accent">
+          {t.cart.keepShopping}
+        </Link>
+      </aside>
+    </div>
+  );
+
+  function renderLine(product: Product, qty: number) {
+    const stepper = "flex size-10 cursor-pointer items-center justify-center rounded-full hover:bg-white";
+    return (
+      <li key={product.id} className="flex gap-3 border-b border-line py-4">
+        <Link href={`/${locale}/product/${product.slug}`} className="w-24 flex-none">
+          <ProductImage product={product} iconSize={40} className="aspect-square rounded-2xl" />
+        </Link>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <Link href={`/${locale}/product/${product.slug}`} className="text-sm font-bold leading-snug">
+            {product.name[locale]}
+          </Link>
+          <span className="text-base font-extrabold">{price(product.priceUsd * qty)}</span>
+          <div className="mt-auto flex items-center justify-between">
+            <div role="group" aria-label={t.cart.quantity} className="flex items-center rounded-full bg-surface">
+              <button type="button" aria-label={t.cart.decrease} onClick={() => setQty(product.id, qty - 1)} className={stepper}>
+                <MinusIcon />
+              </button>
+              <span className="min-w-6 text-center text-sm font-extrabold" aria-live="polite">
+                {qty}
+              </span>
+              <button type="button" aria-label={t.cart.increase} onClick={() => setQty(product.id, qty + 1)} className={stepper}>
+                <PlusIcon />
+              </button>
+            </div>
+            <button type="button" onClick={() => removeFromCart(product.id)} className="min-h-10 cursor-pointer px-2 text-sm font-bold text-muted underline">
+              {t.cart.remove}
+            </button>
+          </div>
+        </div>
+      </li>
+    );
+  }
+}

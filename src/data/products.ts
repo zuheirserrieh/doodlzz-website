@@ -1,0 +1,193 @@
+import { getCategory } from "@/data/catalog";
+import type { Localized } from "@/lib/i18n";
+
+export type Product = {
+  id: string;
+  slug: string;
+  name: Localized;
+  description: Localized;
+  category: string;
+  /** Age group slugs from catalog.ts. */
+  ages: string[];
+  priceUsd: number;
+  bestSeller?: boolean;
+  isNew?: boolean;
+  /** Path under /public, e.g. "/products/travel-system.jpg". Missing = placeholder tile. */
+  image?: string;
+};
+
+// TODO(owner): replace these SAMPLE products and prices with the real catalogue.
+export const products: Product[] = [
+  {
+    id: "p1",
+    slug: "3-in-1-travel-system-stroller",
+    name: { en: "3-in-1 Travel System Stroller", ar: "عربة أطفال 3 في 1" },
+    description: {
+      en: "Stroller, carrycot and infant car seat in one. One-hand fold, all-terrain wheels and a large shopping basket.",
+      ar: "عربة وسرير محمول وكرسي سيارة للرضع في منتج واحد. طيّ بيد واحدة، عجلات لكل الطرق وسلة تسوّق كبيرة.",
+    },
+    category: "strollers",
+    ages: ["0-6m", "6-12m", "1-2y", "2-4y"],
+    priceUsd: 289,
+    bestSeller: true,
+  },
+  {
+    id: "p2",
+    slug: "convertible-car-seat-0-4",
+    name: { en: "Convertible Car Seat 0–4 yrs", ar: "كرسي سيارة قابل للتحويل 0–4 سنوات" },
+    description: {
+      en: "Rear- and forward-facing car seat with a 5-point harness, side-impact protection and ISOFIX.",
+      ar: "كرسي سيارة باتجاه الخلف والأمام مع حزام بخمس نقاط وحماية جانبية ونظام ISOFIX.",
+    },
+    category: "car-seats",
+    ages: ["0-6m", "6-12m", "1-2y", "2-4y"],
+    priceUsd: 149,
+    bestSeller: true,
+  },
+  {
+    id: "p3",
+    slug: "electric-baby-swing-chair",
+    name: { en: "Electric Baby Swing Chair", ar: "كرسي هزّاز كهربائي" },
+    description: {
+      en: "Gentle swing with 5 speeds, soothing music and a removable toy bar.",
+      ar: "هزّاز لطيف بخمس سرعات، موسيقى مهدّئة وقوس ألعاب قابل للإزالة.",
+    },
+    category: "swing-chairs",
+    ages: ["0-6m", "6-12m"],
+    priceUsd: 119,
+    bestSeller: true,
+  },
+  {
+    id: "p4",
+    slug: "musical-play-gym-mat",
+    name: { en: "Musical Play Gym Mat", ar: "سجادة لعب موسيقية" },
+    description: {
+      en: "Soft padded mat with hanging toys, a piano kick pad and lights for tummy time.",
+      ar: "سجادة مبطّنة مع ألعاب معلّقة وبيانو للقدمين وأضواء لوقت اللعب على البطن.",
+    },
+    category: "play-mats",
+    ages: ["0-6m", "6-12m"],
+    priceUsd: 45,
+    bestSeller: true,
+  },
+  {
+    id: "p5",
+    slug: "foldable-baby-walker",
+    name: { en: "Foldable Baby Walker", ar: "مشّاية أطفال قابلة للطي" },
+    description: {
+      en: "Height-adjustable walker with an activity tray and anti-slip stoppers. Folds flat for storage.",
+      ar: "مشّاية قابلة لتعديل الارتفاع مع صينية ألعاب ومانع انزلاق. تُطوى بسهولة للتخزين.",
+    },
+    category: "walkers",
+    ages: ["6-12m", "1-2y"],
+    priceUsd: 55,
+    isNew: true,
+  },
+  {
+    id: "p6",
+    slug: "adjustable-high-chair",
+    name: { en: "Adjustable High Chair", ar: "كرسي طعام قابل للتعديل" },
+    description: {
+      en: "7 height positions, reclining seat and a dishwasher-safe tray.",
+      ar: "7 مستويات للارتفاع، مقعد قابل للإمالة وصينية آمنة لغسالة الصحون.",
+    },
+    category: "high-chairs",
+    ages: ["6-12m", "1-2y", "2-4y"],
+    priceUsd: 89,
+    isNew: true,
+  },
+  {
+    id: "p7",
+    slug: "wooden-crib-with-drawer",
+    name: { en: "Wooden Crib with Drawer", ar: "سرير خشبي مع درج" },
+    description: {
+      en: "Solid wood crib with 3 mattress heights and a large storage drawer. Converts to a toddler bed.",
+      ar: "سرير من الخشب الصلب بثلاثة ارتفاعات للفرشة ودرج تخزين كبير. يتحوّل إلى سرير للأطفال.",
+    },
+    category: "beds",
+    ages: ["0-6m", "6-12m", "1-2y", "2-4y"],
+    priceUsd: 259,
+    isNew: true,
+  },
+  {
+    id: "p8",
+    slug: "foldable-baby-bath-tub",
+    name: { en: "Foldable Baby Bath Tub", ar: "حوض استحمام قابل للطي" },
+    description: {
+      en: "Space-saving bath tub with a temperature indicator and a non-slip base.",
+      ar: "حوض استحمام موفّر للمساحة مع مؤشر لحرارة الماء وقاعدة مانعة للانزلاق.",
+    },
+    category: "bath-tubs",
+    ages: ["0-6m", "6-12m", "1-2y"],
+    priceUsd: 35,
+    isNew: true,
+  },
+  {
+    id: "p9",
+    slug: "lightweight-cabin-stroller",
+    name: { en: "Lightweight Cabin Stroller", ar: "عربة خفيفة للسفر" },
+    description: {
+      en: "Under 7 kg and small enough for airplane cabins. Full recline and a big sun canopy.",
+      ar: "أقل من 7 كغ وصغيرة بما يكفي لمقصورة الطائرة. إمالة كاملة ومظلة شمس كبيرة.",
+    },
+    category: "strollers",
+    ages: ["6-12m", "1-2y", "2-4y"],
+    priceUsd: 159,
+  },
+  {
+    id: "p10",
+    slug: "booster-car-seat",
+    name: { en: "High-Back Booster Seat", ar: "كرسي سيارة معزّز بظهر" },
+    description: {
+      en: "Grows with your child with an adjustable headrest and side wings.",
+      ar: "يكبر مع طفلك بمسند رأس قابل للتعديل وأجنحة جانبية.",
+    },
+    category: "car-seats",
+    ages: ["2-4y", "4y-plus"],
+    priceUsd: 79,
+  },
+  {
+    id: "p11",
+    slug: "training-potty-with-lid",
+    name: { en: "Training Potty with Lid", ar: "نونية تدريب مع غطاء" },
+    description: {
+      en: "Comfortable potty with a splash guard, removable bowl and a lid.",
+      ar: "نونية مريحة مع واقي رذاذ ووعاء قابل للإزالة وغطاء.",
+    },
+    category: "potty",
+    ages: ["1-2y", "2-4y", "4y-plus"],
+    priceUsd: 19,
+  },
+  {
+    id: "p12",
+    slug: "kids-wooden-bedroom-set",
+    name: { en: "Kids Wooden Bedroom Set", ar: "غرفة نوم خشبية للأطفال" },
+    description: {
+      en: "Bed, wardrobe and dresser in natural wood. Delivery and assembly included.",
+      ar: "سرير وخزانة وتسريحة من الخشب الطبيعي. يشمل التوصيل والتركيب.",
+    },
+    category: "beds",
+    ages: ["2-4y", "4y-plus"],
+    priceUsd: 890,
+  },
+];
+
+export function getProduct(slug: string) {
+  return products.find((p) => p.slug === slug);
+}
+
+export function getProductById(id: string) {
+  return products.find((p) => p.id === id);
+}
+
+export function searchProducts(query: string) {
+  const q = query.trim().toLowerCase();
+  if (!q) return products;
+  return products.filter((p) => {
+    const category = getCategory(p.category);
+    const haystack = [p.name.en, p.name.ar, category?.name.en, category?.name.ar]
+      .join(" ")
+      .toLowerCase();
+    return haystack.includes(q);
+  });
+}

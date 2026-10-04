@@ -1,0 +1,12 @@
+// Cloudflare Workers config: serve the static export (`npm run build` → ./out).
+// Having this file stops `wrangler deploy` from auto-converting the app to OpenNext.
+{
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+  "name": "doodlzz-website",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./out",
+    // Unknown URLs get out/404.html; "/" → "/en" comes from public/_redirects.
+    "not_found_handling": "404-page"
+  }
+}

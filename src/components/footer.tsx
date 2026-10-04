@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FacebookIcon, InstagramIcon, TikTokIcon } from "@/components/icons";
+import { FacebookIcon, InstagramIcon, MailIcon, PhoneIcon, TikTokIcon, WhatsAppIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { useDict, useStore } from "@/components/store-provider";
 import { site, whatsappLink } from "@/lib/site";
@@ -59,6 +59,35 @@ export function Footer() {
           </nav>
         </div>
       </div>
+      <section aria-labelledby="get-in-touch" className="mx-auto max-w-6xl px-4 pb-7">
+        <h2 id="get-in-touch" className={heading}>
+          {t.contact.title}
+        </h2>
+        <div className="mt-2 grid gap-2.5 sm:grid-cols-3">
+          {[
+            { href: `tel:${site.phoneTel}`, label: t.contact.call, value: site.phoneDisplay, Icon: PhoneIcon, external: false },
+            { href: whatsappLink(t.whatsapp.greeting), label: "WhatsApp", value: site.phoneDisplay, Icon: WhatsAppIcon, external: true },
+            { href: `mailto:${site.email}`, label: t.contact.email, value: site.email, Icon: MailIcon, external: false },
+          ].map(({ href, label, value, Icon, external }) => (
+            <a
+              key={label}
+              href={href}
+              {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              className="flex items-center gap-3 rounded-2xl border border-[#e2ddd4] bg-white/60 p-3"
+            >
+              <span className="flex size-10 flex-none items-center justify-center rounded-full border border-[#e2ddd4] bg-white">
+                <Icon size={18} />
+              </span>
+              <span className="flex min-w-0 flex-col">
+                <span className="text-[11px] font-extrabold uppercase tracking-[0.06em] text-muted">{label}</span>
+                <span dir="ltr" className="truncate text-[15px] font-bold rtl:text-end">
+                  {value}
+                </span>
+              </span>
+            </a>
+          ))}
+        </div>
+      </section>
       <div className="mx-auto max-w-6xl px-4 pb-24">
         <div className="border-t border-[#e2ddd4] pt-[18px] text-xs text-muted">{t.footer.rights(new Date().getFullYear())}</div>
       </div>

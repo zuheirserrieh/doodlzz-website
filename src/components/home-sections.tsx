@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { ageGroups, categories } from "@/data/catalog";
+import { categories } from "@/data/catalog";
 import {
   CategoryIcon,
   FacebookIcon,
   InstagramIcon,
-  SearchIcon,
+  BearMascot,
   StarIcon,
   TikTokIcon,
 } from "@/components/icons";
@@ -12,54 +12,6 @@ import { getDictionary, type Locale } from "@/lib/i18n";
 import { site } from "@/lib/site";
 
 const h2 = "font-display text-2xl font-semibold";
-
-export function SearchBar({ locale, defaultValue = "" }: { locale: Locale; defaultValue?: string }) {
-  const t = getDictionary(locale);
-  return (
-    <form action={`/${locale}/shop`} role="search" className="mx-auto max-w-6xl px-4 pt-3 pb-2">
-      <label htmlFor="dz-search" className="sr-only">
-        {t.search.label}
-      </label>
-      <div className="flex h-12 items-center gap-2.5 rounded-full bg-surface px-4 text-muted focus-within:outline-2 focus-within:outline-accent">
-        <SearchIcon />
-        <input
-          id="dz-search"
-          name="q"
-          type="search"
-          defaultValue={defaultValue}
-          placeholder={t.search.placeholder}
-          className="h-11 flex-1 bg-transparent text-[15px] font-semibold text-navy outline-none placeholder:text-muted"
-        />
-      </div>
-    </form>
-  );
-}
-
-export function ShopByAge({ locale }: { locale: Locale }) {
-  const t = getDictionary(locale);
-  return (
-    <section id="shop-by-age" className="mx-auto max-w-6xl scroll-mt-28 pt-3 pb-4">
-      <h2 className="px-4 font-display text-xl font-semibold">{t.age.title}</h2>
-      <div className="no-scrollbar mt-3 flex gap-3 overflow-x-auto px-4">
-        {ageGroups.map((a) => (
-          <Link
-            key={a.slug}
-            href={`/${locale}/shop?age=${a.slug}`}
-            className="flex w-[72px] flex-none flex-col items-center gap-1.5"
-          >
-            <span
-              dir="ltr"
-              className={`flex size-[68px] items-center justify-center rounded-full font-display text-xl font-semibold ${a.tint}`}
-            >
-              {a.label}
-            </span>
-            <span className="text-xs font-bold">{a.unit === "months" ? t.age.months : t.age.years}</span>
-          </Link>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 export function CategoryGrid({ locale }: { locale: Locale }) {
   const t = getDictionary(locale);
@@ -152,6 +104,56 @@ export function BrandsMarquee({ locale }: { locale: Locale }) {
   );
 }
 
+
+/** Playful wavy divider with stars and the mascot in the middle. */
+export function WavySeparator() {
+  const stars = [
+    { x: 4, y: 62, c: "#F25C54", s: 7 },
+    { x: 14, y: 30, c: "#FFD449", s: 9 },
+    { x: 24, y: 70, c: "#F25C54", s: 7 },
+    { x: 30, y: 38, c: "#FFD449", s: 6 },
+    { x: 38, y: 14, c: "#3A9AD9", s: 9 },
+    { x: 58, y: 4, c: "#F25C54", s: 8 },
+    { x: 66, y: 12, c: "#FFD449", s: 11 },
+    { x: 72, y: 34, c: "#3A9AD9", s: 9 },
+    { x: 78, y: 48, c: "#FFD449", s: 6 },
+    { x: 86, y: 66, c: "#F25C54", s: 7 },
+    { x: 93, y: 28, c: "#FFD449", s: 9 },
+  ];
+  return (
+    <div aria-hidden className="relative mx-auto mt-12 h-36 max-w-6xl overflow-hidden">
+      <svg viewBox="0 0 400 120" preserveAspectRatio="none" className="absolute inset-0 size-full">
+        <path
+          d="M0 78 C 60 60, 110 95, 160 70 S 185 20, 205 40 S 215 75, 235 60 S 245 30, 230 32 S 225 70, 260 72 S 340 60, 400 74"
+          fill="none"
+          stroke="#3A9AD9"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      {stars.map((s, i) => (
+        <svg
+          key={i}
+          width={s.s}
+          height={s.s}
+          viewBox="0 0 24 24"
+          className="absolute"
+          style={{ left: `${s.x}%`, top: `${s.y}%`, color: s.c }}
+        >
+          <path fill="currentColor" d="M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z" />
+        </svg>
+      ))}
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+        <BearMascot />
+      </div>
+    </div>
+  );
+}
+
+// TODO(owner): replace with real Instagram posts (put images in /public/social and render <Image>).
+const feedTints = ["bg-pastel-peach", "bg-pastel-blue", "bg-pastel-yellow", "bg-pastel-mint", "bg-pastel-lilac", "bg-pastel-peach"];
+
 export function FollowUs({ locale }: { locale: Locale }) {
   const t = getDictionary(locale);
   const links = [
@@ -160,10 +162,25 @@ export function FollowUs({ locale }: { locale: Locale }) {
     { href: site.social.tiktok, label: "TikTok", Icon: TikTokIcon },
   ];
   return (
-    <section className="mx-4 mt-11 flex flex-col items-center gap-1.5 rounded-3xl bg-navy px-5 py-7 text-center text-white md:mx-auto md:max-w-3xl">
+    <section className="mx-4 mt-11 flex flex-col items-center gap-1.5 rounded-3xl bg-navy px-4 py-7 text-center text-white md:mx-auto md:max-w-3xl">
       <h2 className="font-display text-[22px] font-semibold">{t.follow.title}</h2>
       <p className="text-sm text-[#c9cfdc]">{t.follow.subtitle}</p>
-      <div className="mt-4 flex gap-5">
+
+      <a
+        href={site.social.instagram}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Instagram ${site.social.handle}`}
+        className="mt-4 grid w-full grid-cols-3 gap-1.5 overflow-hidden rounded-2xl"
+      >
+        {feedTints.map((tint, i) => (
+          <span key={i} className={`flex aspect-square items-center justify-center text-[10px] font-semibold text-muted ${tint}`}>
+            [Photo]
+          </span>
+        ))}
+      </a>
+
+      <div className="mt-5 flex gap-5">
         {links.map(({ href, label, Icon }) => (
           <a
             key={label}

@@ -6,7 +6,7 @@ import { useEffect, useRef } from "react";
 import { categories } from "@/data/catalog";
 import { ChevronIcon, CategoryIcon, CloseIcon, WhatsAppIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
-import { useDict, useStore, type Currency } from "@/components/store-provider";
+import { useDict, useStore } from "@/components/store-provider";
 import type { Locale } from "@/lib/i18n";
 import { whatsappLink } from "@/lib/site";
 
@@ -44,7 +44,7 @@ function Segment<T extends string>({
 }
 
 export function MenuDrawer() {
-  const { locale, currency, setCurrency, menuOpen, setMenuOpen } = useStore();
+  const { locale, menuOpen, setMenuOpen } = useStore();
   const t = useDict();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -137,14 +137,6 @@ export function MenuDrawer() {
             options={[
               { value: "en", label: "English", href: switchLocale("en") },
               { value: "ar", label: "العربية", href: switchLocale("ar") },
-            ]}
-          />
-          <Segment<Currency>
-            label={t.menu.currency}
-            value={currency}
-            options={[
-              { value: "usd", label: "USD", onSelect: () => setCurrency("usd") },
-              { value: "lbp", label: "LBP", onSelect: () => setCurrency("lbp") },
             ]}
           />
         </section>

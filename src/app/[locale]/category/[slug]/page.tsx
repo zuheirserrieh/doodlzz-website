@@ -5,6 +5,9 @@ import { categories, getCategory } from "@/data/catalog";
 import { products } from "@/data/products";
 import { isLocale, locales } from "@/lib/i18n";
 
+// Only the pages generated at build time exist; anything else is a 404.
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return locales.flatMap((locale) => categories.map((c) => ({ locale, slug: c.slug })));
 }

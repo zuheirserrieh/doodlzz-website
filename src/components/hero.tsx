@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CategoryIcon, ChevronIcon } from "@/components/icons";
+import { SearchForm } from "@/components/search-form";
 import { useDict, useStore } from "@/components/store-provider";
 import type { CategoryIcon as CategoryIconName } from "@/data/catalog";
 
@@ -15,6 +16,7 @@ const slideArt: { tint: string; dot: string; art: string; icon: CategoryIconName
 
 const INTERVAL_MS = 6000;
 
+/** Hero slideshow with the search bar sitting on top of the slide. */
 export function Hero() {
   const { locale } = useStore();
   const t = useDict();
@@ -32,29 +34,27 @@ export function Hero() {
   const copy = t.hero.slides[index];
 
   return (
-    <section className="mx-auto max-w-6xl px-4" aria-roledescription="carousel">
+    <section className="mx-auto max-w-6xl md:px-4 md:pt-4" aria-roledescription="carousel">
       <div
-        className={`relative flex h-[400px] flex-col justify-between overflow-hidden rounded-3xl p-6 transition-colors duration-500 ${art.tint}`}
+        className={`relative flex h-[460px] flex-col overflow-hidden rounded-b-[28px] px-4 pt-4 pb-6 transition-colors duration-500 md:rounded-3xl md:p-6 ${art.tint}`}
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
-        onFocus={() => setPaused(true)}
-        onBlur={() => setPaused(false)}
       >
         <CategoryIcon
           name={art.icon}
           size={220}
           strokeWidth={1.2}
-          className={`absolute -end-5 bottom-10 rtl:-scale-x-100 md:end-10 md:size-[300px] ${art.art}`}
+          className={`absolute -end-5 bottom-14 rtl:-scale-x-100 md:end-10 md:size-[300px] ${art.art}`}
         />
-        <div
-          key={index}
-          aria-live={paused ? "polite" : "off"}
-          className="relative mt-9 flex max-w-[250px] flex-col gap-3 md:max-w-md"
-        >
+
+        <SearchForm className="relative z-10 md:max-w-xl" />
+
+        <div key={index} className="relative mt-10 flex max-w-[250px] flex-col gap-3 md:max-w-md">
           <h1 className="font-display text-[34px] leading-[1.08] font-semibold md:text-5xl">{copy.title}</h1>
           <p className="text-[15px] leading-normal text-ink-soft">{copy.text}</p>
         </div>
-        <div className="relative flex items-center justify-between">
+
+        <div className="relative mt-auto flex items-center justify-between">
           <Link
             href={`/${locale}${art.href}`}
             className="flex h-12 items-center gap-2 rounded-full bg-accent px-[22px] text-[15px] font-extrabold text-white hover:bg-accent-dark hover:text-white"
@@ -72,9 +72,7 @@ export function Hero() {
                 onClick={() => setIndex(i)}
                 className="flex h-6 cursor-pointer items-center"
               >
-                <span
-                  className={`block h-2 rounded-full transition-all ${i === index ? "w-5 bg-navy" : `w-2 ${art.dot}`}`}
-                />
+                <span className={`block h-2 rounded-full transition-all ${i === index ? "w-5 bg-navy" : `w-2 ${art.dot}`}`} />
               </button>
             ))}
           </div>

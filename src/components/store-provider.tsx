@@ -2,21 +2,20 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { getDictionary, type Locale } from "@/lib/i18n";
-import { site } from "@/lib/site";
 
-export type Currency = "usd" | "lbp";
 export type CartLine = { id: string; qty: number };
 
 type Store = {
   locale: Locale;
-  currency: Currency;
-  setCurrency: (c: Currency) => void;
   cart: CartLine[];
   cartCount: number;
   addToCart: (id: string, qty?: number) => void;
   setQty: (id: string, qty: number) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
+  wishlist: string[];
+  isWished: (id: string) => boolean;
+  toggleWish: (id: string) => void;
   menuOpen: boolean;
   setMenuOpen: (open: boolean) => void;
 };
@@ -24,7 +23,7 @@ type Store = {
 const StoreContext = createContext<Store | null>(null);
 
 const CART_KEY = "dz-cart";
-const CURRENCY_KEY = "dz-currency";
+const WISHLIST_KEY = "dz-wishlist";
 
 function readStorage<T>(key: string, fallback: T): T {
   try {
@@ -44,8 +43,8 @@ function writeStorage(key: string, value: unknown) {
 }
 
 export function StoreProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
-  const [currency, setCurrencyState] = useState<Currency>("usd");
   const [cart, setCart] = useState<CartLine[]>([]);
+  const [wishlist, setWishlist] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -53,7 +52,7 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     setCart(readStorage<CartLine[]>(CART_KEY, []));
-    setCurrencyState(readStorage<Currency>(CURRENCY_KEY, "usd"));
+    setWishlist(readStorage<string[]>(WISHLIST_KEY, []));
     setHydrated(true);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
@@ -62,10 +61,9 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
     if (hydrated) writeStorage(CART_KEY, cart);
   }, [cart, hydrated]);
 
-  const setCurrency = useCallback((c: Currency) => {
-    setCurrencyState(c);
-    writeStorage(CURRENCY_KEY, c);
-  }, []);
+  useEffect(() => {
+    if (hydrated) writeStorage(WISHLIST_KEY, wishlist);
+  }, [wishlist, hydrated]);
 
   const addToCart = useCallback((id: string, qty = 1) => {
     setCart((lines) => {
@@ -87,21 +85,27 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
 
   const clearCart = useCallback(() => setCart([]), []);
 
+  const toggleWish = useCallback((id: string) => {
+    setWishlist((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
+  }, []);
+  const isWished = useCallback((id: string) => wishlist.includes(id), [wishlist]);
+
   const value = useMemo<Store>(
     () => ({
       locale,
-      currency,
-      setCurrency,
       cart,
       cartCount: cart.reduce((n, l) => n + l.qty, 0),
       addToCart,
       setQty,
       removeFromCart,
       clearCart,
+      wishlist,
+      isWished,
+      toggleWish,
       menuOpen,
       setMenuOpen,
     }),
-    [locale, currency, setCurrency, cart, addToCart, setQty, removeFromCart, clearCart, menuOpen],
+    [locale, cart, addToCart, setQty, removeFromCart, clearCart, wishlist, isWished, toggleWish, menuOpen],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
@@ -117,16 +121,12 @@ export function useDict() {
   return getDictionary(useStore().locale);
 }
 
-export function formatPrice(usd: number, currency: Currency, locale: Locale) {
-  const tag = locale === "ar" ? "ar-LB-u-nu-latn" : "en-US";
-  if (currency === "lbp") {
-    const lbp = Math.round((usd * site.lbpPerUsd) / 1000) * 1000;
-    return `${new Intl.NumberFormat(tag).format(lbp)} ${locale === "ar" ? "ل.ل." : "LBP"}`;
-  }
-  return new Intl.NumberFormat(tag, { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(usd);
+/** Prices are US dollars only, "$149" / "$149.50" style in both languages. */
+export function formatPrice(usd: number) {
+  const digits = Number.isInteger(usd) ? 0 : 2;
+  return `$${new Intl.NumberFormat("en-US", { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(usd)}`;
 }
 
 export function usePrice() {
-  const { currency, locale } = useStore();
-  return useCallback((usd: number) => formatPrice(usd, currency, locale), [currency, locale]);
+  return formatPrice;
 }

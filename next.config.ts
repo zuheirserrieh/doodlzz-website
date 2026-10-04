@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async redirects() {
-    return [{ source: "/", destination: "/en", permanent: false }];
-  },
+  // Fully static site (HTML/JS in `out/`) — deployed to Cloudflare Pages.
+  // The "/" → "/en" redirect lives in public/_redirects (Cloudflare reads it).
+  output: "export",
+  images: { unoptimized: true },
 };
 
 export default nextConfig;

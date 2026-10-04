@@ -14,23 +14,31 @@ export function dirOf(locale: Locale) {
 export type Localized = Record<Locale, string>;
 
 const en = {
-  announcement: "Fast delivery all over Lebanon",
+  announcements: ["Delivery available all over Lebanon 🇱🇧", "Pay cash on delivery or by Whish Money"],
   nav: {
     openMenu: "Open menu",
     closeMenu: "Close menu",
-    settings: "Settings",
     signIn: "Sign in",
+    favorites: (n: number) => `Favorites, ${n} ${n === 1 ? "item" : "items"}`,
     cart: (n: number) => `Shopping cart, ${n} ${n === 1 ? "item" : "items"}`,
     home: "Doodlzz home",
   },
   search: {
     label: "Search products",
-    placeholder: "Search strollers, car seats…",
+    placeholder: "What are you looking for?",
+    submit: "Search",
+    scope: "Search in",
+    all: "All",
+    byAge: "Shop by age",
+    categories: "Categories",
   },
   age: {
     title: "Shop by age",
+    orTitle: "Or shop by age",
     months: "Months",
     years: "Years",
+    viewAll: "View all",
+    empty: "New products for this age are coming soon.",
   },
   hero: {
     slides: [
@@ -64,7 +72,7 @@ const en = {
   product: {
     addToCart: "Add to cart",
     added: "Added ✓",
-    addToWishlist: "Add to wishlist",
+    addToWishlist: "Add to favorites",
     badgeBest: "Best seller",
     badgeNew: "New",
     photo: "Product photo",
@@ -95,6 +103,16 @@ const en = {
     title: "Follow the fun",
     subtitle: "Tips, new arrivals and real moments every week",
   },
+  contact: {
+    title: "Get in touch",
+    call: "Call us",
+    email: "Email",
+  },
+  wishlist: {
+    title: "Favorites",
+    empty: "No favorites yet. Tap the heart on any product to save it here.",
+    browse: "Browse products",
+  },
   footer: {
     aboutTitle: "About us",
     about:
@@ -117,7 +135,6 @@ const en = {
     catalog: "Catalog",
     settings: "Settings",
     language: "Language",
-    currency: "Currency",
     whatsapp: "Order or ask on WhatsApp",
   },
   whatsapp: {
@@ -149,23 +166,31 @@ const en = {
 export type Dictionary = typeof en;
 
 const ar: Dictionary = {
-  announcement: "توصيل سريع إلى كل لبنان",
+  announcements: ["التوصيل متوفر إلى كل لبنان 🇱🇧", "الدفع نقداً عند الاستلام أو عبر Whish Money"],
   nav: {
     openMenu: "فتح القائمة",
     closeMenu: "إغلاق القائمة",
-    settings: "الإعدادات",
     signIn: "تسجيل الدخول",
+    favorites: (n) => `المفضلة، ${n} ${n === 1 ? "منتج" : "منتجات"}`,
     cart: (n) => `سلة التسوق، ${n} ${n === 1 ? "منتج" : "منتجات"}`,
     home: "الصفحة الرئيسية لـ Doodlzz",
   },
   search: {
     label: "ابحث عن المنتجات",
-    placeholder: "ابحث عن عربات، كراسي سيارة…",
+    placeholder: "عن ماذا تبحث؟",
+    submit: "بحث",
+    scope: "ابحث في",
+    all: "الكل",
+    byAge: "تسوّق حسب العمر",
+    categories: "الأقسام",
   },
   age: {
     title: "تسوّق حسب العمر",
+    orTitle: "أو تسوّق حسب العمر",
     months: "أشهر",
     years: "سنوات",
+    viewAll: "عرض الكل",
+    empty: "منتجات جديدة لهذا العمر قريباً.",
   },
   hero: {
     slides: [
@@ -230,6 +255,16 @@ const ar: Dictionary = {
     title: "تابعونا",
     subtitle: "نصائح، منتجات جديدة ولحظات حقيقية كل أسبوع",
   },
+  contact: {
+    title: "تواصل معنا",
+    call: "اتصل بنا",
+    email: "البريد الإلكتروني",
+  },
+  wishlist: {
+    title: "المفضلة",
+    empty: "لا يوجد منتجات في المفضلة بعد. اضغط على القلب لحفظ أي منتج هنا.",
+    browse: "تصفّح المنتجات",
+  },
   footer: {
     aboutTitle: "من نحن",
     about:
@@ -252,7 +287,6 @@ const ar: Dictionary = {
     catalog: "الأقسام",
     settings: "الإعدادات",
     language: "اللغة",
-    currency: "العملة",
     whatsapp: "اطلب أو اسأل عبر واتساب",
   },
   whatsapp: {

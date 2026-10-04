@@ -13,6 +13,9 @@ const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin"], weight
 const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"], weight: ["400", "600", "700", "800"] });
 const tajawal = Tajawal({ variable: "--font-arabic", subsets: ["arabic"], weight: ["400", "500", "700", "800"] });
 
+// Only the pages generated at build time exist; anything else is a 404.
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }

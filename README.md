@@ -19,13 +19,14 @@ npm run lint
 | Route | What it is |
 | --- | --- |
 | `/en`, `/ar` | Home page (Arabic is fully right-to-left) |
-| `/[locale]/shop` | All products; supports `?q=` search, `?age=0-6m`, `?tab=best\|new` |
+| `/[locale]/shop` | All products; supports `?q=` search, `?age=0-6m`, `?category=strollers`, `?tab=best\|new` |
 | `/[locale]/category/[slug]` | Category listing |
 | `/[locale]/product/[slug]` | Product page with "Order on WhatsApp" |
 | `/[locale]/cart` | Cart; checkout sends the order as a WhatsApp message |
+| `/[locale]/favorites` | Saved (hearted) products |
 
-- **Menu drawer** opens from the header (menu, settings and sign-in buttons) with the catalog, language and currency switches.
-- **Cart and currency** are saved in the browser (`localStorage`). USD → LBP uses the rate in `src/lib/site.ts`.
+- **Menu drawer** opens from the header (menu and sign-in buttons) with the catalog and the language switch.
+- **Cart and favorites** are saved in the browser (`localStorage`). Prices are in US dollars only.
 - **Text** for both languages is in `src/lib/i18n.ts`.
 
 ## Where to edit content
@@ -34,7 +35,7 @@ npm run lint
 | --- | --- |
 | Products, prices, photos | `src/data/products.ts` (photos go in `public/products/`) |
 | Categories, age groups | `src/data/catalog.ts` |
-| WhatsApp number, LBP rate, social links | `src/lib/site.ts` |
+| WhatsApp, phone, email, social links | `src/lib/site.ts` |
 | Hero slides, all wording (EN + AR) | `src/lib/i18n.ts` |
 | Colors and fonts | `src/app/globals.css` (`@theme`) |
 
@@ -42,7 +43,7 @@ Search the code for `TODO(owner)` to find every placeholder that still needs rea
 
 ## Not built yet
 
-- Accounts / sign-in, and the wishlist
+- Accounts / sign-in (favorites are saved in the browser for now)
 - Online payment (orders currently go through WhatsApp)
 - An admin panel for products. They live in a code file for now, and moving them to Shopify (headless) or a CMS is the planned next step.
 - Delivery, exchange policy and "our story" pages

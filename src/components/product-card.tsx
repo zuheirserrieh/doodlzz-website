@@ -33,6 +33,26 @@ export function ProductBadge({ product }: { product: Product }) {
   );
 }
 
+/** Heart toggle. Favorites are kept in the browser until accounts exist. */
+export function WishButton({ productId, className = "" }: { productId: string; className?: string }) {
+  const { isWished, toggleWish } = useStore();
+  const t = useDict();
+  const on = isWished(productId);
+  return (
+    <button
+      type="button"
+      aria-label={t.product.addToWishlist}
+      aria-pressed={on}
+      onClick={() => toggleWish(productId)}
+      className={`flex size-11 cursor-pointer items-center justify-center ${className}`}
+    >
+      <span className={`flex size-8 items-center justify-center rounded-full bg-white ${on ? "text-accent" : "text-navy"}`}>
+        <HeartIcon fill={on ? "currentColor" : "none"} />
+      </span>
+    </button>
+  );
+}
+
 export function Price({ usd }: { usd: number }) {
   return <>{usePrice()(usd)}</>;
 }
@@ -58,7 +78,6 @@ export function AddToCartButton({ productId, className = "" }: { productId: stri
 
 export function ProductCard({ product }: { product: Product }) {
   const { locale } = useStore();
-  const t = useDict();
   const price = usePrice();
   const category = getCategory(product.category);
   const href = `/${locale}/product/${product.slug}`;
@@ -72,16 +91,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="absolute start-2.5 top-2.5">
           <ProductBadge product={product} />
         </div>
-        {/* TODO: persist wishlist once accounts exist. */}
-        <button
-          type="button"
-          aria-label={t.product.addToWishlist}
-          className="absolute end-0.5 top-0.5 flex size-11 cursor-pointer items-center justify-center"
-        >
-          <span className="flex size-8 items-center justify-center rounded-full bg-white">
-            <HeartIcon />
-          </span>
-        </button>
+        <WishButton productId={product.id} className="absolute end-0.5 top-0.5" />
       </div>
       <Link href={href} className="mt-1 min-h-[38px] text-sm font-bold leading-[1.35]">
         {product.name[locale]}

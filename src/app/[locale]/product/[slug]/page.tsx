@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronIcon, SwapIcon, TruckIcon, WhatsAppIcon } from "@/components/icons";
-import { AddToCartButton, Price, ProductBadge, ProductGrid, ProductImage } from "@/components/product-card";
+import { AddToCartButton, Price, ProductBadge, ProductGrid, ProductImage, WishButton } from "@/components/product-card";
 import { ageGroups, getCategory } from "@/data/catalog";
 import { getProduct, products } from "@/data/products";
 import { getDictionary, isLocale, locales } from "@/lib/i18n";
 import { whatsappLink } from "@/lib/site";
+
+// Only the pages generated at build time exist; anything else is a 404.
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return locales.flatMap((locale) => products.map((p) => ({ locale, slug: p.slug })));
@@ -44,6 +47,7 @@ export default async function ProductPage({ params }: PageProps<"/[locale]/produ
           <div className="absolute start-4 top-4">
             <ProductBadge product={product} />
           </div>
+          <WishButton productId={product.id} className="absolute end-2 top-2" />
         </div>
 
         <div className="flex flex-col gap-4">

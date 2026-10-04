@@ -237,3 +237,117 @@ export function SwapIcon({ size = 22, ...props }: IconProps) {
     </svg>
   );
 }
+
+export function PhoneIcon({ size = 22, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, "0 0 24 24", 1.8, props)}>
+      <path d="M5 4h3l2 5-2.5 1.5a11 11 0 0 0 6 6L15 14l5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
+    </svg>
+  );
+}
+
+export function MailIcon({ size = 22, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, "0 0 24 24", 1.8, props)}>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M3 7l9 6 9-6" />
+    </svg>
+  );
+}
+
+export function BagIcon({ size = 22, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, "0 0 24 24", 2, props)}>
+      <path d="M5 8h14l-1 12H6z" />
+      <path d="M9 11V7a3 3 0 0 1 6 0v4" />
+    </svg>
+  );
+}
+
+/** Points "forward" — flip with `rtl:rotate-180`. */
+export function ArrowIcon({ size = 18, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, "0 0 24 24", 2.4, props)}>
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  );
+}
+
+/** Small colourful illustrations for the shop-by-age tabs, keyed by age-group slug. */
+export function AgeIcon({ slug, size = 30 }: { slug: string; size?: number }) {
+  const common = { width: size, height: size, viewBox: "0 0 32 32", "aria-hidden": true, strokeWidth: 1.6, stroke: "#1E2742" } as const;
+  switch (slug) {
+    case "0-6m": // rattle
+      return (
+        <svg {...common} strokeLinecap="round">
+          <circle cx="12" cy="12" r="7" fill="#7CC4F0" />
+          <path d="M17 17l7 7" />
+          <circle cx="25" cy="25" r="3" fill="#F25C54" />
+          <circle cx="10" cy="10" r="1.6" fill="#fff" stroke="none" />
+        </svg>
+      );
+    case "6-12m": // bottle
+      return (
+        <svg {...common} strokeLinejoin="round">
+          <path d="M13 4h6l1 4h-8z" fill="#F7A072" />
+          <rect x="10" y="8" width="12" height="20" rx="4" fill="#FFF2C7" />
+          <path d="M10 16h12" />
+          <path d="M14 20h4M14 24h4" />
+        </svg>
+      );
+    case "1-2y": // stacking rings
+      return (
+        <svg {...common} strokeLinejoin="round">
+          <path d="M16 3v4" />
+          <rect x="7" y="22" width="18" height="6" rx="3" fill="#3A9AD9" />
+          <rect x="9" y="16" width="14" height="6" rx="3" fill="#7CC67E" />
+          <rect x="11" y="10" width="10" height="6" rx="3" fill="#FFD449" />
+          <circle cx="16" cy="7.5" r="3" fill="#F25C54" />
+        </svg>
+      );
+    case "2-4y": // ball
+      return (
+        <svg {...common}>
+          <circle cx="16" cy="16" r="11" fill="#FFD449" />
+          <path d="M5 16h22" />
+          <path d="M16 5c-4 3-4 19 0 22M16 5c4 3 4 19 0 22" fill="none" />
+          <path d="M6 12a11 11 0 0 1 20 0z" fill="#F25C54" stroke="none" opacity="0.85" />
+        </svg>
+      );
+    default: // kite
+      return (
+        <svg {...common} strokeLinejoin="round" strokeLinecap="round">
+          <path d="M16 3l9 10-9 10-9-10z" fill="#3A9AD9" />
+          <path d="M16 3v20M7 13h18" />
+          <path d="M16 3l9 10H16z" fill="#F25C54" />
+          <path d="M16 13H7l9 10z" fill="#F25C54" />
+          <path d="M16 23c-2 2 2 3 0 5" fill="none" />
+        </svg>
+      );
+  }
+}
+
+// TODO(owner): replace with the real Doodlzz mascot artwork when available.
+export function BearMascot({ size = 72 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden stroke="#1E2742" strokeWidth={1.6} strokeLinejoin="round">
+      <ellipse cx="32" cy="60" rx="14" ry="2.5" fill="#EEF1F6" stroke="none" />
+      <circle cx="17" cy="20" r="6" fill="#8CC8F0" />
+      <circle cx="47" cy="20" r="6" fill="#8CC8F0" />
+      <circle cx="17" cy="20" r="2.8" fill="#FCE7DE" stroke="none" />
+      <circle cx="47" cy="20" r="2.8" fill="#FCE7DE" stroke="none" />
+      <path d="M20 44c-2 6 2 13 12 13s14-7 12-13z" fill="#8CC8F0" />
+      <ellipse cx="32" cy="50" rx="6" ry="5" fill="#fff" stroke="none" />
+      <circle cx="32" cy="31" r="15" fill="#8CC8F0" />
+      <ellipse cx="32" cy="36" rx="7" ry="5" fill="#fff" />
+      <circle cx="26" cy="29" r="1.8" fill="#1E2742" stroke="none" />
+      <circle cx="38" cy="29" r="1.8" fill="#1E2742" stroke="none" />
+      <ellipse cx="32" cy="34" rx="2.2" ry="1.6" fill="#1E2742" stroke="none" />
+      <path d="M30 37.5q2 1.6 4 0" fill="none" strokeLinecap="round" />
+      <circle cx="22" cy="34" r="2" fill="#F7A9A0" stroke="none" />
+      <circle cx="42" cy="34" r="2" fill="#F7A9A0" stroke="none" />
+      <path d="M22 18 32 2l10 16z" fill="#F25C54" />
+      <circle cx="32" cy="2.5" r="2" fill="#FFD449" />
+    </svg>
+  );
+}

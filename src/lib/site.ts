@@ -3,10 +3,12 @@
  */
 export const site = {
   name: "Doodlzz",
-  // TODO(owner): real WhatsApp number, international format, digits only (961 = Lebanon).
-  whatsappNumber: "96100000000",
-  // TODO(owner): confirm the USD → LBP rate to display.
-  lbpPerUsd: 89_500,
+  // WhatsApp number: international format, digits only (961 = Lebanon).
+  whatsappNumber: "96181727746",
+  // Phone shown in "Get in touch" (as displayed) and as dialled.
+  phoneDisplay: "+961 81 727 746",
+  phoneTel: "+96181727746",
+  email: "doodlzzlb@gmail.com",
   social: {
     // TODO(owner): real handles.
     handle: "@doodlzz",

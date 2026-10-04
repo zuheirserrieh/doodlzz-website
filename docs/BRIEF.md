@@ -26,7 +26,7 @@ Strollers · Car Seats · Baby Swing Chairs · Baby Play Mat · Baby Walker & Yo
 Baby High Chair · Baby Bed & Wood Bedrooms · Baby Bath Tub · Kids Potty · (more to come)
 
 ## Menu drawer
-Sign in / Create account · full catalog list · Settings: Language (English / العربية), Currency (USD / LBP) ·
+Sign in / Create account · full catalog list · Settings: Language (English / العربية) · Prices in USD only ·
 WhatsApp order button.
 
 ## Visual style
@@ -38,8 +38,9 @@ WhatsApp order button.
   - Pastels: blue #E6F1FA · peach #FCE7DE · yellow #FFF2C7 · mint #E2F3EA · lilac #EDE7F8
   - Light grey surfaces: #F3F5F8 · footer cream: #F6F3EE
   - WhatsApp green: #158F45 · badge yellow: #FFE08A
-- Top strip: "Fast delivery all over Lebanon" (to confirm).
+- Top strip rotates: "Delivery available all over Lebanon 🇱🇧" / "Pay cash on delivery or by Whish Money".
 
 ## Open items (waiting on owner)
 - Logo & brand colors (if any) · Shop-by-age image · product photos & prices ·
-  customer review photos · brand logos · About us text · social handles · WhatsApp number · LBP rate.
+  customer review photos · brand logos · About us text · social handles.
+- Contact: +961 81 727 746 (phone & WhatsApp) · doodlzzlb@gmail.com

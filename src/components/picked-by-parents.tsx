@@ -22,7 +22,7 @@ export function PickedByParents() {
 
   return (
     <section className="mx-auto max-w-6xl px-4 pt-10">
-      <h2 className="font-display text-2xl font-semibold">{t.picked.title}</h2>
+      <h2 className="font-display text-2xl font-bold">{t.picked.title}</h2>
       <div role="tablist" className="mt-3.5 flex gap-2">
         {tabs.map((x) => (
           <button

@@ -91,6 +91,9 @@ create table if not exists public.orders (
   locale text not null default 'en'
 );
 
+alter table public.orders add column if not exists delivery_option text not null default 'standard'
+  check (delivery_option in ('standard', 'express', 'sameday'));
+
 create index if not exists orders_created_at_idx on public.orders (created_at desc);
 create index if not exists orders_user_idx on public.orders (user_id);
 
@@ -154,7 +157,7 @@ begin
     sum_usd := sum_usd + p.price_usd * qty;
   end loop;
 
-  insert into public.orders (user_id, customer_name, phone, city, address, notes, payment_method, items, total_usd, locale)
+  insert into public.orders (user_id, customer_name, phone, city, address, notes, payment_method, delivery_option, items, total_usd, locale)
   values (
     auth.uid(),
     left(trim(customer ->> 'name'), 120),
@@ -163,6 +166,7 @@ begin
     left(trim(customer ->> 'address'), 400),
     left(coalesce(trim(customer ->> 'notes'), ''), 600),
     customer ->> 'payment',
+    case when customer ->> 'delivery' in ('express', 'sameday') then customer ->> 'delivery' else 'standard' end,
     lines,
     sum_usd,
     case when order_locale = 'ar' then 'ar' else 'en' end

@@ -50,14 +50,14 @@ export function Hero() {
         <SearchForm className="relative z-10 md:max-w-xl" />
 
         <div key={index} className="relative mt-10 flex max-w-[250px] flex-col gap-3 md:max-w-md">
-          <h1 className="font-display text-[34px] leading-[1.08] font-semibold md:text-5xl">{copy.title}</h1>
+          <h1 className="font-display text-[34px] leading-[1.08] font-bold md:text-5xl">{copy.title}</h1>
           <p className="text-[15px] leading-normal text-ink-soft">{copy.text}</p>
         </div>
 
         <div className="relative mt-auto flex items-center justify-between">
           <Link
             href={`/${locale}${art.href}`}
-            className="flex h-12 items-center gap-2 rounded-full bg-accent px-[22px] text-[15px] font-extrabold text-white hover:bg-accent-dark hover:text-white"
+            className="flex h-12 items-center gap-2 rounded-full bg-accent/70 px-[22px] text-[15px] font-extrabold text-white shadow-sm ring-1 ring-white/50 backdrop-blur-md hover:bg-accent/85 hover:text-white"
           >
             {t.hero.cta}
             <ChevronIcon strokeWidth={2.4} className="rtl:rotate-180" />

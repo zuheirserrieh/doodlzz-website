@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getCategory } from "@/data/catalog";
 import type { Product } from "@/data/products";
 import { CategoryIcon, HeartIcon } from "@/components/icons";
@@ -15,14 +15,58 @@ export function productHref(locale: Locale, slug: string) {
   return `/${locale}/product?slug=${encodeURIComponent(slug)}`;
 }
 
-export function ProductImage({ product, className = "", iconSize = 72 }: { product: Product; className?: string; iconSize?: number }) {
+/**
+ * Product photo. With `cycle`, products that have several photos flip through them on their
+ * own (only while visible on screen, and not for people who prefer reduced motion).
+ */
+export function ProductImage({
+  product,
+  className = "",
+  iconSize = 72,
+  cycle = false,
+}: {
+  product: Product;
+  className?: string;
+  iconSize?: number;
+  cycle?: boolean;
+}) {
   const category = getCategory(product.category);
+  const images = product.images ?? [];
+  const [index, setIndex] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const canCycle = cycle && images.length > 1;
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!canCycle || !el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const observer = new IntersectionObserver(([entry]) => {
+      clearInterval(timer);
+      if (entry.isIntersecting) timer = setInterval(() => setIndex((i) => (i + 1) % images.length), 2800);
+    });
+    observer.observe(el);
+    return () => {
+      observer.disconnect();
+      clearInterval(timer);
+    };
+  }, [canCycle, images.length]);
+
   return (
-    <div className={`relative overflow-hidden ${category?.tint ?? "bg-surface"} ${className}`}>
-      {product.images?.[0] ? (
-        <Image src={product.images[0]} alt="" fill unoptimized sizes="(min-width: 768px) 25vw, 50vw" className="object-cover" />
+    <div ref={ref} className={`relative overflow-hidden ${category?.tint ?? "bg-surface"} ${className}`}>
+      {images.length > 0 ? (
+        (canCycle ? images : images.slice(0, 1)).map((src, i) => (
+          <Image
+            key={src}
+            src={src}
+            alt=""
+            fill
+            unoptimized
+            sizes="(min-width: 768px) 25vw, 50vw"
+            className={`object-cover transition-opacity duration-700 ${i === index % images.length ? "opacity-100" : "opacity-0"}`}
+          />
+        ))
       ) : (
-        // Placeholder until the owner sends real photos.
+        // Placeholder until the product has photos.
         <div className="flex size-full items-center justify-center text-navy/25">
           {category && <CategoryIcon name={category.icon} size={iconSize} strokeWidth={1.4} />}
         </div>
@@ -104,7 +148,7 @@ export function ProductCard({ product }: { product: Product }) {
     <article className="flex min-w-0 flex-col gap-1.5">
       <div className="relative">
         <Link href={href} tabIndex={-1} aria-hidden>
-          <ProductImage product={product} className="aspect-square rounded-[18px]" />
+          <ProductImage product={product} cycle className="aspect-square rounded-[18px]" />
         </Link>
         <div className="absolute start-2.5 top-2.5">
           <ProductBadge product={product} />

@@ -1,9 +1,10 @@
 "use client";
 
-import { WhatsAppIcon } from "@/components/icons";
+import { WhatsAppMark } from "@/components/icons";
 import { useDict } from "@/components/store-provider";
 import { whatsappLink } from "@/lib/site";
 
+/** Round WhatsApp button, always visible at the bottom corner. */
 export function WhatsAppFab() {
   const t = useDict();
   return (
@@ -12,10 +13,12 @@ export function WhatsAppFab() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label={t.whatsapp.chatLabel}
-      className="fixed bottom-5 end-4 z-40 flex h-14 items-center gap-2 rounded-full bg-whatsapp ps-3.5 pe-[18px] text-sm font-extrabold text-white shadow-[0_6px_18px_rgba(30,39,66,0.22)] hover:text-white hover:brightness-110"
+      title={t.whatsapp.chatLabel}
+      className="group fixed bottom-5 end-4 z-40 flex size-[60px] items-center justify-center rounded-full bg-[#25D366] text-white shadow-[0_8px_22px_rgba(37,211,102,0.45)] transition-transform hover:scale-105 hover:text-white"
     >
-      <WhatsAppIcon size={26} />
-      {t.whatsapp.chat}
+      {/* Soft pulse so the button gets noticed without being in the way. */}
+      <span aria-hidden className="absolute inset-0 rounded-full bg-[#25D366] opacity-40 motion-safe:animate-[ping_2.4s_ease-out_infinite]" />
+      <WhatsAppMark size={32} className="relative" />
     </a>
   );
 }

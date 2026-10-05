@@ -38,7 +38,7 @@ export function ProductView() {
     }
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-3 px-4 py-24 text-center">
-        <h1 className="font-display text-3xl font-semibold">{t.notFound.title}</h1>
+        <h1 className="font-display text-3xl font-bold">{t.notFound.title}</h1>
         <p className="text-muted">{t.notFound.text}</p>
         <Link href={`/${locale}/shop`} className="mt-3 flex h-12 items-center rounded-full bg-accent px-6 font-extrabold text-white hover:text-white">
           {t.wishlist.browse}
@@ -99,7 +99,7 @@ export function ProductView() {
         <div className="flex flex-col gap-4">
           <div>
             <p className="text-sm font-bold text-muted">{category?.name[locale]}</p>
-            <h1 className="mt-1 font-display text-[28px] leading-tight font-semibold md:text-4xl">{product.name[locale]}</h1>
+            <h1 className="mt-1 font-display text-[28px] leading-tight font-bold md:text-4xl">{product.name[locale]}</h1>
             <PriceTag product={product} className="mt-2 text-2xl" />
           </div>
 
@@ -146,7 +146,7 @@ export function ProductView() {
 
       {related.length + fill.length > 0 && (
         <section className="pt-12">
-          <h2 className="font-display text-2xl font-semibold">{t.product.related}</h2>
+          <h2 className="font-display text-2xl font-bold">{t.product.related}</h2>
           <div className="mt-4">
             <ProductGrid products={[...related, ...fill].slice(0, 4)} />
           </div>

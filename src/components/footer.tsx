@@ -1,8 +1,8 @@
 "use client";
+/* eslint-disable @next/next/no-img-element -- static logo file */
 
 import Link from "next/link";
 import { FacebookIcon, InstagramIcon, MailIcon, PhoneIcon, TikTokIcon, WhatsAppIcon } from "@/components/icons";
-import { Logo } from "@/components/logo";
 import { useDict, useStore } from "@/components/store-provider";
 import { site, whatsappLink } from "@/lib/site";
 
@@ -16,28 +16,12 @@ export function Footer() {
     <footer className="mt-11 bg-cream">
       <div className="mx-auto flex max-w-6xl flex-col gap-7 px-4 pt-8 pb-7 md:flex-row md:gap-16">
         <div className="flex flex-col gap-2 md:max-w-sm">
-          <Logo className="text-[26px]" />
+          <img src="/brand/doodlzz-logo.jpg" alt="Doodlzz" width={940} height={788} className="w-36 rounded-2xl" />
           <h2 className="mt-1 text-base font-extrabold">{t.footer.aboutTitle}</h2>
-          {/* TODO(owner): real "About us" text. */}
           <p className="text-sm leading-relaxed text-ink-soft">{t.footer.about}</p>
-          <div className="mt-2 flex gap-3">
-            {[
-              { href: site.social.instagram, label: "Instagram", Icon: InstagramIcon },
-              { href: site.social.facebook, label: "Facebook", Icon: FacebookIcon },
-              { href: site.social.tiktok, label: "TikTok", Icon: TikTokIcon },
-            ].map(({ href, label, Icon }) => (
-              <a
-                key={label}
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={label}
-                className="flex size-11 items-center justify-center rounded-full bg-white"
-              >
-                <Icon size={20} />
-              </a>
-            ))}
-          </div>
+          <Link href={`/${locale}/about`} className="text-sm font-extrabold text-accent">
+            {t.footer.readStory}
+          </Link>
         </div>
         <div className="grid flex-1 grid-cols-2 gap-x-4 gap-y-6">
           <nav aria-label={t.footer.shop} className="flex flex-col gap-0.5">
@@ -47,15 +31,14 @@ export function Footer() {
             <Link href={`/${locale}/shop?tab=new`} className={link}>{t.picked.fresh}</Link>
             <Link href={`/${locale}/#shop-by-age`} className={link}>{t.footer.shopByAge}</Link>
           </nav>
-          {/* TODO: delivery / exchange / account pages. */}
           <nav aria-label={t.footer.help} className="flex flex-col gap-0.5">
             <span className={heading}>{t.footer.help}</span>
             <a href={whatsappLink(t.whatsapp.greeting)} target="_blank" rel="noopener noreferrer" className={link}>
               {t.footer.contact}
             </a>
-            <a href="#" className={link}>{t.footer.deliveryLink}</a>
-            <a href="#" className={link}>{t.footer.exchangeLink}</a>
-            <a href="#" className={link}>{t.footer.account}</a>
+            <Link href={`/${locale}/delivery`} className={link}>{t.menu.deliveryPayment}</Link>
+            <Link href={`/${locale}/about`} className={link}>{t.menu.about}</Link>
+            <Link href={`/${locale}/account`} className={link}>{t.footer.account}</Link>
           </nav>
         </div>
       </div>
@@ -84,6 +67,25 @@ export function Footer() {
                   {value}
                 </span>
               </span>
+            </a>
+          ))}
+        </div>
+        <div className="mt-5 flex justify-center gap-3">
+          {[
+            { href: site.social.instagram, label: "Instagram", Icon: InstagramIcon },
+            { href: site.social.facebook, label: "Facebook", Icon: FacebookIcon },
+            { href: site.social.tiktok, label: "TikTok", Icon: TikTokIcon },
+            { href: whatsappLink(t.whatsapp.greeting), label: "WhatsApp", Icon: WhatsAppIcon },
+          ].map(({ href, label, Icon }) => (
+            <a
+              key={label}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={label}
+              className="flex size-12 items-center justify-center rounded-full bg-white shadow-sm"
+            >
+              <Icon size={22} />
             </a>
           ))}
         </div>

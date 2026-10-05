@@ -23,8 +23,9 @@
   --color-pastel-mint: #e2f3ea;
   --color-pastel-lilac: #ede7f8;
 
-  --font-sans: var(--font-nunito), var(--font-arabic), system-ui, sans-serif;
-  --font-display: var(--font-fredoka), var(--font-arabic), var(--font-nunito), sans-serif;
+  /* One font for headings and text (see src/lib/fonts.ts). */
+  --font-sans: var(--font-a), var(--font-arabic), system-ui, sans-serif;
+  --font-display: var(--font-a), var(--font-arabic), system-ui, sans-serif;
 
   --animate-marquee: dz-marquee 22s linear infinite;
 
@@ -32,6 +33,12 @@
     from { transform: translateX(0); }
     to { transform: translateX(-50%); }
   }
+}
+
+/* Font option B preview (?font=b). */
+html[data-font="b"] {
+  --font-sans: var(--font-b), var(--font-arabic), system-ui, sans-serif;
+  --font-display: var(--font-b), var(--font-arabic), system-ui, sans-serif;
 }
 
 html[lang="ar"] {

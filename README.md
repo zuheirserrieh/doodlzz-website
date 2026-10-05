@@ -27,9 +27,10 @@ Without the Supabase values the site still runs on the sample products in `src/d
 | `/[locale]/shop` | All products; supports `?q=` search, `?age=0-6m`, `?category=strollers`, `?tab=best\|new` |
 | `/[locale]/category/[slug]` | Category listing |
 | `/[locale]/product?slug=…` | Product page (a query string, so new products need no rebuild) |
-| `/[locale]/cart` → `/[locale]/checkout` | Delivery details, Cash on delivery or Whish Money. **Buy** saves the order and opens WhatsApp |
-| `/[locale]/account` | Customer sign-in (email code) and their orders |
+| `/[locale]/cart` → `/[locale]/checkout` | Delivery details and option (Standard / Extra fast / 24 h), then **Pay cash on delivery** or **Pay by Whish Money**: saves the order and opens WhatsApp |
+| `/[locale]/account` | Email + password accounts; saves the cart and favorites across devices, shows past orders |
 | `/[locale]/favorites` | Saved (hearted) products |
+| `/[locale]/about`, `/[locale]/delivery` | About us; Delivery & Payment (delivery options and fees) |
 | `/admin` | Admin panel: products (with photo upload) and orders. Admin email only |
 
 - **Products** are loaded in the browser from Supabase and cached, so the pages stay static.

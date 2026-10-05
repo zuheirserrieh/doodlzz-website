@@ -35,7 +35,7 @@ export function AccountView() {
 
   const shell = (children: ReactNode) => (
     <div className="mx-auto flex max-w-md flex-col gap-5 px-4 pt-8">
-      <h1 className="font-display text-[28px] font-semibold">{t.account.title}</h1>
+      <h1 className="font-display text-[28px] font-bold">{t.account.title}</h1>
       {children}
     </div>
   );

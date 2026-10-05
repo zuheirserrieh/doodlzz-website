@@ -2,44 +2,38 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
-import { categories } from "@/data/catalog";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useAuth } from "@/components/catalog-provider";
-import { ChevronIcon, CategoryIcon, CloseIcon, WhatsAppIcon } from "@/components/icons";
+import {
+  AgeIcon,
+  CategoryIcon,
+  ChevronIcon,
+  CloseIcon,
+  FacebookIcon,
+  InstagramIcon,
+  PhoneIcon,
+  TikTokIcon,
+  WhatsAppIcon,
+} from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { useDict, useStore } from "@/components/store-provider";
+import { ageGroups, categories } from "@/data/catalog";
 import type { Locale } from "@/lib/i18n";
-import { whatsappLink } from "@/lib/site";
+import { site, whatsappLink } from "@/lib/site";
 
-function Segment<T extends string>({
-  label,
-  value,
-  options,
-}: {
-  label: string;
-  value: T;
-  options: { value: T; label: string; href?: string; onSelect?: () => void }[];
-}) {
-  const base =
-    "flex h-10 min-w-16 items-center justify-center rounded-full px-3.5 text-[13px] font-extrabold cursor-pointer";
+const row = "flex min-h-[52px] w-full items-center gap-3 border-b border-line text-start text-[15px] font-bold";
+const subRow = "flex min-h-11 items-center gap-3 ps-3 text-[15px] font-semibold";
+
+/** A menu row that opens a sub-list (Catalog, Shop by age, Contact us). */
+function Expandable({ label, children }: { label: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-[15px] font-bold">{label}</span>
-      <div role="group" aria-label={label} className="flex rounded-full bg-line p-1">
-        {options.map((o) => {
-          const active = o.value === value;
-          const cls = `${base} ${active ? "bg-navy text-white hover:text-white" : "bg-transparent text-navy"}`;
-          return o.href ? (
-            <Link key={o.value} href={o.href} aria-current={active ? "true" : undefined} className={cls}>
-              {o.label}
-            </Link>
-          ) : (
-            <button key={o.value} type="button" aria-pressed={active} onClick={o.onSelect} className={cls}>
-              {o.label}
-            </button>
-          );
-        })}
-      </div>
+    <div className="border-b border-line">
+      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className={`${row} cursor-pointer border-b-0`}>
+        <span className="flex-1">{label}</span>
+        <ChevronIcon className={`text-faint transition-transform ${open ? "rotate-90" : "rtl:rotate-180"}`} />
+      </button>
+      {open && <div className="flex flex-col pb-2">{children}</div>}
     </div>
   );
 }
@@ -71,15 +65,15 @@ export function MenuDrawer() {
   }, [menuOpen, setMenuOpen]);
 
   const switchLocale = (target: Locale) => pathname.replace(/^\/(en|ar)(?=\/|$)/, `/${target}`);
+  const close = () => setMenuOpen(false);
+  const href = (path: string) => `/${locale}${path}`;
+  const chevron = <ChevronIcon className="text-faint rtl:rotate-180" />;
 
   return (
-    <div
-      className={`fixed inset-0 z-50 transition-[visibility] ${menuOpen ? "visible" : "invisible delay-200"}`}
-      inert={!menuOpen}
-    >
+    <div className={`fixed inset-0 z-50 transition-[visibility] ${menuOpen ? "visible" : "invisible delay-200"}`} inert={!menuOpen}>
       <div
         className={`absolute inset-0 bg-navy/40 transition-opacity duration-200 ${menuOpen ? "opacity-100" : "opacity-0"}`}
-        onClick={() => setMenuOpen(false)}
+        onClick={close}
       />
       <div
         ref={panelRef}
@@ -95,84 +89,112 @@ export function MenuDrawer() {
           <button
             type="button"
             aria-label={t.nav.closeMenu}
-            onClick={() => setMenuOpen(false)}
-            className="flex size-11 items-center justify-center rounded-xl hover:bg-surface"
+            onClick={close}
+            className="flex size-11 cursor-pointer items-center justify-center rounded-xl hover:bg-surface"
           >
             <CloseIcon />
           </button>
         </div>
 
-        <div className="mx-4 mt-4 flex flex-col gap-3 rounded-[20px] bg-pastel-blue p-[18px]">
-          {email ? (
-            <>
-              <div className="truncate text-[15px] font-bold" dir="auto">
-                {t.account.signedInAs(email)}
-              </div>
-              <Link
-                href={`/${locale}/account`}
-                onClick={() => setMenuOpen(false)}
-                className="flex h-[46px] items-center justify-center rounded-full bg-accent text-sm font-extrabold text-white hover:bg-accent-dark hover:text-white"
-              >
-                {t.account.title}
-              </Link>
-            </>
-          ) : (
-            <>
-              <div className="text-[15px] font-bold">{t.menu.pitch}</div>
-              {/* One email sign-in flow creates the account on first use, so both go to the same page. */}
-              <div className="flex gap-2.5">
-                <Link
-                  href={`/${locale}/account`}
-                  onClick={() => setMenuOpen(false)}
-                  className="flex h-[46px] flex-1 items-center justify-center rounded-full bg-accent text-sm font-extrabold text-white hover:bg-accent-dark hover:text-white"
-                >
-                  {t.menu.signIn}
-                </Link>
-                <Link
-                  href={`/${locale}/account`}
-                  onClick={() => setMenuOpen(false)}
-                  className="flex h-[46px] flex-1 items-center justify-center rounded-full border-2 border-navy text-sm font-extrabold"
-                >
-                  {t.menu.createAccount}
-                </Link>
-              </div>
-            </>
-          )}
-        </div>
+        <nav aria-label={t.menu.title} className="flex flex-col px-4 pt-2">
+          <Link href={href("")} onClick={close} className={row}>
+            <span className="flex-1">{t.menu.home}</span>
+            {chevron}
+          </Link>
 
-        <nav aria-label={t.menu.catalog} className="flex flex-col px-4 pt-6">
-          <span className="mb-1.5 text-[13px] font-extrabold uppercase tracking-[0.04em] text-muted">{t.menu.catalog}</span>
-          {categories.map((c) => (
-            <Link
-              key={c.slug}
-              href={`/${locale}/category/${c.slug}`}
-              onClick={() => setMenuOpen(false)}
-              className="flex h-[52px] items-center gap-3.5 border-b border-line text-[15px] font-bold"
-            >
-              <CategoryIcon name={c.icon} size={26} strokeWidth={1.9} />
-              <span className="flex-1">{c.name[locale]}</span>
-              <ChevronIcon className="text-faint rtl:rotate-180" />
+          <Expandable label={t.menu.catalog}>
+            <Link href={href("/shop")} onClick={close} className={`${subRow} text-accent`}>
+              {t.menu.allProducts}
             </Link>
-          ))}
+            {categories.map((c) => (
+              <Link key={c.slug} href={href(`/category/${c.slug}`)} onClick={close} className={subRow}>
+                <CategoryIcon name={c.icon} size={24} strokeWidth={1.9} />
+                {c.name[locale]}
+              </Link>
+            ))}
+          </Expandable>
+
+          <Expandable label={t.menu.shopByAge}>
+            {ageGroups.map((a) => (
+              <Link key={a.slug} href={href(`/shop?age=${a.slug}`)} onClick={close} className={subRow}>
+                <AgeIcon slug={a.slug} size={26} />
+                <span>
+                  <span dir="ltr">{a.label}</span> {a.unit === "months" ? t.age.months : t.age.years}
+                </span>
+              </Link>
+            ))}
+          </Expandable>
+
+          <div className="my-3 h-0.5 rounded-full bg-line" role="separator" />
+
+          <Link href={href("/about")} onClick={close} className={row}>
+            <span className="flex-1">{t.menu.about}</span>
+            {chevron}
+          </Link>
+          <Link href={href("/delivery")} onClick={close} className={row}>
+            <span className="flex-1">{t.menu.deliveryPayment}</span>
+            {chevron}
+          </Link>
+          <Link href={href("/account")} onClick={close} className={row}>
+            <span className="flex min-w-0 flex-1 flex-col">
+              {t.menu.account}
+              {email && (
+                <span className="truncate text-xs font-semibold text-muted" dir="ltr">
+                  {email}
+                </span>
+              )}
+            </span>
+            {chevron}
+          </Link>
+          <Link href={href("/favorites")} onClick={close} className={row}>
+            <span className="flex-1">{t.menu.favorites}</span>
+            {chevron}
+          </Link>
+
+          <Expandable label={t.menu.contact}>
+            {[
+              { href: site.social.instagram, label: "Instagram", Icon: InstagramIcon },
+              { href: site.social.facebook, label: "Facebook", Icon: FacebookIcon },
+              { href: site.social.tiktok, label: "TikTok", Icon: TikTokIcon },
+              { href: whatsappLink(t.whatsapp.greeting), label: "WhatsApp", Icon: WhatsAppIcon },
+            ].map(({ href: link, label, Icon }) => (
+              <a key={label} href={link} target="_blank" rel="noopener noreferrer" className={subRow}>
+                <Icon size={22} />
+                {label}
+              </a>
+            ))}
+            <a href={`tel:${site.phoneTel}`} className={subRow}>
+              <PhoneIcon size={22} />
+              <span>
+                {t.menu.call} · <span dir="ltr">{site.phoneDisplay}</span>
+              </span>
+            </a>
+          </Expandable>
         </nav>
 
-        <section className="flex flex-col gap-3.5 px-4 pt-7">
-          <span className="text-[13px] font-extrabold uppercase tracking-[0.04em] text-muted">{t.menu.settings}</span>
-          <Segment<Locale>
-            label={t.menu.language}
-            value={locale}
-            options={[
-              { value: "en", label: "English", href: switchLocale("en") },
-              { value: "ar", label: "العربية", href: switchLocale("ar") },
-            ]}
-          />
-        </section>
+        <div className="flex items-center justify-between px-4 pt-6">
+          <span className="text-[15px] font-bold">{t.menu.language}</span>
+          <div role="group" aria-label={t.menu.language} className="flex rounded-full bg-line p-1">
+            {(["en", "ar"] as const).map((l) => (
+              <Link
+                key={l}
+                href={switchLocale(l)}
+                aria-current={l === locale ? "true" : undefined}
+                className={`flex h-10 min-w-16 items-center justify-center rounded-full px-3.5 text-[13px] font-extrabold ${
+                  l === locale ? "bg-navy text-white hover:text-white" : "text-navy"
+                }`}
+              >
+                {l === "en" ? "English" : "العربية"}
+              </Link>
+            ))}
+          </div>
+        </div>
 
         <a
           href={whatsappLink(t.whatsapp.greeting)}
           target="_blank"
           rel="noopener noreferrer"
-          className="mx-4 mt-7 flex h-14 shrink-0 items-center justify-center gap-2.5 rounded-2xl bg-whatsapp text-[15px] font-extrabold text-white hover:text-white hover:brightness-110"
+          className="mx-4 mt-6 flex h-14 shrink-0 items-center justify-center gap-2.5 rounded-2xl bg-[#25D366] text-[15px] font-extrabold text-white hover:text-white hover:brightness-105"
         >
           <WhatsAppIcon />
           {t.menu.whatsapp}

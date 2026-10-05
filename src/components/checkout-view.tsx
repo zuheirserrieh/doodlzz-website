@@ -4,17 +4,20 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useCartLines } from "@/components/cart-view";
 import { useAuth } from "@/components/catalog-provider";
-import { WhatsAppIcon } from "@/components/icons";
-import { ProductImage } from "@/components/product-card";
+import { TruckIcon, WhatsAppIcon } from "@/components/icons";
+import { ProductImage, productHref } from "@/components/product-card";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
+import { WhishLogo } from "@/components/whish-logo";
 import { getSupabase } from "@/lib/supabase";
 import { whatsappLink } from "@/lib/site";
 
 type Payment = "cash" | "whish";
-type Customer = { name: string; phone: string; city: string; address: string; notes: string; payment: Payment };
+type DeliveryOption = "standard" | "express" | "sameday";
+type Customer = { name: string; phone: string; city: string; address: string; notes: string; delivery: DeliveryOption };
 
 const DETAILS_KEY = "dz-customer";
-const empty: Customer = { name: "", phone: "", city: "", address: "", notes: "", payment: "cash" };
+const empty: Customer = { name: "", phone: "", city: "", address: "", notes: "", delivery: "standard" };
+const deliveryOptions: DeliveryOption[] = ["standard", "express", "sameday"];
 
 const input =
   "h-12 w-full rounded-xl border border-[#dfe3ea] bg-white px-3.5 text-[15px] font-semibold outline-none focus:border-navy focus:ring-2 focus:ring-navy/15";
@@ -30,25 +33,29 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 export function CheckoutView() {
-  const { locale, clearCart } = useStore();
+  const { locale, clearCart, orderNote, setOrderNote } = useStore();
   const t = useDict();
   const price = usePrice();
   const { lines, subtotal, ready } = useCartLines();
+  const { session } = useAuth();
   const [form, setForm] = useState<Customer>(empty);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<Payment | null>(null);
   const [error, setError] = useState("");
   const [done, setDone] = useState<{ id: number | null; link: string } | null>(null);
-  const { session } = useAuth();
 
-  // Prefill with the details used last time on this device.
+  // Prefill with the details used last time on this device, plus the note typed in the cart.
   useEffect(() => {
     try {
       const saved = localStorage.getItem(DETAILS_KEY);
-      if (saved) setForm({ ...empty, ...JSON.parse(saved), notes: "" }); // eslint-disable-line react-hooks/set-state-in-effect
+      if (saved) setForm((f) => ({ ...f, ...JSON.parse(saved), notes: f.notes })); // eslint-disable-line react-hooks/set-state-in-effect
     } catch {
       // ignore
     }
   }, []);
+
+  useEffect(() => {
+    if (orderNote) setForm((f) => (f.notes ? f : { ...f, notes: orderNote })); // eslint-disable-line react-hooks/set-state-in-effect
+  }, [orderNote]);
 
   // Signed-in customers: fill name and phone from their account if still empty.
   useEffect(() => {
@@ -59,28 +66,37 @@ export function CheckoutView() {
 
   const set = <K extends keyof Customer>(key: K, value: Customer[K]) => setForm((f) => ({ ...f, [key]: value }));
 
-  function buildMessage(orderId: number | null, total: number) {
-    const paymentLabel = form.payment === "cash" ? t.checkout.cash : t.checkout.whish;
+  function buildMessage(orderId: number | null, total: number, payment: Payment) {
+    const delivery = t.checkout.deliveryOptions[form.delivery];
     return [
       `🛒 ${t.checkout.msgTitle(orderId)}`,
       "",
       `${t.checkout.msgItems}:`,
-      ...lines.map((l) => `• ${l.qty} × ${l.product.name[locale]} — ${price(l.product.priceUsd * l.qty)}`),
+      // WhatsApp turns the address under each item into a tappable link to the product.
+      ...lines.flatMap((l) => [
+        `• ${l.qty} × ${l.product.name[locale]} — ${price(l.product.priceUsd * l.qty)}`,
+        `  ${window.location.origin}${productHref(locale, l.product.slug)}`,
+      ]),
       `${t.checkout.total}: ${price(total)} ${t.checkout.msgDeliveryNote}`,
+      "",
+      `🚚 ${t.checkout.msgDelivery}: ${delivery.label} (${delivery.time})`,
+      `${payment === "cash" ? "💵" : "📱"} ${t.checkout.payment}: ${payment === "cash" ? t.checkout.cash : t.checkout.whish}`,
       "",
       `${t.checkout.name}: ${form.name.trim()}`,
       `${t.checkout.phone}: ${form.phone.trim()}`,
       `${t.checkout.city}: ${form.city.trim()}`,
       `${t.checkout.address.split(" (")[0]}: ${form.address.trim()}`,
       ...(form.notes.trim() ? [`${t.checkout.notes.split(" (")[0]}: ${form.notes.trim()}`] : []),
-      `${t.checkout.payment}: ${paymentLabel}`,
     ].join("\n");
   }
 
-  async function submit(e: FormEvent) {
+  async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (busy) return;
-    setBusy(true);
+    // Which of the two pay buttons was pressed.
+    const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
+    const payment: Payment = submitter?.value === "whish" ? "whish" : "cash";
+    setBusy(payment);
     setError("");
 
     let orderId: number | null = null;
@@ -89,7 +105,7 @@ export function CheckoutView() {
     if (supabase) {
       // Saved in the database first so the manager also sees it in the admin panel.
       const { data, error: rpcError } = await supabase.rpc("place_order", {
-        customer: { ...form },
+        customer: { ...form, payment },
         cart: lines.map((l) => ({ id: l.product.id, qty: l.qty })),
         order_locale: locale,
       });
@@ -97,22 +113,23 @@ export function CheckoutView() {
       if (rpcError || !row) {
         console.error("place_order failed", rpcError);
         setError(t.checkout.error);
-        setBusy(false);
+        setBusy(null);
         return;
       }
       orderId = Number(row.order_id);
       total = Number(row.total);
     }
 
-    const link = whatsappLink(buildMessage(orderId, total));
+    const link = whatsappLink(buildMessage(orderId, total, payment));
     try {
       localStorage.setItem(DETAILS_KEY, JSON.stringify({ ...form, notes: "" }));
     } catch {
       // ignore
     }
     clearCart();
+    setOrderNote("");
     setDone({ id: orderId, link });
-    setBusy(false);
+    setBusy(null);
     window.location.href = link;
   }
 
@@ -122,13 +139,13 @@ export function CheckoutView() {
         <div className="flex size-16 items-center justify-center rounded-full bg-pastel-mint text-3xl" aria-hidden>
           ✓
         </div>
-        <h1 className="font-display text-[28px] leading-tight font-semibold">
+        <h1 className="font-display text-[28px] leading-tight font-bold">
           {done.id ? t.checkout.successTitle(done.id) : t.checkout.msgTitle(null)}
         </h1>
         <p className="text-ink-soft">{t.checkout.successText}</p>
         <a
           href={done.link}
-          className="flex h-14 w-full items-center justify-center gap-2.5 rounded-2xl bg-whatsapp text-[15px] font-extrabold text-white hover:text-white hover:brightness-110"
+          className="flex h-14 w-full items-center justify-center gap-2.5 rounded-2xl bg-[#25D366] text-[15px] font-extrabold text-white hover:text-white hover:brightness-105"
         >
           <WhatsAppIcon />
           {t.checkout.openWhatsApp}
@@ -145,7 +162,7 @@ export function CheckoutView() {
   if (lines.length === 0) {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-20 text-center">
-        <h1 className="font-display text-3xl font-semibold">{t.cart.title}</h1>
+        <h1 className="font-display text-3xl font-bold">{t.cart.title}</h1>
         <p className="text-muted">{t.cart.empty}</p>
         <Link href={`/${locale}/shop`} className="flex h-12 items-center rounded-full bg-accent px-6 font-extrabold text-white hover:text-white">
           {t.cart.keepShopping}
@@ -154,15 +171,13 @@ export function CheckoutView() {
     );
   }
 
-  const paymentOptions: { value: Payment; label: string; hint: string }[] = [
-    { value: "cash", label: t.checkout.cash, hint: t.checkout.cashHint },
-    { value: "whish", label: t.checkout.whish, hint: t.checkout.whishHint },
-  ];
+  const payButton =
+    "flex h-14 cursor-pointer items-center justify-center gap-2.5 rounded-2xl px-4 text-base font-extrabold disabled:cursor-wait disabled:opacity-70";
 
   return (
-    <form onSubmit={submit} className="mx-auto grid max-w-6xl gap-8 px-4 pt-6 md:grid-cols-[1fr_360px]">
+    <form onSubmit={submit} className="mx-auto grid max-w-6xl gap-8 px-4 pt-6 md:grid-cols-[1fr_380px]">
       <div className="flex flex-col gap-7">
-        <h1 className="font-display text-[28px] font-semibold">{t.checkout.title}</h1>
+        <h1 className="font-display text-[28px] font-bold">{t.checkout.title}</h1>
 
         <fieldset className="flex flex-col gap-4">
           <legend className="mb-3 text-lg font-extrabold">{t.checkout.delivery}</legend>
@@ -202,28 +217,29 @@ export function CheckoutView() {
         </fieldset>
 
         <fieldset className="flex flex-col gap-3">
-          <legend className="mb-3 text-lg font-extrabold">{t.checkout.payment}</legend>
-          {paymentOptions.map((o) => (
-            <label
-              key={o.value}
-              className={`flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 ${
-                form.payment === o.value ? "border-navy bg-surface" : "border-[#dfe3ea]"
-              }`}
-            >
-              <input
-                type="radio"
-                name="payment"
-                value={o.value}
-                checked={form.payment === o.value}
-                onChange={() => set("payment", o.value)}
-                className="size-5 accent-navy"
-              />
-              <span className="flex flex-col">
-                <span className="font-extrabold">{o.label}</span>
-                <span className="text-sm text-muted">{o.hint}</span>
-              </span>
-            </label>
-          ))}
+          <legend className="mb-3 flex items-center gap-2 text-lg font-extrabold">
+            <TruckIcon /> {t.checkout.deliveryTitle}
+          </legend>
+          {deliveryOptions.map((key) => {
+            const o = t.checkout.deliveryOptions[key];
+            const on = form.delivery === key;
+            return (
+              <label
+                key={key}
+                className={`flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 ${on ? "border-navy bg-surface" : "border-[#dfe3ea]"}`}
+              >
+                <input type="radio" name="delivery" checked={on} onChange={() => set("delivery", key)} className="size-5 accent-navy" />
+                <span className="flex flex-col">
+                  <span className="font-extrabold">
+                    {o.label} · {o.time}
+                  </span>
+                  <span className="text-sm text-muted">{o.fee}</span>
+                </span>
+              </label>
+            );
+          })}
+          <p className="text-sm text-ink-soft">{t.checkout.finalizedNote}</p>
+          <p className="rounded-2xl bg-pastel-yellow p-3.5 text-sm font-bold">🛠️ {t.checkout.installNote}</p>
         </fieldset>
       </div>
 
@@ -233,7 +249,7 @@ export function CheckoutView() {
           {lines.map(({ product, qty }) => (
             <li key={product.id} className="flex items-center gap-3">
               <ProductImage product={product} iconSize={28} className="size-14 flex-none rounded-xl" />
-              <span className="min-w-0 flex-1 text-sm font-bold leading-snug">
+              <span className="min-w-0 flex-1 text-sm leading-snug font-bold">
                 {qty} × {product.name[locale]}
               </span>
               <span className="text-sm font-extrabold">{price(product.priceUsd * qty)}</span>
@@ -244,21 +260,27 @@ export function CheckoutView() {
           <span>{t.checkout.total}</span>
           <span>{price(subtotal)}</span>
         </div>
-        <p className="text-sm text-muted">{t.checkout.deliveryFee}</p>
+        <p className="rounded-xl bg-white p-3 text-sm font-bold">{t.checkout.confirmNote}</p>
         {error && (
           <p role="alert" className="rounded-xl bg-pastel-peach p-3 text-sm font-bold text-accent-dark">
             {error}
           </p>
         )}
+        <p className="text-sm font-extrabold">{t.checkout.payWith}:</p>
+        <button type="submit" name="payment" value="cash" disabled={busy !== null} className={`${payButton} bg-navy text-white`}>
+          <span aria-hidden>💵</span>
+          {busy === "cash" ? t.checkout.placing : t.checkout.payCash}
+        </button>
         <button
           type="submit"
-          disabled={busy}
-          className="flex h-14 cursor-pointer items-center justify-center gap-2.5 rounded-2xl bg-whatsapp text-base font-extrabold text-white hover:brightness-110 disabled:cursor-wait disabled:opacity-70"
+          name="payment"
+          value="whish"
+          disabled={busy !== null}
+          className={`${payButton} border-2 border-[#E8204A] bg-white text-[#E8204A]`}
         >
-          <WhatsAppIcon />
-          {busy ? t.checkout.placing : t.checkout.buy}
+          <WhishLogo className="h-6" />
+          {busy === "whish" ? t.checkout.placing : t.checkout.payWhish}
         </button>
-        <p className="text-center text-xs text-muted">{t.checkout.buyHint}</p>
       </aside>
     </form>
   );

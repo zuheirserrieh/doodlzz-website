@@ -15,6 +15,7 @@ type Order = {
   address: string;
   notes: string;
   payment_method: "cash" | "whish";
+  delivery_option?: "standard" | "express" | "sameday";
   items: OrderItem[];
   total_usd: number;
   status: string;
@@ -36,6 +37,12 @@ function toWhatsAppNumber(phone: string) {
   if (digits.startsWith("0")) digits = digits.slice(1);
   return digits.length <= 8 ? `961${digits}` : digits;
 }
+
+const deliveryLabels: Record<string, string> = {
+  standard: "🚚 Standard (2–5 days)",
+  express: "⚡ Extra fast (2 days)",
+  sameday: "🏎️ Within 24 hours",
+};
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" });
 
@@ -113,6 +120,9 @@ export function AdminOrders() {
               <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-extrabold">
                 {o.payment_method === "cash" ? "💵 Cash on delivery" : "📱 Whish Money"}
               </span>
+              {o.delivery_option && (
+                <span className="rounded-full bg-pastel-blue px-2.5 py-0.5 text-xs font-extrabold">{deliveryLabels[o.delivery_option]}</span>
+              )}
               <span className="ms-auto text-xs text-muted">{dateFormat.format(new Date(o.created_at))}</span>
             </div>
 

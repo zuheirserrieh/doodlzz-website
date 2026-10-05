@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { CartIcon, HeartIcon, MenuIcon, UserIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
+import { WhishLogo } from "@/components/whish-logo";
 import { useDict, useStore } from "@/components/store-provider";
 
 const iconButton =
@@ -39,6 +40,7 @@ function AnnouncementBar({ messages }: { messages: string[] }) {
           }`}
         >
           {m}
+          {m.includes("Whish") && <WhishLogo className="ms-1.5 h-4" />}
         </p>
       ))}
     </div>
@@ -46,7 +48,7 @@ function AnnouncementBar({ messages }: { messages: string[] }) {
 }
 
 export function Header() {
-  const { locale, cartCount, wishlist, setMenuOpen } = useStore();
+  const { locale, cartCount, wishlist, setMenuOpen, setCartOpen } = useStore();
   const t = useDict();
 
   return (
@@ -67,10 +69,10 @@ export function Header() {
             <HeartIcon size={22} />
             <CountBadge count={wishlist.length} />
           </Link>
-          <Link href={`/${locale}/cart`} aria-label={t.nav.cart(cartCount)} className={iconButton}>
+          <button type="button" aria-label={t.nav.cart(cartCount)} onClick={() => setCartOpen(true)} className={`cursor-pointer ${iconButton}`}>
             <CartIcon />
             <CountBadge count={cartCount} />
-          </Link>
+          </button>
         </div>
       </div>
     </header>

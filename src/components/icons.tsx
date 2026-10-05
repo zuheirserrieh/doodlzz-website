@@ -273,55 +273,54 @@ export function ArrowIcon({ size = 18, ...props }: IconProps) {
   );
 }
 
-/** Small colourful illustrations for the shop-by-age tabs, keyed by age-group slug. */
+/** Small colourful illustrations for the shop-by-age picker, keyed by age-group slug. */
 export function AgeIcon({ slug, size = 30 }: { slug: string; size?: number }) {
   const common = { width: size, height: size, viewBox: "0 0 32 32", "aria-hidden": true, strokeWidth: 1.6, stroke: "#1E2742" } as const;
   switch (slug) {
-    case "0-6m": // rattle
+    case "0-6m": // pacifier
       return (
-        <svg {...common} strokeLinecap="round">
-          <circle cx="12" cy="12" r="7" fill="#7CC4F0" />
-          <path d="M17 17l7 7" />
-          <circle cx="25" cy="25" r="3" fill="#F25C54" />
-          <circle cx="10" cy="10" r="1.6" fill="#fff" stroke="none" />
+        <svg {...common} strokeLinejoin="round" strokeLinecap="round">
+          <circle cx="16" cy="25" r="4" fill="none" />
+          <path d="M6 17c0-3 4.5-5 10-5s10 2 10 5-4.5 4-10 4-10-1-10-4z" fill="#8FD3C1" />
+          <path d="M12 12.5c0-4 1.8-8 4-8s4 4 4 8" fill="#FBC4C8" />
+          <circle cx="16" cy="17" r="1.6" fill="#fff" />
         </svg>
       );
     case "6-12m": // bottle
       return (
         <svg {...common} strokeLinejoin="round">
-          <path d="M13 4h6l1 4h-8z" fill="#F7A072" />
-          <rect x="10" y="8" width="12" height="20" rx="4" fill="#FFF2C7" />
-          <path d="M10 16h12" />
-          <path d="M14 20h4M14 24h4" />
+          <path d="M13 3.5h6l1 4.5h-8z" fill="#F7A072" />
+          <rect x="10" y="8" width="12" height="20.5" rx="4" fill="#FFF2C7" />
+          <path d="M10 15h12" />
+          <path d="M14 19h4M14 23h4" />
         </svg>
       );
-    case "1-2y": // stacking rings
+    case "1-2y": // first steps (footprints)
       return (
         <svg {...common} strokeLinejoin="round">
-          <path d="M16 3v4" />
-          <rect x="7" y="22" width="18" height="6" rx="3" fill="#3A9AD9" />
-          <rect x="9" y="16" width="14" height="6" rx="3" fill="#7CC67E" />
-          <rect x="11" y="10" width="10" height="6" rx="3" fill="#FFD449" />
-          <circle cx="16" cy="7.5" r="3" fill="#F25C54" />
+          <ellipse cx="11" cy="20" rx="4" ry="6" fill="#A7C7F2" />
+          <circle cx="8.5" cy="11.5" r="1.3" fill="#A7C7F2" />
+          <circle cx="11.5" cy="11" r="1.3" fill="#A7C7F2" />
+          <ellipse cx="21.5" cy="14" rx="4" ry="6" fill="#F7A9A0" />
+          <circle cx="19" cy="5.5" r="1.3" fill="#F7A9A0" />
+          <circle cx="22" cy="5" r="1.3" fill="#F7A9A0" />
         </svg>
       );
-    case "2-4y": // ball
-      return (
-        <svg {...common}>
-          <circle cx="16" cy="16" r="11" fill="#FFD449" />
-          <path d="M5 16h22" />
-          <path d="M16 5c-4 3-4 19 0 22M16 5c4 3 4 19 0 22" fill="none" />
-          <path d="M6 12a11 11 0 0 1 20 0z" fill="#F25C54" stroke="none" opacity="0.85" />
-        </svg>
-      );
-    default: // kite
+    case "2-4y": // tricycle
       return (
         <svg {...common} strokeLinejoin="round" strokeLinecap="round">
-          <path d="M16 3l9 10-9 10-9-10z" fill="#3A9AD9" />
-          <path d="M16 3v20M7 13h18" />
-          <path d="M16 3l9 10H16z" fill="#F25C54" />
-          <path d="M16 13H7l9 10z" fill="#F25C54" />
-          <path d="M16 23c-2 2 2 3 0 5" fill="none" />
+          <circle cx="8" cy="23" r="4.5" fill="#FFD449" />
+          <circle cx="25" cy="24.5" r="3" fill="#FFD449" />
+          <path d="M8 23l6-10h6l5 11.5M14 13l-2-4h-3M20 13l1-5h3" fill="none" />
+          <path d="M12 9h4" />
+        </svg>
+      );
+    default: // 4+: bike
+      return (
+        <svg {...common} strokeLinejoin="round" strokeLinecap="round">
+          <circle cx="8" cy="22" r="5" fill="#B9E4C9" />
+          <circle cx="24" cy="22" r="5" fill="#B9E4C9" />
+          <path d="M8 22l5-9h9l2 9M13 13l3 9h6M11 9h4M22 13l-1.5-4h3" fill="none" />
         </svg>
       );
   }
@@ -348,6 +347,25 @@ export function BearMascot({ size = 72 }: { size?: number }) {
       <circle cx="42" cy="34" r="2" fill="#F7A9A0" stroke="none" />
       <path d="M22 18 32 2l10 16z" fill="#F25C54" />
       <circle cx="32" cy="2.5" r="2" fill="#FFD449" />
+    </svg>
+  );
+}
+
+/** Filled WhatsApp-style mark (chat bubble with handset), for the green round button. */
+export function WhatsAppMark({ size = 30, ...props }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden {...props}>
+      <path
+        d="M16 3.6A12.4 12.4 0 0 0 5.3 22.3L3.7 28.3l6.2-1.6A12.4 12.4 0 1 0 16 3.6z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.3"
+        strokeLinejoin="round"
+      />
+      <path
+        fill="currentColor"
+        d="M11.6 9.7c.3-.6.9-.8 1.3-.8h.9c.3 0 .6.1.8.6l1.2 2.8c.1.3.1.6-.1.8l-.9 1.1c-.2.2-.2.5 0 .8.9 1.6 2.1 2.8 3.7 3.7.3.2.6.1.8-.1l1.1-1.2c.2-.3.5-.3.8-.2l2.7 1.3c.3.2.5.4.5.7v.9c0 .5-.2 1-.7 1.3-1 .7-2.4.9-3.8.4-3.2-1.1-6-3.9-7.1-7.1-.5-1.4-.3-2.8.4-3.8z"
+      />
     </svg>
   );
 }

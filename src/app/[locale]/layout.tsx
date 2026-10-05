@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Fredoka, Nunito, Tajawal } from "next/font/google";
 import { notFound } from "next/navigation";
+import { CartDrawer } from "@/components/cart-drawer";
 import { CatalogProvider } from "@/components/catalog-provider";
 import { Footer } from "@/components/footer";
 import { Header } from "@/components/header";
@@ -8,11 +8,8 @@ import { MenuDrawer } from "@/components/menu-drawer";
 import { StoreProvider } from "@/components/store-provider";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { dirOf, getDictionary, isLocale, locales } from "@/lib/i18n";
+import { fontPreviewScript, fontVariables } from "@/lib/fonts";
 import "../globals.css";
-
-const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin"], weight: ["500", "600"] });
-const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"], weight: ["400", "600", "700", "800"] });
-const tajawal = Tajawal({ variable: "--font-arabic", subsets: ["arabic"], weight: ["400", "500", "700", "800"] });
 
 // Only the pages generated at build time exist; anything else is a 404.
 export const dynamicParams = false;
@@ -44,8 +41,12 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
     <html
       lang={locale}
       dir={dirOf(locale)}
-      className={`${fredoka.variable} ${nunito.variable} ${tajawal.variable}`}
+      className={fontVariables}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: fontPreviewScript }} />
+      </head>
       <body className="min-h-dvh">
         <CatalogProvider>
         <StoreProvider locale={locale}>
@@ -55,6 +56,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             <Footer />
           </div>
           <MenuDrawer />
+          <CartDrawer />
           <WhatsAppFab />
         </StoreProvider>
         </CatalogProvider>

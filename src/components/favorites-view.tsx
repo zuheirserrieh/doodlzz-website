@@ -13,7 +13,7 @@ export function FavoritesView() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 pt-6">
-      <h1 className="font-display text-[28px] font-semibold">{t.wishlist.title}</h1>
+      <h1 className="font-display text-[28px] font-bold">{t.wishlist.title}</h1>
       {ready && saved.length === 0 ? (
         <div className="mt-6 flex flex-col items-center gap-4 rounded-3xl bg-surface px-6 py-14 text-center">
           <p className="max-w-xs text-ink-soft">{t.wishlist.empty}</p>

@@ -30,7 +30,7 @@ export function CartView() {
   if (lines.length === 0) {
     return (
       <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-20 text-center">
-        <h1 className="font-display text-3xl font-semibold">{t.cart.title}</h1>
+        <h1 className="font-display text-3xl font-bold">{t.cart.title}</h1>
         <p className="text-muted">{t.cart.empty}</p>
         <Link
           href={`/${locale}/shop`}
@@ -45,7 +45,7 @@ export function CartView() {
   return (
     <div className="mx-auto grid max-w-6xl gap-8 px-4 pt-6 md:grid-cols-[1fr_340px]">
       <div>
-        <h1 className="font-display text-[28px] font-semibold">{t.cart.title}</h1>
+        <h1 className="font-display text-[28px] font-bold">{t.cart.title}</h1>
         <ul className="mt-4 flex flex-col">
           {lines.map(({ product, qty }) => renderLine(product, qty))}
         </ul>

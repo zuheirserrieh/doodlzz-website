@@ -8,7 +8,7 @@ export default function NotFound() {
   const t = useDict();
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-3 px-4 py-24 text-center">
-      <h1 className="font-display text-3xl font-semibold">{t.notFound.title}</h1>
+      <h1 className="font-display text-3xl font-bold">{t.notFound.title}</h1>
       <p className="text-muted">{t.notFound.text}</p>
       <Link
         href={`/${locale}`}

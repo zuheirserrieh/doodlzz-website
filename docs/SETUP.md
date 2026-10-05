@@ -28,6 +28,8 @@ It also makes **doodlzzlb@gmail.com** the admin.
    These are only used by the "Forgot password?" email link.
 3. If you set up the project before 5 Oct 2026, also run [`supabase/002_user_data.sql`](../supabase/002_user_data.sql)
    in the SQL Editor. It adds the table that saves customers' carts and favorites.
+4. If you set up the project before 6 Oct 2026, also run [`supabase/003_delivery_option.sql`](../supabase/003_delivery_option.sql).
+   It saves the delivery option (Standard / Extra fast / Within 24 hours) with each order.
 
 > **"Forgot password?" emails:** Supabase's built-in email only reaches the project's own team
 > (so it works for the admin email), and only a few emails per hour. For customers to reset passwords,

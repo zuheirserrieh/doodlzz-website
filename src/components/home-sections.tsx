@@ -23,12 +23,13 @@ export function CategoryGrid({ locale }: { locale: Locale }) {
           {t.catalog.viewAll}
         </Link>
       </div>
-      <div className="mt-4 grid grid-cols-3 gap-3 md:grid-cols-5 lg:grid-cols-9">
+      {/* Two rows that swipe sideways, so every category is reachable from the home page. */}
+      <div className="no-scrollbar -mx-4 mt-4 grid snap-x snap-mandatory auto-cols-[108px] grid-flow-col grid-rows-2 gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 md:auto-cols-[132px]">
         {categories.map((c) => (
           <Link
             key={c.slug}
             href={`/${locale}/category/${c.slug}`}
-            className={`flex h-28 flex-col items-center justify-center gap-2 rounded-[18px] p-2 text-center hover:text-navy hover:brightness-[0.97] ${c.tint}`}
+            className={`flex h-28 snap-start flex-col items-center justify-center gap-2 rounded-[18px] p-2 text-center hover:text-navy hover:brightness-[0.97] ${c.tint}`}
           >
             <CategoryIcon name={c.icon} />
             <span className="text-[13px] font-bold leading-tight">{c.shortName[locale]}</span>
@@ -85,7 +86,7 @@ export function BrandsMarquee({ locale }: { locale: Locale }) {
   const t = getDictionary(locale);
   return (
     <section className="mx-auto max-w-6xl pt-11">
-      <h2 className="px-4 font-display text-xl font-semibold">{t.brands.title}</h2>
+      <h2 className="px-4 font-display text-xl font-bold">{t.brands.title}</h2>
       <div dir="ltr" className="mt-3.5 overflow-hidden">
         {/* The list is rendered twice so the -50% loop is seamless. */}
         <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
@@ -163,7 +164,7 @@ export function FollowUs({ locale }: { locale: Locale }) {
   ];
   return (
     <section className="mx-4 mt-11 flex flex-col items-center gap-1.5 rounded-3xl bg-navy px-4 py-7 text-center text-white md:mx-auto md:max-w-3xl">
-      <h2 className="font-display text-[22px] font-semibold">{t.follow.title}</h2>
+      <h2 className="font-display text-[22px] font-bold">{t.follow.title}</h2>
       <p className="text-sm text-[#c9cfdc]">{t.follow.subtitle}</p>
 
       <a

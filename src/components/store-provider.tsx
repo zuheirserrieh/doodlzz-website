@@ -20,12 +20,18 @@ type Store = {
   toggleWish: (id: string) => void;
   menuOpen: boolean;
   setMenuOpen: (open: boolean) => void;
+  cartOpen: boolean;
+  setCartOpen: (open: boolean) => void;
+  /** Note typed in the cart panel; carried into the checkout notes. */
+  orderNote: string;
+  setOrderNote: (note: string) => void;
 };
 
 const StoreContext = createContext<Store | null>(null);
 
 const CART_KEY = "dz-cart";
 const WISHLIST_KEY = "dz-wishlist";
+const NOTE_KEY = "dz-order-note";
 
 function readStorage<T>(key: string, fallback: T): T {
   try {
@@ -49,12 +55,19 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [orderNote, setOrderNoteState] = useState("");
+  const setOrderNote = useCallback((note: string) => {
+    setOrderNoteState(note);
+    writeStorage(NOTE_KEY, note);
+  }, []);
 
   // Load persisted state after mount so server and first client render match.
   useEffect(() => {
     /* eslint-disable react-hooks/set-state-in-effect */
     setCart(readStorage<CartLine[]>(CART_KEY, []));
     setWishlist(readStorage<string[]>(WISHLIST_KEY, []));
+    setOrderNoteState(readStorage<string>(NOTE_KEY, ""));
     setHydrated(true);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
@@ -158,8 +171,12 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
       toggleWish,
       menuOpen,
       setMenuOpen,
+      cartOpen,
+      setCartOpen,
+      orderNote,
+      setOrderNote,
     }),
-    [locale, cart, addToCart, setQty, removeFromCart, clearCart, wishlist, isWished, toggleWish, menuOpen],
+    [locale, cart, addToCart, setQty, removeFromCart, clearCart, wishlist, isWished, toggleWish, menuOpen, cartOpen, orderNote, setOrderNote],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

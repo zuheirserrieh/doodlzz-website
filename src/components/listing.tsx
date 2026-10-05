@@ -48,7 +48,7 @@ export function Listing({
         })}
       </nav>
       <div className="px-4 pt-6">
-        <h1 className="font-display text-[28px] leading-tight font-semibold">{title}</h1>
+        <h1 className="font-display text-[28px] leading-tight font-bold">{title}</h1>
         <p className="mt-1 h-5 text-sm text-muted">{ready && t.listing.results(products.length)}</p>
         <div className="mt-5">
           {!ready || products.length > 0 ? (

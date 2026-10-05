@@ -173,7 +173,7 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
   return (
     <form onSubmit={save} className="flex flex-col gap-5 rounded-3xl bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-2xl font-semibold">{isNew ? "Add product" : "Edit product"}</h2>
+        <h2 className="font-display text-2xl font-bold">{isNew ? "Add product" : "Edit product"}</h2>
         <button type="button" onClick={onCancel} className="min-h-10 cursor-pointer text-sm font-bold text-muted underline">
           Cancel
         </button>

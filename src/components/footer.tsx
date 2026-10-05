@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { FacebookIcon, InstagramIcon, MailIcon, PhoneIcon, TikTokIcon, WhatsAppIcon } from "@/components/icons";
+import { RichText } from "@/components/rich-text";
 import { useDict, useStore } from "@/components/store-provider";
 import { site, whatsappLink } from "@/lib/site";
 
@@ -18,7 +19,11 @@ export function Footer() {
         <div className="flex flex-col gap-2 md:max-w-sm">
           <img src="/brand/doodlzz-logo.jpg" alt="Doodlzz" width={940} height={788} className="w-36 rounded-2xl" />
           <h2 className="mt-1 text-base font-extrabold">{t.footer.aboutTitle}</h2>
-          <p className="text-sm leading-relaxed text-ink-soft">{t.footer.about}</p>
+          {t.footer.about.map((p) => (
+            <p key={p.slice(0, 20)} className="text-sm leading-relaxed text-ink-soft">
+              <RichText text={p} href={`/${locale}/delivery`} />
+            </p>
+          ))}
           <Link href={`/${locale}/about`} className="text-sm font-extrabold text-accent">
             {t.footer.readStory}
           </Link>

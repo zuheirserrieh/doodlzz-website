@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { TruckIcon } from "@/components/icons";
+import { WhatsAppIcon } from "@/components/icons";
 import { WhishLogo } from "@/components/whish-logo";
 import { getDictionary, isLocale } from "@/lib/i18n";
+import { whatsappLink } from "@/lib/site";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/delivery">): Promise<Metadata> {
   const { locale } = await params;
@@ -14,49 +15,60 @@ export default async function DeliveryPage({ params }: PageProps<"/[locale]/deli
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const t = getDictionary(locale);
-  const options = ["standard", "express", "sameday"] as const;
+  const page = t.deliveryPage;
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-8 px-4 pt-8">
-      <h1 className="font-display text-3xl font-extrabold">{t.deliveryPage.title}</h1>
+    <div className="mx-auto flex max-w-2xl flex-col gap-9 px-4 pt-8">
+      <h1 className="font-display text-3xl font-extrabold">{page.title}</h1>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="flex items-center gap-2 text-xl font-extrabold">
-          <TruckIcon /> {t.deliveryPage.deliveryHeading}
-        </h2>
-        <p className="text-ink-soft">{t.deliveryPage.deliveryIntro}</p>
-        <ol className="flex flex-col gap-2.5">
-          {options.map((key, i) => {
-            const o = t.checkout.deliveryOptions[key];
-            return (
-              <li key={key} className="flex gap-3 rounded-2xl bg-surface p-4">
-                <span className="flex size-8 flex-none items-center justify-center rounded-full bg-navy text-sm font-extrabold text-white">
-                  {i + 1}
-                </span>
-                <span className="flex flex-col">
-                  <span className="font-extrabold">
-                    {o.label} · {o.time}
-                  </span>
-                  <span className="text-sm text-ink-soft">{o.fee}</span>
-                </span>
-              </li>
-            );
-          })}
+      <section id="delivery" className="flex scroll-mt-28 flex-col gap-3">
+        <h2 className="text-2xl font-extrabold">{page.deliveryHeading}</h2>
+        <p className="text-[17px] leading-relaxed text-ink-soft">{page.deliveryIntro}</p>
+        <ol className="flex flex-col gap-3">
+          {page.options.map((o, i) => (
+            <li key={o.title} className="flex gap-3 rounded-2xl bg-surface p-4">
+              <span className="flex size-8 flex-none items-center justify-center rounded-full bg-navy text-sm font-extrabold text-white">
+                {i + 1}
+              </span>
+              <span className="flex flex-col gap-1">
+                <span className="text-[17px] font-extrabold">{o.title}</span>
+                <span className="leading-relaxed text-ink-soft">{o.text}</span>
+              </span>
+            </li>
+          ))}
         </ol>
-        <p className="text-sm text-ink-soft">{t.checkout.finalizedNote}</p>
-        <p className="rounded-2xl bg-pastel-yellow p-4 text-sm font-bold">🛠️ {t.checkout.installNote}</p>
       </section>
 
-      <section className="flex flex-col gap-3">
-        <h2 className="text-xl font-extrabold">{t.deliveryPage.paymentHeading}</h2>
-        <div className="flex flex-wrap gap-2.5">
-          <span className="flex h-11 items-center gap-2 rounded-full bg-surface px-4 font-bold">💵 {t.checkout.payCash}</span>
-          <span className="flex h-11 items-center gap-2 rounded-full bg-surface px-4 font-bold">
-            <WhishLogo className="h-5" /> {t.checkout.payWhish}
-          </span>
-        </div>
-        <p className="text-ink-soft">{t.deliveryPage.paymentText}</p>
+      <section id="payment" className="flex scroll-mt-28 flex-col gap-3">
+        <h2 className="text-2xl font-extrabold">{page.paymentHeading}</h2>
+        <p className="text-[17px] leading-relaxed text-ink-soft">{page.paymentIntro}</p>
+        <p className="font-bold">{page.chooseBetween}</p>
+        <ul className="flex flex-col gap-3">
+          {page.methods.map((m) => (
+            <li key={m.id} className="flex gap-3 rounded-2xl bg-surface p-4">
+              <span className="flex h-8 w-12 flex-none items-center justify-center text-2xl" aria-hidden>
+                {m.id === "whish" ? <WhishLogo className="h-6" /> : "💵"}
+              </span>
+              <span className="flex flex-col gap-1">
+                <span className="text-[17px] font-extrabold">{m.title}</span>
+                <span className="leading-relaxed text-ink-soft">{m.text}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
       </section>
+
+      <a
+        href={whatsappLink(t.whatsapp.greeting)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-3 rounded-2xl bg-pastel-mint p-4 font-bold hover:text-navy"
+      >
+        <span className="flex size-11 flex-none items-center justify-center rounded-full bg-[#25D366] text-white">
+          <WhatsAppIcon size={22} />
+        </span>
+        {page.closing}
+      </a>
     </div>
   );
 }

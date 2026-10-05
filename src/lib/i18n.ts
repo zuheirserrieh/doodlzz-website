@@ -114,8 +114,11 @@ const en = {
   },
   footer: {
     aboutTitle: "About us",
-    about:
-      "Doodlzz is a Lebanese store for babies, kids and the whole family: nursery essentials, toys, sports equipment and outdoor gear, delivered all over Lebanon.",
+    about: [
+      "From little ones to big kids, from trending toys to sports, hobbies, home & outdoor essentials, Doodlzz makes shopping easy and fun, all in one place.",
+      "We're an online shop [[delivering across Lebanon]], right to your doorstep, with [[easy payment]] through Whish or Cash on Delivery.",
+      "Choose the delivery option that works best for you. We're here to make finding what you need simple, fun, and hassle-free.",
+    ],
     readStory: "Read our story",
     shop: "Shop",
     help: "Help",
@@ -184,8 +187,8 @@ const en = {
       express: { label: "Extra fast", time: "Within 2 days", fee: "Double the standard fee" },
       sameday: { label: "Within 24 hours", time: "Next day at the latest", fee: "Price depends on the distance" },
     } as Record<string, { label: string; time: string; fee: string }>,
-    confirmNote: "Please note: Your order will be confirmed via WhatsApp after checkout.",
-    finalizedNote: "Once you've completed checkout, all order details will be confirmed and finalized via WhatsApp.",
+    confirmNote: "Please note: Your order will be confirmed, and item availability will be checked via WhatsApp after checkout.",
+    finalizedNote: "Once you've completed checkout, all order details will be confirmed, and item availability will be checked via WhatsApp.",
     installNote: "Need help with installation? Additional installation fees may apply to certain large items.",
     payWith: "Choose how to pay",
     payCash: "Pay cash on delivery",
@@ -205,20 +208,53 @@ const en = {
   },
   about: {
     title: "About us",
-    // TODO(owner): replace with the real Doodlzz story.
     paragraphs: [
-      "Doodlzz is a Lebanese store for babies, kids and the whole family. We started with strollers, car seats and nursery essentials, and today we also carry toys, sports equipment and outdoor gear.",
-      "We hand-pick every product for safety, quality and value, and we deliver all over Lebanon. You can pay cash on delivery or by Whish Money, and our team confirms every order personally on WhatsApp.",
+      "Doodlzz is a trusted online shop in Lebanon, bringing together everything you need for little ones, growing kids, and active families — all in one place. From baby essentials, kids' and teen toys, and trending finds to sports equipment, hobbies, fitness & gym gear, home essentials, and outdoor products, we're always looking for fun, useful, and exciting products to add to our collection.",
+      "Since 2020, Doodlzz has been growing through social media and our online community, connecting with customers across Instagram, Facebook, and TikTok. With warehouses in different locations across Lebanon, we make it easier to get your orders wherever you are.",
+      "We offer [[delivery]] all across Lebanon, with both regular and faster delivery options depending on the item and your needs. For selected products that require assembly, we also offer professional installation services by our team, making the process easier from delivery to setup. Every product is delivered according to its listed specifications and photos, so you know what to expect.",
+      "And when it comes to [[payment]], no Visa card is needed — simply choose Whish or Cash on Delivery. Have a question before ordering? Our Doodlzz team is available on WhatsApp to help you with product details, availability, delivery, installation, or anything else you'd like to know.",
+      "Over the years, we've had the pleasure of working with influencers, companies, schools, nurseries, gyms, and many happy customers who have trusted Doodlzz for their shopping needs.",
+      "At Doodlzz, we're here to make online shopping easy, convenient, and a little more fun. 💛",
     ],
     cta: "Shop now",
   },
+
   deliveryPage: {
     title: "Delivery & Payment",
-    deliveryHeading: "Delivery time & fees",
-    deliveryIntro: "We deliver all over Lebanon. Choose one of three options at checkout:",
-    paymentHeading: "Payment",
-    paymentText: "Pay cash to the driver when your order arrives, or pay by Whish Money. We send you the Whish details on WhatsApp.",
+    deliveryHeading: "🚚 Delivery",
+    deliveryIntro: "We offer delivery across Lebanon with flexible options to suit your needs.",
+    options: [
+      {
+        title: "Regular Delivery — 2–5 Days",
+        text: "Our standard delivery option takes approximately 2–5 days. Delivery fees range from $4–$5, depending on your location. The exact delivery fee will be confirmed with you by our Doodlzz team on WhatsApp when your order is confirmed.",
+      },
+      {
+        title: "Express Delivery — Up to 2 Days",
+        text: "Need your order sooner? Our express delivery option can get your order to you within 2 days. The delivery fee is double the regular delivery fee and will be confirmed with you on WhatsApp when your order is confirmed.",
+      },
+      {
+        title: "24-Hour Delivery",
+        text: "For selected orders and locations, we also offer delivery within 24 hours. The fee depends on the delivery distance and will be calculated and confirmed by our team on WhatsApp.",
+      },
+    ],
+    paymentHeading: "💵 Payment",
+    paymentIntro: "Making your payment is easy — no Visa card is required.",
+    chooseBetween: "You can choose between:",
+    methods: [
+      {
+        id: "cash",
+        title: "Cash on Delivery",
+        text: "Pay when your order arrives at your doorstep.",
+      },
+      {
+        id: "whish",
+        title: "Whish",
+        text: "After your order details are confirmed with our team on WhatsApp, we'll send you the necessary payment details to complete your Whish payment.",
+      },
+    ],
+    closing: "Our team is always available on WhatsApp to confirm your order, answer your questions, and provide you with the exact delivery and payment details.",
   },
+
   account: {
     auth: {
       signIn: "Sign in",
@@ -367,8 +403,11 @@ const ar: Dictionary = {
   },
   footer: {
     aboutTitle: "من نحن",
-    about:
-      "Doodlzz متجر لبناني للأطفال وكل العائلة: مستلزمات الأطفال، ألعاب، معدات رياضية وتجهيزات خارجية، مع التوصيل إلى كل لبنان.",
+    about: [
+      "من الصغار إلى الأطفال الأكبر، ومن الألعاب الرائجة إلى الرياضة والهوايات ومستلزمات المنزل والأماكن الخارجية، Doodlzz يجعل التسوّق سهلاً وممتعاً، وكل شيء في مكان واحد.",
+      "نحن متجر إلكتروني [[نوصل إلى كل لبنان]]، حتى باب منزلك، مع [[دفع سهل]] عبر Whish أو نقداً عند الاستلام.",
+      "اختر خيار التوصيل الذي يناسبك. نحن هنا لنجعل إيجاد ما تحتاجه بسيطاً وممتعاً ومن دون عناء.",
+    ],
     readStory: "اقرأ قصتنا",
     shop: "تسوّق",
     help: "مساعدة",
@@ -437,8 +476,8 @@ const ar: Dictionary = {
       express: { label: "سريع جداً", time: "خلال يومين", fee: "ضعف رسوم التوصيل العادي" },
       sameday: { label: "خلال 24 ساعة", time: "في اليوم التالي كحد أقصى", fee: "السعر حسب المسافة" },
     } as Record<string, { label: string; time: string; fee: string }>,
-    confirmNote: "ملاحظة: سيتم تأكيد طلبك عبر واتساب بعد إتمام الطلب.",
-    finalizedNote: "بعد إتمام الطلب، يتم تأكيد كل تفاصيل الطلب وإنهاؤها عبر واتساب.",
+    confirmNote: "ملاحظة: سيتم تأكيد طلبك والتحقق من توفر المنتجات عبر واتساب بعد إتمام الطلب.",
+    finalizedNote: "بعد إتمام الطلب، يتم تأكيد كل تفاصيل الطلب والتحقق من توفر المنتجات عبر واتساب.",
     installNote: "تحتاج مساعدة في التركيب؟ قد تُضاف رسوم تركيب على بعض المنتجات الكبيرة.",
     payWith: "اختر طريقة الدفع",
     payCash: "الدفع نقداً عند الاستلام",
@@ -459,18 +498,52 @@ const ar: Dictionary = {
   about: {
     title: "من نحن",
     paragraphs: [
-      "Doodlzz متجر لبناني للأطفال والرضّع وكل العائلة. بدأنا بعربات الأطفال وكراسي السيارة ومستلزمات غرفة الطفل، واليوم نوفّر أيضاً الألعاب والمعدات الرياضية وتجهيزات الأماكن الخارجية.",
-      "نختار كل منتج بعناية من حيث الأمان والجودة والسعر، ونوصل إلى كل لبنان. يمكنك الدفع نقداً عند الاستلام أو عبر Whish Money، وفريقنا يؤكد كل طلب شخصياً عبر واتساب.",
+      "Doodlzz متجر إلكتروني موثوق في لبنان، يجمع كل ما تحتاجه للصغار والأطفال والعائلات النشيطة في مكان واحد. من مستلزمات الرضّع وألعاب الأطفال والمراهقين والمنتجات الرائجة، إلى المعدات الرياضية والهوايات ومعدات اللياقة والنوادي الرياضية ومستلزمات المنزل والمنتجات الخارجية، نبحث دائماً عن منتجات ممتعة ومفيدة ومميزة لنضيفها إلى مجموعتنا.",
+      "منذ عام 2020، يكبر Doodlzz عبر وسائل التواصل الاجتماعي ومجتمعنا على الإنترنت، ونتواصل مع زبائننا على Instagram وFacebook وTikTok. ومع مستودعات في مناطق مختلفة من لبنان، نسهّل وصول طلباتك أينما كنت.",
+      "نوفّر [[التوصيل]] إلى كل لبنان، مع خيارات توصيل عادية وأسرع حسب المنتج وحاجتك. وللمنتجات المختارة التي تحتاج إلى تركيب، يوفّر فريقنا خدمة تركيب احترافية، لتكون العملية أسهل من التوصيل حتى التركيب. ويُسلَّم كل منتج حسب المواصفات والصور المعروضة، لتعرف تماماً ما ستحصل عليه.",
+      "وعندما يتعلق الأمر بـ[[الدفع]]، لا حاجة لبطاقة Visa — ببساطة اختر Whish أو الدفع نقداً عند الاستلام. لديك سؤال قبل الطلب؟ فريق Doodlzz متوفر على واتساب لمساعدتك في تفاصيل المنتج، التوفر، التوصيل، التركيب، أو أي شيء آخر تود معرفته.",
+      "على مرّ السنوات، تشرّفنا بالعمل مع مؤثرين وشركات ومدارس وحضانات ونوادٍ رياضية والكثير من الزبائن السعداء الذين وثقوا بـDoodlzz لاحتياجاتهم.",
+      "في Doodlzz، نحن هنا لنجعل التسوّق عبر الإنترنت سهلاً ومريحاً وممتعاً أكثر. 💛",
     ],
     cta: "تسوّق الآن",
   },
+
   deliveryPage: {
     title: "التوصيل والدفع",
-    deliveryHeading: "وقت التوصيل والرسوم",
-    deliveryIntro: "نوصل إلى كل لبنان. اختر واحداً من ثلاثة خيارات عند إتمام الطلب:",
-    paymentHeading: "الدفع",
-    paymentText: "ادفع نقداً للسائق عند وصول طلبك، أو ادفع عبر Whish Money. نرسل لك تفاصيل Whish عبر واتساب.",
+    deliveryHeading: "🚚 التوصيل",
+    deliveryIntro: "نوفّر التوصيل إلى كل لبنان مع خيارات مرنة تناسب حاجتك.",
+    options: [
+      {
+        title: "التوصيل العادي — من 2 إلى 5 أيام",
+        text: "يستغرق التوصيل العادي من 2 إلى 5 أيام تقريباً. تتراوح رسوم التوصيل بين 4$ و5$ حسب منطقتك. يؤكد لك فريق Doodlzz رسوم التوصيل الدقيقة عبر واتساب عند تأكيد طلبك.",
+      },
+      {
+        title: "التوصيل السريع — خلال يومين كحد أقصى",
+        text: "تحتاج طلبك بسرعة أكبر؟ يصلك طلبك مع التوصيل السريع خلال يومين. رسوم التوصيل ضعف رسوم التوصيل العادي، ونؤكدها لك عبر واتساب عند تأكيد طلبك.",
+      },
+      {
+        title: "التوصيل خلال 24 ساعة",
+        text: "لبعض الطلبات والمناطق، نوفّر أيضاً التوصيل خلال 24 ساعة. تعتمد الرسوم على مسافة التوصيل، ويحسبها فريقنا ويؤكدها لك عبر واتساب.",
+      },
+    ],
+    paymentHeading: "💵 الدفع",
+    paymentIntro: "الدفع سهل — لا حاجة لبطاقة Visa.",
+    chooseBetween: "يمكنك الاختيار بين:",
+    methods: [
+      {
+        id: "cash",
+        title: "الدفع نقداً عند الاستلام",
+        text: "ادفع عند وصول طلبك إلى باب منزلك.",
+      },
+      {
+        id: "whish",
+        title: "Whish",
+        text: "بعد تأكيد تفاصيل طلبك مع فريقنا عبر واتساب، نرسل لك تفاصيل الدفع اللازمة لإتمام الدفع عبر Whish.",
+      },
+    ],
+    closing: "فريقنا متوفر دائماً على واتساب لتأكيد طلبك، والإجابة عن أسئلتك، وتزويدك بتفاصيل التوصيل والدفع الدقيقة.",
   },
+
   account: {
     auth: {
       signIn: "تسجيل الدخول",

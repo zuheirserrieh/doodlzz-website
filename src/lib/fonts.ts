@@ -1,12 +1,12 @@
-import { Outfit, Plus_Jakarta_Sans, Shrikhand, Tajawal } from "next/font/google";
+import { Fredoka, Outfit, Plus_Jakarta_Sans, Tajawal } from "next/font/google";
 
 // One font for the whole site (headings and text). Two candidates while the owner
 // chooses: A is the default, B is previewed with ?font=b (see FontPreviewScript).
 export const fontA = Plus_Jakarta_Sans({ variable: "--font-a", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 export const fontB = Outfit({ variable: "--font-b", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 export const fontArabic = Tajawal({ variable: "--font-arabic", subsets: ["arabic"], weight: ["400", "500", "700", "800"] });
-// Retro script close to the lettering in the Doodlzz logo; used only for the wordmark.
-export const fontLogo = Shrikhand({ variable: "--font-logo", subsets: ["latin"], weight: "400" });
+// Used only for the "Doodlzz" wordmark in the header and menu.
+export const fontLogo = Fredoka({ variable: "--font-logo", subsets: ["latin"], weight: "600" });
 
 export const fontVariables = [fontA, fontB, fontArabic, fontLogo].map((f) => f.variable).join(" ");
 

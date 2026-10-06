@@ -34,7 +34,7 @@ function slugify(text: string) {
 }
 
 /** Shrink phone photos (often 4–8 MB) to ≤1600px WebP before uploading. */
-async function shrinkImage(file: File): Promise<Blob> {
+export async function shrinkImage(file: File): Promise<Blob> {
   try {
     const bitmap = await createImageBitmap(file);
     const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
@@ -240,17 +240,6 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
             ))}
           </select>
         </Field>
-        <Field label="Link (slug)" hint={`Page address: /product?slug=${slugify(row.slug || row.name_en) || "…"}`}>
-          <input
-            className={input}
-            dir="ltr"
-            value={row.slug}
-            onChange={(e) => {
-              setSlugTouched(true);
-              set("slug", e.target.value);
-            }}
-          />
-        </Field>
 
         <Field label="Price (USD) *">
           <input
@@ -322,18 +311,37 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
             {label}
           </label>
         ))}
-        <label className="flex items-center gap-2 font-bold">
-          Order
-          <input
-            className={`${input} w-20`}
-            type="number"
-            dir="ltr"
-            value={row.sort}
-            onChange={(e) => set("sort", Number(e.target.value))}
-            title="Lower numbers are shown first"
-          />
-        </label>
       </fieldset>
+
+      <Field label="Position in shop" hint="Lower numbers are shown first. Leave 0 if the order doesn't matter (newest products then come first).">
+        <input
+          className={`${input} w-28`}
+          type="number"
+          dir="ltr"
+          value={row.sort}
+          onChange={(e) => set("sort", Number(e.target.value))}
+        />
+      </Field>
+
+      <details className="rounded-xl bg-surface px-4 py-3">
+        <summary className="cursor-pointer text-sm font-bold text-muted">Advanced: page link</summary>
+        <div className="mt-3">
+          <Field
+            label="Link name (slug)"
+            hint={`Filled in automatically from the English name. Page address: /product?slug=${slugify(row.slug || row.name_en) || "…"}. Avoid changing it once the product link has been shared.`}
+          >
+            <input
+              className={input}
+              dir="ltr"
+              value={row.slug}
+              onChange={(e) => {
+                setSlugTouched(true);
+                set("slug", e.target.value);
+              }}
+            />
+          </Field>
+        </div>
+      </details>
 
       {error && (
         <p role="alert" className="rounded-xl bg-pastel-peach p-3 text-sm font-bold text-accent-dark">

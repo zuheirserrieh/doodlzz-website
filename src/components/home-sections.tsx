@@ -1,7 +1,7 @@
 import Link from "next/link";
+import { CategoryTile } from "@/components/category-tile";
 import { categories } from "@/data/catalog";
 import {
-  CategoryIcon,
   FacebookIcon,
   InstagramIcon,
   BearMascot,
@@ -26,14 +26,7 @@ export function CategoryGrid({ locale }: { locale: Locale }) {
       {/* Two rows that swipe sideways, so every category is reachable from the home page. */}
       <div className="no-scrollbar -mx-4 mt-4 grid snap-x snap-mandatory auto-cols-[108px] grid-flow-col grid-rows-2 gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 md:auto-cols-[132px]">
         {categories.map((c) => (
-          <Link
-            key={c.slug}
-            href={`/${locale}/category/${c.slug}`}
-            className={`flex h-28 snap-start flex-col items-center justify-center gap-2 rounded-[18px] p-2 text-center hover:text-navy hover:brightness-[0.97] ${c.tint}`}
-          >
-            <CategoryIcon name={c.icon} />
-            <span className="text-[13px] font-bold leading-tight">{c.shortName[locale]}</span>
-          </Link>
+          <CategoryTile key={c.slug} category={c} locale={locale} />
         ))}
       </div>
     </section>

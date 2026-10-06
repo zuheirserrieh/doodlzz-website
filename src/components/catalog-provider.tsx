@@ -11,6 +11,8 @@ type Catalog = {
   ready: boolean;
   getById: (id: string) => Product | undefined;
   getBySlug: (slug: string) => Product | undefined;
+  /** Category slug → photo URL, set in /admin → Categories (missing = icon tile). */
+  categoryImages: Record<string, string>;
   reload: () => Promise<void>;
 };
 
@@ -32,6 +34,7 @@ const CatalogContext = createContext<Catalog | null>(null);
 const AuthContext = createContext<Auth | null>(null);
 
 const CACHE_KEY = "dz-products-v1";
+const CATEGORY_CACHE_KEY = "dz-category-images-v1";
 
 function readCache(): Product[] | null {
   try {
@@ -59,6 +62,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(false);
   const [authReady, setAuthReady] = useState(!supabaseConfigured);
   const [recovery, setRecovery] = useState(false);
+  const [categoryImages, setCategoryImages] = useState<Record<string, string>>({});
 
   const reload = useCallback(async () => {
     const supabase = getSupabase();
@@ -78,6 +82,18 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     setProducts(list);
     setReady(true);
     writeCache(list);
+
+    // Category photos are optional: if the table isn't set up yet, the icon tiles stay.
+    const { data: images } = await supabase.from("category_images").select("slug, image");
+    if (images) {
+      const map = Object.fromEntries((images as { slug: string; image: string }[]).map((r) => [r.slug, r.image]));
+      setCategoryImages(map);
+      try {
+        localStorage.setItem(CATEGORY_CACHE_KEY, JSON.stringify(map));
+      } catch {
+        // ignore
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -90,6 +106,12 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     if (cached) {
       setProducts(cached);
       setReady(true);
+    }
+    try {
+      const cachedImages = localStorage.getItem(CATEGORY_CACHE_KEY);
+      if (cachedImages) setCategoryImages(JSON.parse(cachedImages));
+    } catch {
+      // ignore
     }
     /* eslint-enable react-hooks/set-state-in-effect */
     void reload();
@@ -127,9 +149,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       ready,
       getById: (id) => products.find((p) => p.id === id),
       getBySlug: (slug) => products.find((p) => p.slug === slug),
+      categoryImages,
       reload,
     }),
-    [products, ready, reload],
+    [products, ready, categoryImages, reload],
   );
 
   const auth = useMemo<Auth>(

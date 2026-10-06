@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
+import { AdminCategories } from "@/components/admin/admin-categories";
 import { AdminOrders } from "@/components/admin/admin-orders";
 import { AdminProducts } from "@/components/admin/admin-products";
 import { useAuth } from "@/components/catalog-provider";
@@ -12,7 +13,7 @@ import { supabaseConfigured } from "@/lib/supabase";
 
 const authTexts = getDictionary("en").account.auth;
 
-type Tab = "orders" | "products";
+type Tab = "orders" | "products" | "categories";
 
 function Card({ children }: { children: ReactNode }) {
   return (
@@ -102,15 +103,18 @@ export function AdminApp() {
 
       <div className="mx-auto max-w-5xl px-4 pt-5">
         <p className="text-sm text-muted">Signed in as {email}</p>
-        <div role="tablist" className="mt-3 flex gap-2">
+        <div role="tablist" className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
           <button type="button" role="tab" aria-selected={tab === "orders"} onClick={() => setTab("orders")} className={tabClass("orders")}>
             Orders
           </button>
           <button type="button" role="tab" aria-selected={tab === "products"} onClick={() => setTab("products")} className={tabClass("products")}>
             Products
           </button>
+          <button type="button" role="tab" aria-selected={tab === "categories"} onClick={() => setTab("categories")} className={tabClass("categories")}>
+            Categories
+          </button>
         </div>
-        <div className="mt-5">{tab === "orders" ? <AdminOrders /> : <AdminProducts />}</div>
+        <div className="mt-5">{tab === "orders" ? <AdminOrders /> : tab === "products" ? <AdminProducts /> : <AdminCategories />}</div>
       </div>
     </div>
   );

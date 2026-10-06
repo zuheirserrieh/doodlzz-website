@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- local object URLs, not optimisable */
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 
-const OUT = 1200; // output size (square), px
+const OUT = 1200; // longest output side, px
 
 type Props = {
   /** Object URL or public URL of the photo to crop. */
@@ -11,6 +11,8 @@ type Props = {
   /** Called with the result; null = keep the original file as it is. */
   onDone: (result: Blob | null) => void;
   onCancel: () => void;
+  /** Width ÷ height of the crop (1 = square, 0.75 = portrait 3:4, 2 = wide). */
+  aspect?: number;
 };
 
 function toBlob(canvas: HTMLCanvasElement) {
@@ -23,11 +25,14 @@ function toBlob(canvas: HTMLCanvasElement) {
  * Square photo cropper for the admin panel: drag to move, slider to zoom.
  * Product photos are shown as squares in the shop, so a square crop looks best.
  */
-export function ImageCropper({ src, onDone, onCancel }: Props) {
+export function ImageCropper({ src, onDone, onCancel, aspect = 1 }: Props) {
   const viewRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const drag = useRef<{ x: number; y: number; ox: number; oy: number } | null>(null);
-  const [view, setView] = useState(320);
+  const [view, setView] = useState(320); // crop box width; height = view / aspect
+  const viewH = view / aspect;
+  const outW = aspect >= 1 ? OUT : Math.round(OUT * aspect);
+  const outH = Math.round(outW / aspect);
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -40,31 +45,32 @@ export function ImageCropper({ src, onDone, onCancel }: Props) {
   }, []);
 
   // "Cover" scale: at zoom 1 the photo just fills the square.
-  const base = natural ? Math.max(view / natural.w, view / natural.h) : 1;
+  const base = natural ? Math.max(view / natural.w, viewH / natural.h) : 1;
   const scale = base * zoom;
   const dw = natural ? natural.w * scale : view;
-  const dh = natural ? natural.h * scale : view;
+  const dh = natural ? natural.h * scale : viewH;
 
   function clamp(x: number, y: number, w = dw, h = dh) {
-    return { x: Math.min(0, Math.max(view - w, x)), y: Math.min(0, Math.max(view - h, y)) };
+    return { x: Math.min(0, Math.max(view - w, x)), y: Math.min(0, Math.max(viewH - h, y)) };
   }
 
   function onLoad() {
     const img = imgRef.current!;
     const n = { w: img.naturalWidth, h: img.naturalHeight };
     setNatural(n);
-    const s = Math.max(view / n.w, view / n.h);
-    setOffset({ x: (view - n.w * s) / 2, y: (view - n.h * s) / 2 }); // centred
+    const s = Math.max(view / n.w, viewH / n.h);
+    setOffset({ x: (view - n.w * s) / 2, y: (viewH - n.h * s) / 2 }); // centred
   }
 
   function changeZoom(next: number) {
     if (!natural) return;
     // Zoom around the centre of the square.
-    const c = view / 2;
+    const cx = view / 2;
+    const cy = viewH / 2;
     const ratio = next / zoom;
     const w = natural.w * base * next;
     const h = natural.h * base * next;
-    setOffset(clamp(c - (c - offset.x) * ratio, c - (c - offset.y) * ratio, w, h));
+    setOffset(clamp(cx - (cx - offset.x) * ratio, cy - (cy - offset.y) * ratio, w, h));
     setZoom(next);
   }
 
@@ -83,18 +89,18 @@ export function ImageCropper({ src, onDone, onCancel }: Props) {
     setBusy(true);
     try {
       const canvas = document.createElement("canvas");
-      canvas.width = OUT;
-      canvas.height = OUT;
+      canvas.width = outW;
+      canvas.height = outH;
       const ctx = canvas.getContext("2d")!;
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, OUT, OUT);
+      ctx.fillRect(0, 0, outW, outH);
       if (mode === "crop") {
-        ctx.drawImage(img, -offset.x / scale, -offset.y / scale, view / scale, view / scale, 0, 0, OUT, OUT);
+        ctx.drawImage(img, -offset.x / scale, -offset.y / scale, view / scale, viewH / scale, 0, 0, outW, outH);
       } else {
-        const s = Math.min(OUT / natural.w, OUT / natural.h);
+        const s = Math.min(outW / natural.w, outH / natural.h);
         const w = natural.w * s;
         const h = natural.h * s;
-        ctx.drawImage(img, (OUT - w) / 2, (OUT - h) / 2, w, h);
+        ctx.drawImage(img, (outW - w) / 2, (outH - h) / 2, w, h);
       }
       onDone(await toBlob(canvas));
     } catch (err) {
@@ -108,13 +114,14 @@ export function ImageCropper({ src, onDone, onCancel }: Props) {
 
   return (
     <div role="dialog" aria-modal="true" aria-label="Crop photo" className="fixed inset-0 z-[70] flex items-center justify-center bg-navy/70 p-4">
-      <div className="flex w-full max-w-md flex-col gap-4 rounded-3xl bg-white p-5">
+      <div className="flex max-h-full w-full max-w-md flex-col gap-4 overflow-y-auto rounded-3xl bg-white p-5">
         <h2 className="text-lg font-extrabold">Crop photo</h2>
         <p className="-mt-2 text-sm text-muted">Drag the photo to move it, use the slider to zoom.</p>
 
         <div
           ref={viewRef}
-          className="relative aspect-square w-full touch-none overflow-hidden rounded-2xl bg-surface select-none"
+          className="relative w-full touch-none overflow-hidden rounded-2xl bg-surface select-none"
+          style={{ aspectRatio: String(aspect) }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={() => (drag.current = null)}

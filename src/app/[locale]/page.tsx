@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { Hero } from "@/components/hero";
-import { BrandsMarquee, CategoryGrid, FollowUs, RealMoments, WavySeparator } from "@/components/home-sections";
+import { BrandsMarquee, FollowUs, RealMoments } from "@/components/home-media-sections";
+import { CategoryGrid, WavySeparator } from "@/components/home-sections";
 import { PickedByParents } from "@/components/picked-by-parents";
 import { ShopByAge } from "@/components/shop-by-age";
 import { getDictionary, isLocale } from "@/lib/i18n";

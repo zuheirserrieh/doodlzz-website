@@ -5,6 +5,18 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { fromRow, sampleProducts, type Product, type ProductRow } from "@/data/products";
 import { getSupabase, supabaseConfigured } from "@/lib/supabase";
 
+export type HomeMedia = {
+  id: string;
+  section: "moment" | "brand" | "social";
+  image: string;
+  title: string;
+  subtitle: string;
+  rating: number;
+  link: string;
+  sort: number;
+  active: boolean;
+};
+
 type Catalog = {
   products: Product[];
   /** False until products have been loaded (from cache or the database). */
@@ -13,6 +25,8 @@ type Catalog = {
   getBySlug: (slug: string) => Product | undefined;
   /** Category slug → photo URL, set in /admin → Categories (missing = icon tile). */
   categoryImages: Record<string, string>;
+  /** Real Moments, brand logos and social photos (set in /admin → Home page). */
+  homeMedia: HomeMedia[];
   reload: () => Promise<void>;
 };
 
@@ -35,6 +49,7 @@ const AuthContext = createContext<Auth | null>(null);
 
 const CACHE_KEY = "dz-products-v1";
 const CATEGORY_CACHE_KEY = "dz-category-images-v1";
+const MEDIA_CACHE_KEY = "dz-home-media-v1";
 
 function readCache(): Product[] | null {
   try {
@@ -63,6 +78,7 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const [authReady, setAuthReady] = useState(!supabaseConfigured);
   const [recovery, setRecovery] = useState(false);
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>({});
+  const [homeMedia, setHomeMedia] = useState<HomeMedia[]>([]);
 
   const reload = useCallback(async () => {
     const supabase = getSupabase();
@@ -82,6 +98,22 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     setProducts(list);
     setReady(true);
     writeCache(list);
+
+    // Home page content (optional table): Real Moments, brands, social photos.
+    const { data: media } = await supabase
+      .from("home_media")
+      .select("*")
+      .eq("active", true)
+      .order("sort", { ascending: true })
+      .order("created_at", { ascending: true });
+    if (media) {
+      setHomeMedia(media as HomeMedia[]);
+      try {
+        localStorage.setItem(MEDIA_CACHE_KEY, JSON.stringify(media));
+      } catch {
+        // ignore
+      }
+    }
 
     // Category photos are optional: if the table isn't set up yet, the icon tiles stay.
     const { data: images } = await supabase.from("category_images").select("slug, image");
@@ -110,6 +142,8 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
     try {
       const cachedImages = localStorage.getItem(CATEGORY_CACHE_KEY);
       if (cachedImages) setCategoryImages(JSON.parse(cachedImages));
+      const cachedMedia = localStorage.getItem(MEDIA_CACHE_KEY);
+      if (cachedMedia) setHomeMedia(JSON.parse(cachedMedia));
     } catch {
       // ignore
     }
@@ -150,9 +184,10 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       getById: (id) => products.find((p) => p.id === id),
       getBySlug: (slug) => products.find((p) => p.slug === slug),
       categoryImages,
+      homeMedia,
       reload,
     }),
-    [products, ready, categoryImages, reload],
+    [products, ready, categoryImages, homeMedia, reload],
   );
 
   const auth = useMemo<Auth>(

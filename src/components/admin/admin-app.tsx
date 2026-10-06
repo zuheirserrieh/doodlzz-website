@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { AdminCategories } from "@/components/admin/admin-categories";
+import { AdminHomeMedia } from "@/components/admin/admin-home-media";
 import { AdminOrders } from "@/components/admin/admin-orders";
 import { AdminProducts } from "@/components/admin/admin-products";
 import { useAuth } from "@/components/catalog-provider";
@@ -13,7 +14,7 @@ import { supabaseConfigured } from "@/lib/supabase";
 
 const authTexts = getDictionary("en").account.auth;
 
-type Tab = "orders" | "products" | "categories";
+type Tab = "orders" | "products" | "categories" | "home";
 
 function Card({ children }: { children: ReactNode }) {
   return (
@@ -83,7 +84,7 @@ export function AdminApp() {
   }
 
   const tabClass = (id: Tab) =>
-    `h-11 cursor-pointer rounded-full px-5 text-sm font-extrabold ${tab === id ? "bg-navy text-white" : "bg-white text-navy"}`;
+    `h-11 flex-none cursor-pointer rounded-full px-5 text-sm font-extrabold ${tab === id ? "bg-navy text-white" : "bg-white text-navy"}`;
 
   return (
     <div className="min-h-dvh pb-16">
@@ -113,8 +114,11 @@ export function AdminApp() {
           <button type="button" role="tab" aria-selected={tab === "categories"} onClick={() => setTab("categories")} className={tabClass("categories")}>
             Categories
           </button>
+          <button type="button" role="tab" aria-selected={tab === "home"} onClick={() => setTab("home")} className={tabClass("home")}>
+            Home page
+          </button>
         </div>
-        <div className="mt-5">{tab === "orders" ? <AdminOrders /> : tab === "products" ? <AdminProducts /> : <AdminCategories />}</div>
+        <div className="mt-5">{tab === "orders" ? <AdminOrders /> : tab === "products" ? <AdminProducts /> : tab === "categories" ? <AdminCategories /> : <AdminHomeMedia />}</div>
       </div>
     </div>
   );

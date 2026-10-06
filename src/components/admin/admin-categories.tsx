@@ -37,7 +37,7 @@ export function AdminCategories() {
     if (saveError) {
       setError(
         saveError.code === "PGRST205" || saveError.code === "42P01"
-          ? "The category photos table is missing. Run supabase/004_category_images.sql in the Supabase SQL Editor first."
+          ? "The category photos table is missing. Run supabase/schema.sql in the Supabase SQL Editor first."
           : saveError.message,
       );
     }

@@ -26,13 +26,8 @@ It also makes **doodlzzlb@gmail.com** the admin.
    - **Redirect URLs**: add `https://doodlzz-website.<name>.workers.dev/**` and `http://localhost:3000/**`
 
    These are only used by the "Forgot password?" email link.
-3. If you set up the project before 5 Oct 2026, also run [`supabase/002_user_data.sql`](../supabase/002_user_data.sql)
-   in the SQL Editor. It adds the table that saves customers' carts and favorites.
-4. If you set up the project before 6 Oct 2026, also run [`supabase/003_delivery_option.sql`](../supabase/003_delivery_option.sql).
-   It saves the delivery option (Standard / Extra fast / Within 24 hours) with each order.
-5. Also run [`supabase/004_category_images.sql`](../supabase/004_category_images.sql) if your project was set up before 6 Oct 2026.
-   It stores the category tile photos you upload in **/admin → Categories**.
-6. Projects set up before 7 Oct 2026: also run [`supabase/UPDATE_2026-10-07.sql`](../supabase/UPDATE_2026-10-07.sql) once (new categories, Boy/Girl, labels, related items, home page content).
+3. **After every website update** that changes the database, run [`supabase/schema.sql`](../supabase/schema.sql) again
+   (SQL Editor → New query → paste all → Run). It only adds what is missing and never deletes data.
 
 > **"Forgot password?" emails:** Supabase's built-in email only reaches the project's own team
 > (so it works for the admin email), and only a few emails per hour. For customers to reset passwords,

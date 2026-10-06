@@ -1,5 +1,6 @@
--- Doodlzz database. Paste this whole file into Supabase → SQL Editor → Run.
--- Safe to re-run: it only creates what is missing and replaces functions/policies.
+-- Doodlzz database: the ONE file to run. Paste all of it into Supabase → SQL Editor → Run.
+-- Safe to run again after every update: it only adds what is missing, updates functions and
+-- security rules, and never deletes products, orders or customers.
 
 -- ─────────────────────────────────────────────────────────────
 -- Admins: who can manage products and see all orders.
@@ -56,6 +57,15 @@ alter table public.products add column if not exists sold_count integer not null
 alter table public.products add column if not exists limited_quantity boolean not null default false;
 alter table public.products add column if not exists last_piece boolean not null default false;
 alter table public.products add column if not exists related uuid[] not null default '{}';
+
+-- Data fixes for older setups (safe to repeat: they only touch old values).
+-- The old categories became subcategories of "Baby Essentials".
+update public.products set subcategory = category, category = 'baby-essentials'
+where category in ('strollers', 'car-seats', 'swing-chairs', 'play-mats', 'walkers', 'high-chairs', 'beds');
+update public.products set subcategory = 'bath-potty', category = 'baby-essentials'
+where category in ('bath-tubs', 'potty');
+-- "4+ years" was split into finer groups; old products move to "4–6 years".
+update public.products set ages = array_replace(ages, '4y-plus', '4-6y') where '4y-plus' = any(ages);
 
 create or replace function public.touch_updated_at()
 returns trigger language plpgsql as $$

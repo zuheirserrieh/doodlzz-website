@@ -162,7 +162,7 @@ export function AdminHomeMedia() {
     if (err) {
       setError(
         err.code === "PGRST205"
-          ? "The home page table is missing. Run supabase/UPDATE_2026-10-07.sql in the Supabase SQL Editor first."
+          ? "The home page table is missing. Run supabase/schema.sql in the Supabase SQL Editor first."
           : err.message,
       );
       setItems([]);

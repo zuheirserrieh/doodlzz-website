@@ -47,7 +47,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       <head>
         <script dangerouslySetInnerHTML={{ __html: fontPreviewScript }} />
       </head>
-      <body className="min-h-dvh">
+      <body className="site-bg min-h-dvh">
         <CatalogProvider>
         <StoreProvider locale={locale}>
           <div className="flex min-h-dvh flex-col">

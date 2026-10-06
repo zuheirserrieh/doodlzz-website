@@ -80,3 +80,23 @@ a:hover {
     animation: none;
   }
 }
+
+/* Shop background: the owner's toy pattern, repeated down the page at (about) phone width so it
+   stays sharp, with a white veil on top so text and prices stay easy to read. */
+.site-bg {
+  position: relative;
+  isolation: isolate;
+  background-color: #fffdf8;
+  background-image: url("/brand/bg-pattern.jpg");
+  background-repeat: repeat;
+  background-position: top center;
+  background-size: clamp(360px, 100vw, 540px) auto;
+}
+.site-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: rgb(255 255 255 / 0.62);
+}

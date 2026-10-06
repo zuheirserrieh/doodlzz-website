@@ -35,7 +35,7 @@ function AnnouncementBar({ messages }: { messages: string[] }) {
         <p
           key={m}
           aria-hidden={i !== index}
-          className={`absolute inset-0 flex items-center justify-center px-4 text-center transition-all duration-500 ${
+          className={`absolute inset-0 flex items-center justify-center px-3 text-center whitespace-nowrap transition-all duration-500 ${
             i === index ? "translate-y-0 opacity-100" : i < index ? "-translate-y-full opacity-0" : "translate-y-full opacity-0"
           }`}
         >

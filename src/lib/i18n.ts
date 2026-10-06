@@ -14,7 +14,7 @@ export function dirOf(locale: Locale) {
 export type Localized = Record<Locale, string>;
 
 const en = {
-  announcements: ["Delivery available all over Lebanon 🇱🇧", "Payment via Cash on Delivery 💵 or by Whish Money"],
+  announcements: ["Delivery available all over Lebanon 🇱🇧", "Payment via Cash on Delivery or by WhishMoney"],
   nav: {
     openMenu: "Open menu",
     closeMenu: "Close menu",
@@ -323,7 +323,7 @@ const en = {
 export type Dictionary = typeof en;
 
 const ar: Dictionary = {
-  announcements: ["التوصيل متوفر إلى كل لبنان 🇱🇧", "الدفع نقداً عند الاستلام 💵 أو عبر Whish Money"],
+  announcements: ["التوصيل متوفر إلى كل لبنان 🇱🇧", "الدفع نقداً عند الاستلام أو عبر WhishMoney"],
   nav: {
     openMenu: "فتح القائمة",
     closeMenu: "إغلاق القائمة",

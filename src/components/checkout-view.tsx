@@ -175,7 +175,7 @@ export function CheckoutView() {
     "flex h-14 cursor-pointer items-center justify-center gap-2.5 rounded-2xl px-4 text-base font-extrabold disabled:cursor-wait disabled:opacity-70";
 
   return (
-    <form onSubmit={submit} className="mx-auto grid max-w-6xl gap-8 px-4 pt-6 md:grid-cols-[1fr_380px]">
+    <form onSubmit={submit} className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 px-4 pt-6 md:grid-cols-[minmax(0,1fr)_380px]">
       <div className="flex flex-col gap-7">
         <h1 className="font-display text-[28px] font-bold">{t.checkout.title}</h1>
 

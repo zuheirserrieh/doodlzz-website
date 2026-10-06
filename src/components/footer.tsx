@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @next/next/no-img-element -- static logo file */
 
 import Link from "next/link";
 import { FacebookIcon, InstagramIcon, MailIcon, PhoneIcon, TikTokIcon, WhatsAppIcon } from "@/components/icons";
@@ -16,8 +15,7 @@ export function Footer() {
   return (
     <footer className="mt-11 bg-cream">
       <div className="mx-auto flex max-w-6xl flex-col gap-7 px-4 pt-8 pb-7 md:flex-row md:gap-16">
-        <div className="flex flex-col gap-2 md:max-w-sm">
-          <img src="/brand/doodlzz-logo.jpg" alt="Doodlzz" width={940} height={788} className="w-36 rounded-2xl" />
+        <div className="flex flex-col items-center gap-2 text-center md:max-w-sm md:items-start md:text-start">
           <h2 className="mt-1 text-base font-extrabold">{t.footer.aboutTitle}</h2>
           {t.footer.about.map((p) => (
             <p key={p.slice(0, 20)} className="text-sm leading-relaxed text-ink-soft">

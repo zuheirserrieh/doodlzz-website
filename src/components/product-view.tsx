@@ -65,7 +65,7 @@ export function ProductView() {
         </Link>
       )}
 
-      <div className="mt-2 grid gap-6 md:grid-cols-2 md:gap-10">
+      <div className="mt-2 grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-10">
         <div>
           <div className="relative">
             {current ? (
@@ -89,7 +89,7 @@ export function ProductView() {
             <WishButton productId={product.id} className="absolute end-2 top-2" />
           </div>
           {images.length > 1 && (
-            <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto">
+            <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto p-1">
               {images.map((src, i) => (
                 <button
                   key={src}

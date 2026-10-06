@@ -12,13 +12,16 @@ function useMedia(section: HomeMedia["section"]) {
   return useCatalog().homeMedia.filter((m) => m.section === section);
 }
 
+// Sample placeholders, shown until the owner adds real items in /admin → Home page.
+const sampleTints = ["bg-pastel-blue", "bg-pastel-peach", "bg-pastel-yellow", "bg-pastel-mint", "bg-pastel-lilac", "bg-pastel-peach"];
+const sampleReview = { en: "[One line from the customer's review]", ar: "[جملة من تقييم الزبون]" };
+
 const h2 = "font-display text-2xl font-bold";
 
 /** "Real Moments with Doodlzz": customer photos with a short review. Hidden until there's at least one. */
 export function RealMoments({ locale }: { locale: Locale }) {
   const t = getDictionary(locale);
   const moments = useMedia("moment");
-  if (moments.length === 0) return null;
   return (
     <section className="mx-auto max-w-6xl pt-11">
       <div className="px-4">
@@ -26,6 +29,21 @@ export function RealMoments({ locale }: { locale: Locale }) {
         <p className="mt-1.5 text-sm text-muted">{t.moments.subtitle}</p>
       </div>
       <div className="no-scrollbar mt-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4">
+        {moments.length === 0 &&
+          sampleTints.slice(0, 3).map((tint, i) => (
+            <figure key={i} className={`relative flex h-[360px] w-[270px] flex-none snap-start items-center justify-center rounded-[22px] ${tint}`}>
+              <span className="text-xs font-semibold text-muted">[Customer photo]</span>
+              <figcaption className="absolute inset-x-3 bottom-3 flex flex-col gap-1 rounded-2xl bg-white px-3.5 py-3">
+                <span className="flex gap-0.5 text-star" role="img" aria-label={t.moments.stars(5)}>
+                  {Array.from({ length: 5 }, (_, s) => (
+                    <StarIcon key={s} />
+                  ))}
+                </span>
+                <span className="text-sm leading-[1.35] font-bold">{sampleReview[locale]}</span>
+                <span className="text-xs text-muted">[Customer name] · [Product]</span>
+              </figcaption>
+            </figure>
+          ))}
         {moments.map((m) => (
           <figure key={m.id} className="relative h-[360px] w-[270px] flex-none snap-start overflow-hidden rounded-[22px] bg-surface">
             <Image src={m.image} alt="" fill unoptimized sizes="270px" className="object-cover" />
@@ -59,15 +77,24 @@ export function RealMoments({ locale }: { locale: Locale }) {
 export function BrandsMarquee({ locale }: { locale: Locale }) {
   const t = getDictionary(locale);
   const brands = useMedia("brand");
-  if (brands.length === 0) return null;
   // Repeat short lists so the strip is always wider than the screen, then render it twice
   // so the -50% loop is seamless.
-  const strip = Array.from({ length: Math.max(1, Math.ceil(8 / brands.length)) }, () => brands).flat();
+  const strip = brands.length ? Array.from({ length: Math.ceil(8 / brands.length) }, () => brands).flat() : [];
   return (
     <section className="mx-auto max-w-6xl pt-11">
       <h2 className="px-4 font-display text-xl font-bold">{t.brands.title}</h2>
       <div dir="ltr" className="mt-3.5 overflow-hidden">
         <div className="flex w-max animate-marquee hover:[animation-play-state:paused]">
+          {brands.length === 0 &&
+            Array.from({ length: 16 }, (_, i) => (
+              <span
+                key={i}
+                aria-hidden={i >= 8}
+                className="ms-3 flex h-16 w-[120px] items-center justify-center rounded-[14px] border border-[#e3e7ee] text-xs font-bold text-muted"
+              >
+                [Brand logo]
+              </span>
+            ))}
           {[...strip, ...strip].map((b, i) => {
             const tile = (
               <span className="relative block h-16 w-[120px] overflow-hidden rounded-[14px] border border-[#e3e7ee] bg-white">
@@ -106,8 +133,13 @@ export function FollowUs({ locale }: { locale: Locale }) {
       <h2 className="font-display text-[22px] font-bold">{t.follow.title}</h2>
       <p className="text-sm text-[#c9cfdc]">{t.follow.subtitle}</p>
 
-      {photos.length > 0 && (
-        <div className="mt-4 grid w-full grid-cols-3 gap-1.5 overflow-hidden rounded-2xl">
+      <div className="mt-4 grid w-full grid-cols-3 gap-1.5 overflow-hidden rounded-2xl">
+          {photos.length === 0 &&
+            sampleTints.map((tint, i) => (
+              <span key={i} className={`flex aspect-square items-center justify-center text-[10px] font-semibold text-muted ${tint}`}>
+                [Photo]
+              </span>
+            ))}
           {photos.map((p) => (
             <a
               key={p.id}
@@ -120,8 +152,7 @@ export function FollowUs({ locale }: { locale: Locale }) {
               <Image src={p.image} alt="" fill unoptimized sizes="33vw" className="object-cover" />
             </a>
           ))}
-        </div>
-      )}
+      </div>
 
       <div className="mt-5 flex gap-5">
         {links.map(({ href, label, Icon }) => (

@@ -244,7 +244,7 @@ export function AdminHomeMedia() {
   return (
     <div className="flex flex-col gap-7">
       <p className="text-sm text-muted">
-        Sections stay hidden on the home page until they have at least one photo. Text is saved when you tap outside the field.
+        Until you add a photo, each section shows sample placeholders on the home page. Text is saved when you tap outside the field.
       </p>
       {error && <p className="rounded-xl bg-pastel-peach p-3 text-sm font-bold text-accent-dark">{error}</p>}
 
@@ -273,7 +273,7 @@ export function AdminHomeMedia() {
               </label>
             </div>
             {list.length === 0 ? (
-              <p className="rounded-2xl bg-white p-4 text-center text-sm text-muted">Nothing yet. This section is hidden on the site.</p>
+              <p className="rounded-2xl bg-white p-4 text-center text-sm text-muted">Nothing yet. The site shows sample placeholders here.</p>
             ) : (
               <ul className="flex flex-col gap-2">
                 {list.map((m, i) => (

@@ -2,11 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCatalog } from "@/components/catalog-provider";
-import { ChevronIcon, CloseIcon, SearchIcon, SwapIcon, TruckIcon, WhatsAppIcon } from "@/components/icons";
-import { AddToCartButton, PriceTag, ProductBadge, ProductGrid, ProductImage, WishButton } from "@/components/product-card";
+import { ChevronIcon, CloseIcon, MinusIcon, PaymentIcon, PlusIcon, SearchIcon, TruckIcon, WhatsAppIcon } from "@/components/icons";
+import { PriceTag, ProductBadge, ProductGrid, ProductImage, WishButton } from "@/components/product-card";
 import { useDict, useStore } from "@/components/store-provider";
 import { ageGroups, getCategory, getSubcategory } from "@/data/catalog";
 import { isVideo } from "@/lib/media";
@@ -21,6 +21,9 @@ export function ProductView() {
   const slug = useSearchParams().get("slug") ?? "";
   const product = getBySlug(slug);
   const [photo, setPhoto] = useState(0);
+  const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
+  const router = useRouter();
   const [zoom, setZoom] = useState(false);
 
   useEffect(() => {
@@ -96,6 +99,26 @@ export function ProductView() {
               <ProductBadge product={product} />
             </div>
             <WishButton productId={product.id} className="absolute end-2 top-2" />
+            {images.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Previous photo"
+                  onClick={() => setPhoto((p) => (p - 1 + images.length) % images.length)}
+                  className="absolute start-2 top-1/2 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/90 shadow-md hover:bg-white"
+                >
+                  <ChevronIcon size={22} strokeWidth={2.6} className="rotate-180 rtl:rotate-0" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next photo"
+                  onClick={() => setPhoto((p) => (p + 1) % images.length)}
+                  className="absolute end-2 top-1/2 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/90 shadow-md hover:bg-white"
+                >
+                  <ChevronIcon size={22} strokeWidth={2.6} className="rtl:rotate-180" />
+                </button>
+              </>
+            )}
           </div>
           {images.length > 1 && (
             <div className="no-scrollbar mt-3 flex gap-2 overflow-x-auto p-1">
@@ -167,7 +190,50 @@ export function ProductView() {
           )}
 
           <div className="flex flex-col gap-2.5 pt-1">
-            <AddToCartButton productId={product.id} className="h-[52px] rounded-full text-base" />
+            <div className="flex gap-2.5">
+              <div role="group" aria-label={t.cart.quantity} className="flex h-[52px] flex-none items-center rounded-full border-2 border-line bg-white">
+                <button
+                  type="button"
+                  aria-label={t.cart.decrease}
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  className="flex size-11 cursor-pointer items-center justify-center rounded-full"
+                >
+                  <MinusIcon />
+                </button>
+                <span className="min-w-7 text-center text-base font-extrabold" aria-live="polite">
+                  {qty}
+                </span>
+                <button
+                  type="button"
+                  aria-label={t.cart.increase}
+                  onClick={() => setQty((q) => Math.min(20, q + 1))}
+                  className="flex size-11 cursor-pointer items-center justify-center rounded-full"
+                >
+                  <PlusIcon />
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  addToCart(product.id, qty);
+                  setAdded(true);
+                  setTimeout(() => setAdded(false), 1400);
+                }}
+                className="h-[52px] flex-1 cursor-pointer rounded-full border-2 border-accent bg-white text-base font-extrabold text-accent hover:bg-accent/5"
+              >
+                <span aria-live="polite">{added ? t.product.added : t.product.addToCart}</span>
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                addToCart(product.id, qty);
+                router.push(`/${locale}/checkout`);
+              }}
+              className="h-[52px] cursor-pointer rounded-full bg-gradient-to-r from-accent to-[#ff7a59] text-base font-extrabold text-white shadow-[0_6px_16px_rgba(235,70,81,0.3)] hover:brightness-105"
+            >
+              {t.product.buyNow}
+            </button>
             <a
               href={whatsappLink(t.product.whatsAppMessage(product.name[locale]))}
               target="_blank"
@@ -179,12 +245,12 @@ export function ProductView() {
             </a>
           </div>
 
-          <ul className="mt-1 flex flex-col gap-2 rounded-2xl bg-cream p-4 text-sm font-bold">
+          <ul className="mt-1 flex flex-col gap-2.5 rounded-2xl border border-brand-blue bg-brand-blue/35 p-4 text-[15px] font-extrabold text-navy backdrop-blur-sm">
             <li className="flex items-center gap-2.5">
               <TruckIcon /> {t.product.delivery}
             </li>
             <li className="flex items-center gap-2.5">
-              <SwapIcon /> {t.product.exchange}
+              <PaymentIcon /> {t.product.paymentLine}
             </li>
           </ul>
         </div>
@@ -201,7 +267,7 @@ export function ProductView() {
                 setAddedAll(true);
                 setTimeout(() => setAddedAll(false), 1600);
               }}
-              className="h-11 cursor-pointer rounded-full bg-navy px-5 text-sm font-extrabold text-white"
+              className="h-11 cursor-pointer rounded-full bg-accent px-5 text-sm font-extrabold text-white hover:bg-accent-dark"
             >
               <span aria-live="polite">{addedAll ? t.product.addedAll : t.product.addAll(goesWith.length + 1)}</span>
             </button>

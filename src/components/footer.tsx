@@ -13,7 +13,7 @@ export function Footer() {
   const heading = "mb-1 text-[13px] font-extrabold uppercase tracking-[0.04em] text-muted";
 
   return (
-    <footer className="mt-11 bg-cream">
+    <footer className="mt-11 bg-brand-blue-soft/70 backdrop-blur-[2px]">
       <div className="mx-auto flex max-w-6xl flex-col gap-7 px-4 pt-8 pb-7 md:flex-row md:gap-16">
         <div className="flex flex-col items-center gap-2 text-center md:max-w-sm md:items-start md:text-start">
           <h2 className="mt-1 text-base font-extrabold">{t.footer.aboutTitle}</h2>
@@ -59,9 +59,9 @@ export function Footer() {
               key={label}
               href={href}
               {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-              className="flex items-center gap-3 rounded-2xl border border-[#e2ddd4] bg-white/60 p-3"
+              className="flex items-center gap-3 rounded-2xl border border-brand-blue bg-white/60 p-3"
             >
-              <span className="flex size-10 flex-none items-center justify-center rounded-full border border-[#e2ddd4] bg-white">
+              <span className="flex size-10 flex-none items-center justify-center rounded-full border border-brand-blue bg-white">
                 <Icon size={18} />
               </span>
               <span className="flex min-w-0 flex-col">
@@ -94,7 +94,7 @@ export function Footer() {
         </div>
       </section>
       <div className="mx-auto max-w-6xl px-4 pb-24">
-        <div className="border-t border-[#e2ddd4] pt-[18px] text-xs text-muted">{t.footer.rights(new Date().getFullYear())}</div>
+        <div className="border-t border-brand-blue pt-[18px] text-xs text-muted">{t.footer.rights(new Date().getFullYear())}</div>
       </div>
     </footer>
   );

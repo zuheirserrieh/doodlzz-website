@@ -30,7 +30,7 @@ function AnnouncementBar({ messages }: { messages: string[] }) {
   }, [messages.length]);
 
   return (
-    <div className="relative h-[34px] overflow-hidden bg-navy text-xs font-bold tracking-[0.02em] text-white">
+    <div className="relative h-[34px] overflow-hidden bg-brand-blue-soft text-xs font-extrabold tracking-[0.02em] text-navy">
       {messages.map((m, i) => (
         <p
           key={m}

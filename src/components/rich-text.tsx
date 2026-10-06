@@ -10,7 +10,7 @@ export function RichText({ text, href }: { text: string; href: string }) {
     <>
       {text.split(/\[\[(.+?)\]\]/).map((part, i) =>
         i % 2 === 1 ? (
-          <Link key={i} href={href} className="font-bold text-accent underline decoration-2 underline-offset-2">
+          <Link key={i} href={href} className="rounded-md bg-white/70 px-1 font-extrabold text-accent no-underline">
             {part}
           </Link>
         ) : (

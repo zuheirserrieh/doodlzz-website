@@ -8,8 +8,12 @@
   --color-line: #eef1f6;
   --color-surface: #f3f5f8;
   --color-cream: #f6f3ee;
-  --color-accent: #c8462a;
-  --color-accent-dark: #a8381f;
+  /* Logo red-pink ("Doodles" lettering): every main button. */
+  --color-accent: #eb4651;
+  --color-accent-dark: #cc323d;
+  /* Light blue of the logo outline: top strip, footer, info bars. */
+  --color-brand-blue: #8ccbf2;
+  --color-brand-blue-soft: #d4ecfb;
   --color-whatsapp: #158f45;
   --color-badge: #ffe08a;
   --color-star: #d9930d;
@@ -99,4 +103,36 @@ a:hover {
   z-index: -1;
   pointer-events: none;
   background: rgb(255 255 255 / 0.62);
+}
+
+/* Two-handle price slider: two range inputs on one track; only the handles take clicks. */
+.dz-range {
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+  margin: 0;
+}
+.dz-range::-webkit-slider-thumb {
+  appearance: none;
+  pointer-events: auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 2px solid var(--color-navy);
+  box-shadow: 0 1px 4px rgb(30 39 66 / 0.25);
+  cursor: pointer;
+}
+.dz-range::-moz-range-thumb {
+  pointer-events: auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 2px solid var(--color-navy);
+  cursor: pointer;
+}
+.dz-range::-webkit-slider-runnable-track,
+.dz-range::-moz-range-track {
+  background: transparent;
 }

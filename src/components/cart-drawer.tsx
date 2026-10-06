@@ -143,7 +143,7 @@ export function CartDrawer() {
                 </Link>
                 <Link
                   href={`/${locale}/checkout`}
-                  className="flex h-12 items-center justify-center rounded-full bg-navy text-sm font-extrabold text-white hover:text-white"
+                  className="flex h-12 items-center justify-center rounded-full bg-accent text-sm font-extrabold text-white hover:bg-accent-dark hover:text-white"
                 >
                   {t.cartDrawer.checkout}
                 </Link>

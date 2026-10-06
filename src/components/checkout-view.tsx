@@ -267,7 +267,7 @@ export function CheckoutView() {
           </p>
         )}
         <p className="text-sm font-extrabold">{t.checkout.payWith}:</p>
-        <button type="submit" name="payment" value="cash" disabled={busy !== null} className={`${payButton} bg-navy text-white`}>
+        <button type="submit" name="payment" value="cash" disabled={busy !== null} className={`${payButton} bg-accent text-white hover:bg-accent-dark`}>
           <span aria-hidden>💵</span>
           {busy === "cash" ? t.checkout.placing : t.checkout.payCash}
         </button>

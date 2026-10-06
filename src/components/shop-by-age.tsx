@@ -96,7 +96,7 @@ export function ShopByAge({ title }: { title?: string }) {
                         type="button"
                         aria-label={`${t.product.addToCart}: ${p.name[locale]}`}
                         onClick={() => addToCart(p.id)}
-                        className="flex size-10 flex-none cursor-pointer items-center justify-center rounded-xl bg-navy text-white hover:bg-accent"
+                        className="flex size-10 flex-none cursor-pointer items-center justify-center rounded-xl bg-accent text-white hover:bg-accent-dark"
                       >
                         <PlusIcon />
                       </button>

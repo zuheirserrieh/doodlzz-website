@@ -41,6 +41,15 @@ html[data-font="b"] {
   --font-display: var(--font-b), var(--font-arabic), system-ui, sans-serif;
 }
 
+/* Arabic text inside English pages (e.g. the second-language description) must use the
+   Arabic font; otherwise the English font's system fallback draws it with Arial. */
+:not(html)[lang="ar"] {
+  font-family: var(--font-arabic), system-ui, sans-serif;
+}
+:not(html)[lang="en"] {
+  font-family: var(--font-a), system-ui, sans-serif;
+}
+
 html[lang="ar"] {
   --font-sans: var(--font-arabic), system-ui, sans-serif;
   --font-display: var(--font-arabic), sans-serif;

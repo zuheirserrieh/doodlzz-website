@@ -32,6 +32,7 @@ It also makes **doodlzzlb@gmail.com** the admin.
    It saves the delivery option (Standard / Extra fast / Within 24 hours) with each order.
 5. Also run [`supabase/004_category_images.sql`](../supabase/004_category_images.sql) if your project was set up before 6 Oct 2026.
    It stores the category tile photos you upload in **/admin → Categories**.
+6. Also run [`supabase/005_categories_gender_bestselling.sql`](../supabase/005_categories_gender_bestselling.sql) and [`supabase/006_badges_related.sql`](../supabase/006_badges_related.sql) for projects set up before 7 Oct 2026.
 
 > **"Forgot password?" emails:** Supabase's built-in email only reaches the project's own team
 > (so it works for the admin email), and only a few emails per hour. For customers to reset passwords,

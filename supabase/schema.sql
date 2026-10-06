@@ -53,6 +53,9 @@ create table if not exists public.products (
 alter table public.products add column if not exists subcategory text not null default '';
 alter table public.products add column if not exists genders text[] not null default '{}';
 alter table public.products add column if not exists sold_count integer not null default 0;
+alter table public.products add column if not exists limited_quantity boolean not null default false;
+alter table public.products add column if not exists last_piece boolean not null default false;
+alter table public.products add column if not exists related uuid[] not null default '{}';
 
 create or replace function public.touch_updated_at()
 returns trigger language plpgsql as $$

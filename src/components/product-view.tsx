@@ -12,7 +12,9 @@ import { ageGroups, getCategory, getSubcategory } from "@/data/catalog";
 import { whatsappLink } from "@/lib/site";
 
 export function ProductView() {
-  const { locale } = useStore();
+  const { locale, addToCart } = useStore();
+  const other = locale === "ar" ? "en" : "ar";
+  const [addedAll, setAddedAll] = useState(false);
   const t = useDict();
   const { products, ready, getBySlug } = useCatalog();
   const slug = useSearchParams().get("slug") ?? "";
@@ -53,6 +55,8 @@ export function ProductView() {
   const related = products.filter((p) => p.category === product.category && p.id !== product.id);
   const fill = related.length < 4 ? products.filter((p) => p.category !== product.category && p.bestSeller) : [];
   const ages = ageGroups.filter((a) => product.ages.includes(a.slug));
+  // Items the owner linked to this product in the admin panel ("Goes well with").
+  const goesWith = (product.related ?? []).map((id) => products.find((p) => p.id === id)).filter((p): p is NonNullable<typeof p> => Boolean(p));
   const images = product.images ?? [];
   const current = images[Math.min(photo, images.length - 1)];
 
@@ -113,11 +117,26 @@ export function ProductView() {
               {sub && ` · ${sub.name[locale]}`}
             </p>
             <h1 className="mt-1 font-display text-[28px] leading-tight font-bold md:text-4xl">{product.name[locale]}</h1>
+            {/* Same title in the other language (shown when the owner entered both). */}
+            {product.name[other] !== product.name[locale] && (
+              <p lang={other} dir={other === "ar" ? "rtl" : "ltr"} className="mt-1 text-lg font-bold text-ink-soft">
+                {product.name[other]}
+              </p>
+            )}
             <PriceTag product={product} className="mt-2 text-2xl" />
           </div>
 
           {product.description[locale] && (
             <p className="leading-relaxed whitespace-pre-line text-ink-soft">{product.description[locale]}</p>
+          )}
+          {product.description[other] && product.description[other] !== product.description[locale] && (
+            <p
+              lang={other}
+              dir={other === "ar" ? "rtl" : "ltr"}
+              className="rounded-2xl bg-surface p-3.5 leading-relaxed whitespace-pre-line text-ink-soft"
+            >
+              {product.description[other]}
+            </p>
           )}
 
           {ages.length > 0 && (
@@ -156,6 +175,28 @@ export function ProductView() {
           </ul>
         </div>
       </div>
+
+      {goesWith.length > 0 && (
+        <section className="mt-10 rounded-3xl bg-pastel-blue p-4 md:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="font-display text-2xl font-bold">{t.product.goesWellWith}</h2>
+            <button
+              type="button"
+              onClick={() => {
+                [product, ...goesWith].forEach((p) => addToCart(p.id));
+                setAddedAll(true);
+                setTimeout(() => setAddedAll(false), 1600);
+              }}
+              className="h-11 cursor-pointer rounded-full bg-navy px-5 text-sm font-extrabold text-white"
+            >
+              <span aria-live="polite">{addedAll ? t.product.addedAll : t.product.addAll(goesWith.length + 1)}</span>
+            </button>
+          </div>
+          <div className="mt-4">
+            <ProductGrid products={goesWith} />
+          </div>
+        </section>
+      )}
 
       {related.length + fill.length > 0 && (
         <section className="pt-12">

@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { ageGroups, categories, getCategory } from "@/data/catalog";
 import type { ProductRow } from "@/data/products";
+import { ImageCropper } from "@/components/admin/image-cropper";
+import { RelatedPicker } from "@/components/admin/related-picker";
 import { PRODUCT_IMAGES_BUCKET, getSupabase } from "@/lib/supabase";
 
 export const emptyRow: ProductRow = {
@@ -21,6 +23,9 @@ export const emptyRow: ProductRow = {
   compare_at_usd: null,
   images: [],
   best_seller: false,
+  limited_quantity: false,
+  last_piece: false,
+  related: [],
   is_new: true,
   active: true,
   sort: 0,
@@ -71,7 +76,18 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
   );
 }
 
-export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow; onDone: () => void; onCancel: () => void }) {
+export function ProductForm({
+  initial,
+  allProducts,
+  onDone,
+  onCancel,
+}: {
+  initial: ProductRow;
+  /** Every product, for the "Goes well with" picker. */
+  allProducts: ProductRow[];
+  onDone: () => void;
+  onCancel: () => void;
+}) {
   const isNew = !initial.id;
   const [row, setRow] = useState<ProductRow>(initial);
   const [slugTouched, setSlugTouched] = useState(!isNew);
@@ -81,26 +97,50 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
 
   const set = <K extends keyof ProductRow>(key: K, value: ProductRow[K]) => setRow((r) => ({ ...r, [key]: value }));
 
-  async function upload(files: FileList | null) {
-    const supabase = getSupabase();
-    if (!supabase || !files?.length) return;
+  // Photos waiting for the cropper, one at a time. replaceIndex = re-cropping an existing photo.
+  const [cropQueue, setCropQueue] = useState<{ src: string; file?: File; replaceIndex?: number }[]>([]);
+  const cropping = cropQueue[0];
+
+  function queueFiles(files: FileList | null) {
+    if (!files?.length) return;
     setError("");
-    setUploading(files.length);
-    for (const file of Array.from(files)) {
-      const blob = await shrinkImage(file);
-      const ext = blob.type === "image/webp" ? "webp" : (file.name.split(".").pop() ?? "jpg");
-      const path = `products/${crypto.randomUUID()}.${ext}`;
-      const { error: err } = await supabase.storage
-        .from(PRODUCT_IMAGES_BUCKET)
-        .upload(path, blob, { contentType: blob.type || file.type, cacheControl: "31536000" });
-      if (err) {
-        setError(`Photo upload failed: ${err.message}`);
-      } else {
-        const url = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl;
-        setRow((r) => ({ ...r, images: [...r.images, url] }));
-      }
-      setUploading((n) => n - 1);
+    setCropQueue((q) => [...q, ...Array.from(files).map((file) => ({ src: URL.createObjectURL(file), file }))]);
+  }
+
+  function nextCrop() {
+    setCropQueue((q) => {
+      if (q[0]?.file) URL.revokeObjectURL(q[0].src);
+      return q.slice(1);
+    });
+  }
+
+  async function finishCrop(result: Blob | null) {
+    const item = cropping;
+    if (!item) return;
+    nextCrop();
+    // "Keep original": new files are still shrunk; an existing photo simply stays as it is.
+    const blob = result ?? (item.file ? await shrinkImage(item.file) : null);
+    if (!blob) return;
+    const supabase = getSupabase();
+    if (!supabase) return;
+    setUploading((n) => n + 1);
+    const ext = blob.type === "image/webp" ? "webp" : (item.file?.name.split(".").pop() ?? "jpg");
+    const path = `products/${crypto.randomUUID()}.${ext}`;
+    const { error: err } = await supabase.storage
+      .from(PRODUCT_IMAGES_BUCKET)
+      .upload(path, blob, { contentType: blob.type || item.file?.type, cacheControl: "31536000" });
+    if (err) {
+      setError(`Photo upload failed: ${err.message}`);
+    } else {
+      const url = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl;
+      setRow((r) => {
+        if (item.replaceIndex === undefined) return { ...r, images: [...r.images, url] };
+        const images = [...r.images];
+        images[item.replaceIndex] = url;
+        return { ...r, images };
+      });
     }
+    setUploading((n) => n - 1);
   }
 
   function moveImage(index: number, to: number) {
@@ -143,6 +183,9 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
       compare_at_usd: compare,
       images: row.images,
       best_seller: row.best_seller,
+      limited_quantity: Boolean(row.limited_quantity),
+      last_piece: Boolean(row.last_piece),
+      related: row.related ?? [],
       is_new: row.is_new,
       active: row.active,
       sort: Number(row.sort) || 0,
@@ -192,13 +235,20 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
               <Image src={src} alt="" fill unoptimized sizes="96px" className="object-cover" />
               {i === 0 && <span className="absolute start-1 top-1 rounded-full bg-navy px-2 text-[10px] font-extrabold text-white">Main</span>}
               <div className="absolute inset-x-1 bottom-1 flex justify-between">
-                {i > 0 ? (
-                  <button type="button" onClick={() => moveImage(i, 0)} className="cursor-pointer rounded-full bg-white/90 px-2 text-[10px] font-extrabold">
-                    Make main
+                <span className="flex gap-1">
+                  {i > 0 && (
+                    <button type="button" onClick={() => moveImage(i, 0)} className="cursor-pointer rounded-full bg-white/90 px-2 text-[10px] font-extrabold">
+                      Main
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setCropQueue((q) => [...q, { src, replaceIndex: i }])}
+                    className="cursor-pointer rounded-full bg-white/90 px-2 text-[10px] font-extrabold"
+                  >
+                    Crop
                   </button>
-                ) : (
-                  <span />
-                )}
+                </span>
                 <button
                   type="button"
                   aria-label="Remove photo"
@@ -213,10 +263,11 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
           <label className="flex size-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#c9cfdc] text-center text-xs font-bold text-muted hover:border-navy">
             <span className="text-2xl leading-none">+</span>
             {uploading > 0 ? `Uploading ${uploading}…` : "Add photos"}
-            <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => { void upload(e.target.files); e.target.value = ""; }} />
+            <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => { queueFiles(e.target.files); e.target.value = ""; }} />
           </label>
         </div>
-        <span className="text-xs text-muted">The first photo is the main one shown in the shop.</span>
+        <span className="text-xs text-muted">The first photo is the main one shown in the shop. Each new photo opens the cropper; tap “Crop” to adjust a photo later.</span>
+        {cropping && <ImageCropper key={cropping.src} src={cropping.src} onDone={(b) => void finishCrop(b)} onCancel={nextCrop} />}
       </section>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -350,14 +401,18 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
             ["active", "Visible in shop"],
             ["best_seller", "Best seller"],
             ["is_new", "New arrival"],
+            ["limited_quantity", "Limited quantity"],
+            ["last_piece", "Last piece"],
           ] as const
         ).map(([key, label]) => (
           <label key={key} className="flex min-h-10 cursor-pointer items-center gap-2 font-bold">
-            <input type="checkbox" className="size-5 accent-navy" checked={row[key]} onChange={(e) => set(key, e.target.checked)} />
+            <input type="checkbox" className="size-5 accent-navy" checked={Boolean(row[key])} onChange={(e) => set(key, e.target.checked)} />
             {label}
           </label>
         ))}
       </fieldset>
+
+      <RelatedPicker value={row.related ?? []} onChange={(ids) => set("related", ids)} products={allProducts} selfId={row.id} />
 
       <Field label="Position in shop" hint="Lower numbers are shown first. Leave 0 if the order doesn't matter (newest products then come first).">
         <input

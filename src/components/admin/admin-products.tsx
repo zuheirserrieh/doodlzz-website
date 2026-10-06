@@ -77,7 +77,7 @@ export function AdminProducts() {
   }
 
   if (editing) {
-    return <ProductForm initial={editing} onDone={afterChange} onCancel={() => setEditing(null)} />;
+    return <ProductForm initial={editing} allProducts={rows ?? []} onDone={afterChange} onCancel={() => setEditing(null)} />;
   }
 
   if (rows === null) return error ? <p className="text-accent-dark">{error}</p> : <div className="h-40 animate-pulse rounded-2xl bg-white" />;

@@ -22,6 +22,10 @@ export type Product = {
   compareAtUsd?: number | null;
   bestSeller?: boolean;
   isNew?: boolean;
+  limitedQuantity?: boolean;
+  lastPiece?: boolean;
+  /** Ids of products shown under "Goes well with" (picked in the admin panel). */
+  related?: string[];
   /** Photo URLs; the first one is the main photo. Empty = placeholder tile. */
   images?: string[];
 };
@@ -45,6 +49,9 @@ export type ProductRow = {
   images: string[];
   best_seller: boolean;
   is_new: boolean;
+  limited_quantity?: boolean | null;
+  last_piece?: boolean | null;
+  related?: string[] | null;
   active: boolean;
   sort: number;
 };
@@ -66,6 +73,9 @@ export function fromRow(row: ProductRow): Product {
     compareAtUsd: row.compare_at_usd == null ? null : Number(row.compare_at_usd),
     bestSeller: row.best_seller,
     isNew: row.is_new,
+    limitedQuantity: row.limited_quantity ?? false,
+    lastPiece: row.last_piece ?? false,
+    related: row.related ?? [],
     images: row.images ?? [],
   };
 }

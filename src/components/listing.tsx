@@ -1,27 +1,87 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { categories } from "@/data/catalog";
-import type { Product } from "@/data/products";
+import { useEffect, useMemo, useState } from "react";
 import { useCatalog } from "@/components/catalog-provider";
+import { CategoryIcon, CloseIcon } from "@/components/icons";
 import { ProductGrid } from "@/components/product-card";
+import { ageGroups, categories, getCategory } from "@/data/catalog";
+import type { Product } from "@/data/products";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
-/** Shared layout for search, shop-by-age and category listings. */
+type Sort = "featured" | "best" | "priceAsc" | "priceDesc" | "newest" | "oldest";
+type Gender = "all" | "boy" | "girl";
+const sorts: Sort[] = ["featured", "best", "priceAsc", "priceDesc", "newest", "oldest"];
+
+function sortProducts(list: Product[], sort: Sort) {
+  const time = (p: Product) => (p.createdAt ? Date.parse(p.createdAt) : 0);
+  const out = [...list];
+  switch (sort) {
+    case "best":
+      return out.sort((a, b) => (b.soldCount ?? 0) - (a.soldCount ?? 0) || Number(Boolean(b.bestSeller)) - Number(Boolean(a.bestSeller)));
+    case "priceAsc":
+      return out.sort((a, b) => a.priceUsd - b.priceUsd);
+    case "priceDesc":
+      return out.sort((a, b) => b.priceUsd - a.priceUsd);
+    case "newest":
+      return out.sort((a, b) => time(b) - time(a));
+    case "oldest":
+      return out.sort((a, b) => time(a) - time(b));
+    default:
+      return out; // order set in the admin panel
+  }
+}
+
+/** Shared layout for category, search and shop listings, with "Filter & sort". */
 export function Listing({
   locale,
   title,
   products,
   activeCategory,
+  activeSub,
+  initialAge = "",
 }: {
   locale: Locale;
   title: string;
   products: Product[];
   activeCategory?: string;
+  /** Selected subcategory (category pages only). */
+  activeSub?: string;
+  initialAge?: string;
 }) {
   const t = getDictionary(locale);
-  const { ready } = useCatalog();
+  const { ready, categoryImages } = useCatalog();
+  const [sort, setSort] = useState<Sort>("featured");
+  const [age, setAge] = useState(initialAge);
+  const [gender, setGender] = useState<Gender>("all");
+  const [panelOpen, setPanelOpen] = useState(false);
+  const category = activeCategory ? getCategory(activeCategory) : undefined;
+
+  const visible = useMemo(() => {
+    let list = products;
+    if (age) list = list.filter((p) => p.ages.includes(age));
+    // No gender set on a product = suitable for both.
+    if (gender !== "all") list = list.filter((p) => !p.genders?.length || p.genders.includes(gender));
+    return sortProducts(list, sort);
+  }, [products, age, gender, sort]);
+
+  const activeFilters = (age ? 1 : 0) + (gender !== "all" ? 1 : 0) + (sort !== "featured" ? 1 : 0);
+
+  useEffect(() => {
+    if (!panelOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setPanelOpen(false);
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [panelOpen]);
+
   const chip = "flex h-10 flex-none items-center rounded-full px-4 text-sm font-bold whitespace-nowrap";
+  const option = (on: boolean) =>
+    `flex min-h-10 cursor-pointer items-center rounded-full border-2 px-3.5 text-sm font-bold ${on ? "border-navy bg-navy text-white" : "border-line bg-white"}`;
 
   return (
     <div className="mx-auto max-w-6xl pt-4">
@@ -47,17 +107,152 @@ export function Listing({
           );
         })}
       </nav>
+
       <div className="px-4 pt-6">
         <h1 className="font-display text-[28px] leading-tight font-bold">{title}</h1>
-        <p className="mt-1 h-5 text-sm text-muted">{ready && t.listing.results(products.length)}</p>
+
+        {/* Subcategories as round pictures, "View all" first. */}
+        {category && category.subs.length > 0 && (
+          <nav aria-label={category.name[locale]} className="no-scrollbar -mx-4 mt-4 flex gap-3 overflow-x-auto px-4 pb-1">
+            {[{ slug: "", name: { en: t.listing.viewAll, ar: t.listing.viewAll } }, ...category.subs].map((s) => {
+              const active = (activeSub ?? "") === s.slug;
+              const image = s.slug ? categoryImages[s.slug] : categoryImages[category.slug];
+              return (
+                <Link
+                  key={s.slug || "all"}
+                  href={`/${locale}/category/${category.slug}${s.slug ? `?sub=${s.slug}` : ""}`}
+                  aria-current={active ? "page" : undefined}
+                  className="flex w-[84px] flex-none flex-col items-center gap-1.5 text-center"
+                >
+                  <span
+                    className={`relative flex size-[76px] items-center justify-center overflow-hidden rounded-full ${category.tint} ${
+                      active ? "ring-[3px] ring-navy ring-offset-2" : ""
+                    }`}
+                  >
+                    {image ? (
+                      <Image src={image} alt="" fill unoptimized sizes="76px" className="object-cover" />
+                    ) : (
+                      <CategoryIcon name={category.icon} size={34} />
+                    )}
+                  </span>
+                  <span className={`text-xs leading-tight ${active ? "font-extrabold" : "font-semibold"}`}>{s.name[locale]}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        )}
+
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <button
+            type="button"
+            onClick={() => setPanelOpen(true)}
+            aria-haspopup="dialog"
+            className="flex h-11 cursor-pointer items-center gap-2 rounded-full border-2 border-line bg-white px-4 text-sm font-extrabold shadow-sm"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+              <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+              <circle cx="16" cy="7" r="2" />
+              <circle cx="10" cy="17" r="2" />
+            </svg>
+            {t.listing.filterSort}
+            {activeFilters > 0 && (
+              <span className="flex size-5 items-center justify-center rounded-full bg-accent text-[11px] text-white">{activeFilters}</span>
+            )}
+          </button>
+          <p className="text-sm text-muted">{ready && t.listing.results(visible.length)}</p>
+        </div>
+
         <div className="mt-5">
-          {!ready || products.length > 0 ? (
-            <ProductGrid products={products} />
+          {!ready || visible.length > 0 ? (
+            <ProductGrid products={visible} />
           ) : (
             <p className="rounded-2xl bg-surface p-6 text-center text-ink-soft">{t.listing.empty}</p>
           )}
         </div>
       </div>
+
+      {/* Filter & sort panel (slides up from the bottom). */}
+      {panelOpen && (
+        <div className="fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-navy/40" onClick={() => setPanelOpen(false)} />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t.listing.filterSort}
+            className="absolute inset-x-0 bottom-0 flex max-h-[85dvh] flex-col rounded-t-3xl bg-white md:inset-x-auto md:end-4 md:bottom-4 md:w-[420px] md:rounded-3xl"
+          >
+            <div className="flex items-center justify-between border-b border-line ps-5 pe-2 py-2">
+              <h2 className="text-lg font-extrabold">{t.listing.filterSort}</h2>
+              <button
+                type="button"
+                aria-label={t.listing.close}
+                onClick={() => setPanelOpen(false)}
+                className="flex size-11 cursor-pointer items-center justify-center rounded-xl hover:bg-surface"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="flex flex-col gap-6 overflow-y-auto p-5">
+              <fieldset>
+                <legend className="mb-2.5 font-extrabold">{t.listing.sortBy}</legend>
+                <div className="flex flex-col">
+                  {sorts.map((s) => (
+                    <label key={s} className="flex min-h-12 cursor-pointer items-center justify-between border-b border-line text-[15px] font-semibold">
+                      {t.listing.sorts[s]}
+                      <input type="radio" name="sort" checked={sort === s} onChange={() => setSort(s)} className="size-5 accent-navy" />
+                    </label>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend className="mb-2.5 font-extrabold">{t.listing.age}</legend>
+                <div className="flex flex-wrap gap-2">
+                  <button type="button" onClick={() => setAge("")} className={option(!age)}>
+                    {t.listing.all}
+                  </button>
+                  {ageGroups.map((a) => (
+                    <button key={a.slug} type="button" onClick={() => setAge(a.slug)} className={option(age === a.slug)}>
+                      <span dir="ltr">{a.label}</span>&nbsp;{a.sub[locale]}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset>
+                <legend className="mb-2.5 font-extrabold">{t.listing.gender}</legend>
+                <div className="flex flex-wrap gap-2">
+                  {(["all", "boy", "girl"] as const).map((g) => (
+                    <button key={g} type="button" onClick={() => setGender(g)} className={option(gender === g)}>
+                      {g === "boy" ? `👦 ${t.listing.boy}` : g === "girl" ? `👧 ${t.listing.girl}` : t.listing.all}
+                    </button>
+                  ))}
+                </div>
+              </fieldset>
+            </div>
+            <div className="flex gap-2.5 border-t border-line p-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setSort("featured");
+                  setAge("");
+                  setGender("all");
+                }}
+                className="h-12 flex-1 cursor-pointer rounded-full bg-surface text-sm font-extrabold"
+              >
+                {t.listing.clear}
+              </button>
+              <button
+                type="button"
+                onClick={() => setPanelOpen(false)}
+                className="h-12 flex-[2] cursor-pointer rounded-full bg-navy text-sm font-extrabold text-white"
+              >
+                {t.listing.showResults(visible.length)}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

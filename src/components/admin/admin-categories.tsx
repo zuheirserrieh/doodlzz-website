@@ -58,23 +58,29 @@ export function AdminCategories() {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-muted">
-        These photos appear on the category tiles on the home page. Square photos look best. Without a photo, the tile shows its icon.
+        The first photo of each group is the category tile on the home page; the others are the round subcategory pictures on the category page. Square photos look best. Without a photo, the icon is shown.
       </p>
       {error && <p className="rounded-xl bg-pastel-peach p-3 text-sm font-bold text-accent-dark">{error}</p>}
+      {categories.map((cat) => (
+      <section key={cat.slug} className="flex flex-col gap-2 pt-2">
+      <h3 className="text-sm font-extrabold uppercase tracking-[0.05em] text-muted">{cat.name.en}</h3>
       <ul className="grid gap-2 sm:grid-cols-2">
-        {categories.map((c) => {
+        {[
+          { slug: cat.slug, name: `${cat.name.en} (home page tile)`, isTile: true },
+          ...cat.subs.map((s) => ({ slug: s.slug, name: s.name.en, isTile: false })),
+        ].map((c) => {
           const image = categoryImages[c.slug];
           return (
             <li key={c.slug} className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm">
-              <div className={`relative flex size-16 flex-none items-center justify-center overflow-hidden rounded-xl ${c.tint}`}>
+              <div className={`relative flex size-16 flex-none items-center justify-center overflow-hidden ${c.isTile ? "rounded-xl" : "rounded-full"} ${cat.tint}`}>
                 {image ? (
                   <Image src={image} alt="" fill unoptimized sizes="64px" className="object-cover" />
                 ) : (
-                  <CategoryIcon name={c.icon} size={32} />
+                  <CategoryIcon name={cat.icon} size={32} />
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-extrabold">{c.name.en}</p>
+                <p className="truncate font-extrabold">{c.name}</p>
                 <p className="text-xs text-muted">{image ? "Photo" : "Icon (no photo yet)"}</p>
               </div>
               <label
@@ -106,6 +112,8 @@ export function AdminCategories() {
           );
         })}
       </ul>
+      </section>
+      ))}
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { useCatalog } from "@/components/catalog-provider";
 import { Listing } from "@/components/listing";
 import { SearchForm } from "@/components/search-form";
 import { useDict, useStore } from "@/components/store-provider";
-import { getAgeGroup, getCategory } from "@/data/catalog";
+import { ageName, getAgeGroup, getCategory } from "@/data/catalog";
 import { searchProducts } from "@/data/products";
 
 /** Filters come from the URL (?q=, ?age=, ?category=, ?tab=) and are applied in the browser. */
@@ -20,7 +20,6 @@ export function ShopView() {
   const tab = params.get("tab");
 
   let list = searchProducts(products, q);
-  if (age) list = list.filter((p) => p.ages.includes(age.slug));
   if (category) list = list.filter((p) => p.category === category.slug);
   if (tab === "best") list = list.filter((p) => p.bestSeller);
   if (tab === "new") list = list.filter((p) => p.isNew);
@@ -28,7 +27,7 @@ export function ShopView() {
   let title = t.listing.allProducts;
   if (q) title = t.listing.searchFor(q);
   else if (category) title = category.name[locale];
-  else if (age) title = t.listing.ageTitle(`${age.label} ${age.unit === "months" ? t.age.months : t.age.years}`);
+  else if (age) title = t.listing.ageTitle(ageName(age, locale));
   else if (tab === "best") title = t.picked.best;
   else if (tab === "new") title = t.picked.fresh;
 
@@ -41,7 +40,14 @@ export function ShopView() {
           defaultScope={age ? `age:${age.slug}` : category ? `category:${category.slug}` : ""}
         />
       </div>
-      <Listing locale={locale} title={title} products={list} activeCategory={category?.slug} />
+      <Listing
+        key={`${age?.slug}|${tab}`}
+        locale={locale}
+        title={title}
+        products={list}
+        activeCategory={category?.slug}
+        initialAge={age?.slug ?? ""}
+      />
     </>
   );
 }

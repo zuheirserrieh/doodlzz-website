@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCatalog } from "@/components/catalog-provider";
-import { ChevronIcon, SwapIcon, TruckIcon, WhatsAppIcon } from "@/components/icons";
+import { ChevronIcon, CloseIcon, SearchIcon, SwapIcon, TruckIcon, WhatsAppIcon } from "@/components/icons";
 import { AddToCartButton, PriceTag, ProductBadge, ProductGrid, ProductImage, WishButton } from "@/components/product-card";
 import { useDict, useStore } from "@/components/store-provider";
-import { ageGroups, getCategory } from "@/data/catalog";
+import { ageGroups, getCategory, getSubcategory } from "@/data/catalog";
 import { whatsappLink } from "@/lib/site";
 
 export function ProductView() {
@@ -18,6 +18,7 @@ export function ProductView() {
   const slug = useSearchParams().get("slug") ?? "";
   const product = getBySlug(slug);
   const [photo, setPhoto] = useState(0);
+  const [zoom, setZoom] = useState(false);
 
   useEffect(() => {
     if (product) document.title = `${product.name[locale]} · Doodlzz`;
@@ -48,6 +49,7 @@ export function ProductView() {
   }
 
   const category = getCategory(product.category);
+  const sub = getSubcategory(product.category, product.subcategory);
   const related = products.filter((p) => p.category === product.category && p.id !== product.id);
   const fill = related.length < 4 ? products.filter((p) => p.category !== product.category && p.bestSeller) : [];
   const ages = ageGroups.filter((a) => product.ages.includes(a.slug));
@@ -57,9 +59,9 @@ export function ProductView() {
   return (
     <div className="mx-auto max-w-6xl px-4 pt-4">
       {category && (
-        <Link href={`/${locale}/category/${category.slug}`} className="inline-flex min-h-11 items-center gap-1 text-sm font-bold text-muted">
+        <Link href={`/${locale}/category/${category.slug}${sub ? `?sub=${sub.slug}` : ""}`} className="inline-flex min-h-11 items-center gap-1 text-sm font-bold text-muted">
           <ChevronIcon size={16} className="rotate-180 rtl:rotate-0" />
-          {t.product.backTo} {category.name[locale]}
+          {t.product.backTo} {sub?.name[locale] ?? category.name[locale]}
         </Link>
       )}
 
@@ -67,9 +69,17 @@ export function ProductView() {
         <div>
           <div className="relative">
             {current ? (
-              <div className="relative aspect-square overflow-hidden rounded-3xl bg-surface">
-                <Image src={current} alt={product.name[locale]} fill unoptimized sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
-              </div>
+              <button
+                type="button"
+                onClick={() => setZoom(true)}
+                aria-label={t.product.zoom}
+                className="relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-3xl bg-white ring-1 ring-line"
+              >
+                <Image src={current} alt={product.name[locale]} fill unoptimized sizes="(min-width: 768px) 50vw, 100vw" className="object-contain" />
+                <span className="absolute end-3 bottom-3 flex size-11 items-center justify-center rounded-full bg-white shadow-md" aria-hidden>
+                  <SearchIcon size={22} />
+                </span>
+              </button>
             ) : (
               <ProductImage product={product} iconSize={160} className="aspect-square rounded-3xl" />
             )}
@@ -87,9 +97,9 @@ export function ProductView() {
                   aria-label={`${i + 1} / ${images.length}`}
                   aria-current={i === photo ? "true" : undefined}
                   onClick={() => setPhoto(i)}
-                  className={`relative size-16 flex-none cursor-pointer overflow-hidden rounded-xl ring-2 ${i === photo ? "ring-navy" : "ring-transparent"}`}
+                  className={`relative aspect-square w-[calc(33.333%-6px)] max-w-32 flex-none cursor-pointer overflow-hidden rounded-xl bg-white ring-2 ${i === photo ? "ring-navy" : "ring-line"}`}
                 >
-                  <Image src={src} alt="" fill unoptimized sizes="64px" className="object-cover" />
+                  <Image src={src} alt="" fill unoptimized sizes="128px" className="object-contain" />
                 </button>
               ))}
             </div>
@@ -98,7 +108,10 @@ export function ProductView() {
 
         <div className="flex flex-col gap-4">
           <div>
-            <p className="text-sm font-bold text-muted">{category?.name[locale]}</p>
+            <p className="text-sm font-bold text-muted">
+              {category?.name[locale]}
+              {sub && ` · ${sub.name[locale]}`}
+            </p>
             <h1 className="mt-1 font-display text-[28px] leading-tight font-bold md:text-4xl">{product.name[locale]}</h1>
             <PriceTag product={product} className="mt-2 text-2xl" />
           </div>
@@ -113,7 +126,7 @@ export function ProductView() {
               <div className="mt-2 flex flex-wrap gap-2">
                 {ages.map((a) => (
                   <Link key={a.slug} href={`/${locale}/shop?age=${a.slug}`} className={`rounded-full px-3 py-1.5 text-[13px] font-bold ${a.tint}`}>
-                    <span dir="ltr">{a.label}</span> {a.unit === "months" ? t.age.months : t.age.years}
+                    <span dir="ltr">{a.label}</span> {a.sub[locale]}
                   </Link>
                 ))}
               </div>
@@ -151,6 +164,46 @@ export function ProductView() {
             <ProductGrid products={[...related, ...fill].slice(0, 4)} />
           </div>
         </section>
+      )}
+      {zoom && current && (
+        <div role="dialog" aria-modal="true" aria-label={product.name[locale]} className="fixed inset-0 z-[60] flex flex-col bg-black/95">
+          <div className="flex justify-end p-2">
+            <button
+              type="button"
+              aria-label={t.listing.close}
+              onClick={() => setZoom(false)}
+              className="flex size-12 cursor-pointer items-center justify-center rounded-full text-white hover:bg-white/10"
+            >
+              <CloseIcon size={28} />
+            </button>
+          </div>
+          <div className="relative flex-1" onClick={() => setZoom(false)}>
+            <Image src={current} alt={product.name[locale]} fill unoptimized sizes="100vw" className="object-contain" />
+          </div>
+          {images.length > 1 && (
+            <div className="flex items-center justify-center gap-4 p-4 text-white">
+              <button
+                type="button"
+                aria-label="Previous"
+                onClick={() => setPhoto((p) => (p - 1 + images.length) % images.length)}
+                className="flex size-12 cursor-pointer items-center justify-center rounded-full bg-white/15"
+              >
+                <ChevronIcon className="rotate-180 rtl:rotate-0" />
+              </button>
+              <span className="text-sm font-bold" dir="ltr">
+                {(photo % images.length) + 1} / {images.length}
+              </span>
+              <button
+                type="button"
+                aria-label="Next"
+                onClick={() => setPhoto((p) => (p + 1) % images.length)}
+                className="flex size-12 cursor-pointer items-center justify-center rounded-full bg-white/15"
+              >
+                <ChevronIcon className="rtl:rotate-180" />
+              </button>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

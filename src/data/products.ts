@@ -7,8 +7,16 @@ export type Product = {
   name: Localized;
   description: Localized;
   category: string;
+  /** Subcategory slug inside the category (see catalog.ts); "" = none. */
+  subcategory?: string;
   /** Age group slugs from catalog.ts. */
   ages: string[];
+  /** "boy" and/or "girl"; empty means suitable for both. */
+  genders?: string[];
+  /** Units sold (counted when orders are placed); used by "Best selling". */
+  soldCount?: number;
+  /** ISO date the product was added; used by the date sorts. */
+  createdAt?: string;
   priceUsd: number;
   /** Old price shown crossed out when the product is on sale. */
   compareAtUsd?: number | null;
@@ -27,7 +35,11 @@ export type ProductRow = {
   description_en: string;
   description_ar: string;
   category: string;
+  subcategory?: string | null;
   ages: string[];
+  genders?: string[] | null;
+  sold_count?: number | null;
+  created_at?: string;
   price_usd: number | string;
   compare_at_usd: number | string | null;
   images: string[];
@@ -45,7 +57,11 @@ export function fromRow(row: ProductRow): Product {
     name: { en: row.name_en, ar: row.name_ar || row.name_en },
     description: { en: row.description_en, ar: row.description_ar || row.description_en },
     category: row.category,
+    subcategory: row.subcategory ?? "",
     ages: row.ages ?? [],
+    genders: row.genders ?? [],
+    soldCount: row.sold_count ?? 0,
+    createdAt: row.created_at,
     priceUsd: Number(row.price_usd),
     compareAtUsd: row.compare_at_usd == null ? null : Number(row.compare_at_usd),
     bestSeller: row.best_seller,
@@ -67,7 +83,8 @@ export const sampleProducts: Product[] = [
       en: "Stroller, carrycot and infant car seat in one. One-hand fold, all-terrain wheels and a large shopping basket.",
       ar: "عربة وسرير محمول وكرسي سيارة للرضع في منتج واحد. طيّ بيد واحدة، عجلات لكل الطرق وسلة تسوّق كبيرة.",
     },
-    category: "strollers",
+    category: "baby-essentials",
+    subcategory: "strollers",
     ages: ["0-6m", "6-12m", "1-2y", "2-4y"],
     priceUsd: 289,
     bestSeller: true,
@@ -80,7 +97,8 @@ export const sampleProducts: Product[] = [
       en: "Rear- and forward-facing car seat with a 5-point harness, side-impact protection and ISOFIX.",
       ar: "كرسي سيارة باتجاه الخلف والأمام مع حزام بخمس نقاط وحماية جانبية ونظام ISOFIX.",
     },
-    category: "car-seats",
+    category: "baby-essentials",
+    subcategory: "car-seats",
     ages: ["0-6m", "6-12m", "1-2y", "2-4y"],
     priceUsd: 149,
     bestSeller: true,
@@ -93,7 +111,8 @@ export const sampleProducts: Product[] = [
       en: "Gentle swing with 5 speeds, soothing music and a removable toy bar.",
       ar: "هزّاز لطيف بخمس سرعات، موسيقى مهدّئة وقوس ألعاب قابل للإزالة.",
     },
-    category: "swing-chairs",
+    category: "baby-essentials",
+    subcategory: "swing-chairs",
     ages: ["0-6m", "6-12m"],
     priceUsd: 119,
     bestSeller: true,
@@ -106,7 +125,8 @@ export const sampleProducts: Product[] = [
       en: "Soft padded mat with hanging toys, a piano kick pad and lights for tummy time.",
       ar: "سجادة مبطّنة مع ألعاب معلّقة وبيانو للقدمين وأضواء لوقت اللعب على البطن.",
     },
-    category: "play-mats",
+    category: "baby-essentials",
+    subcategory: "play-mats",
     ages: ["0-6m", "6-12m"],
     priceUsd: 45,
     bestSeller: true,
@@ -119,7 +139,8 @@ export const sampleProducts: Product[] = [
       en: "Height-adjustable walker with an activity tray and anti-slip stoppers. Folds flat for storage.",
       ar: "مشّاية قابلة لتعديل الارتفاع مع صينية ألعاب ومانع انزلاق. تُطوى بسهولة للتخزين.",
     },
-    category: "walkers",
+    category: "baby-essentials",
+    subcategory: "walkers",
     ages: ["6-12m", "1-2y"],
     priceUsd: 55,
     isNew: true,
@@ -132,7 +153,8 @@ export const sampleProducts: Product[] = [
       en: "7 height positions, reclining seat and a dishwasher-safe tray.",
       ar: "7 مستويات للارتفاع، مقعد قابل للإمالة وصينية آمنة لغسالة الصحون.",
     },
-    category: "high-chairs",
+    category: "baby-essentials",
+    subcategory: "high-chairs",
     ages: ["6-12m", "1-2y", "2-4y"],
     priceUsd: 89,
     isNew: true,
@@ -145,7 +167,8 @@ export const sampleProducts: Product[] = [
       en: "Solid wood crib with 3 mattress heights and a large storage drawer. Converts to a toddler bed.",
       ar: "سرير من الخشب الصلب بثلاثة ارتفاعات للفرشة ودرج تخزين كبير. يتحوّل إلى سرير للأطفال.",
     },
-    category: "beds",
+    category: "baby-essentials",
+    subcategory: "beds",
     ages: ["0-6m", "6-12m", "1-2y", "2-4y"],
     priceUsd: 259,
     isNew: true,
@@ -158,7 +181,8 @@ export const sampleProducts: Product[] = [
       en: "Space-saving bath tub with a temperature indicator and a non-slip base.",
       ar: "حوض استحمام موفّر للمساحة مع مؤشر لحرارة الماء وقاعدة مانعة للانزلاق.",
     },
-    category: "bath-tubs",
+    category: "baby-essentials",
+    subcategory: "bath-potty",
     ages: ["0-6m", "6-12m", "1-2y"],
     priceUsd: 35,
     isNew: true,
@@ -171,7 +195,8 @@ export const sampleProducts: Product[] = [
       en: "Under 7 kg and small enough for airplane cabins. Full recline and a big sun canopy.",
       ar: "أقل من 7 كغ وصغيرة بما يكفي لمقصورة الطائرة. إمالة كاملة ومظلة شمس كبيرة.",
     },
-    category: "strollers",
+    category: "baby-essentials",
+    subcategory: "strollers",
     ages: ["6-12m", "1-2y", "2-4y"],
     priceUsd: 159,
   },
@@ -183,8 +208,9 @@ export const sampleProducts: Product[] = [
       en: "Grows with your child with an adjustable headrest and side wings.",
       ar: "يكبر مع طفلك بمسند رأس قابل للتعديل وأجنحة جانبية.",
     },
-    category: "car-seats",
-    ages: ["2-4y", "4y-plus"],
+    category: "baby-essentials",
+    subcategory: "car-seats",
+    ages: ["2-4y", "4-6y"],
     priceUsd: 79,
   },
   {
@@ -195,8 +221,9 @@ export const sampleProducts: Product[] = [
       en: "Comfortable potty with a splash guard, removable bowl and a lid.",
       ar: "نونية مريحة مع واقي رذاذ ووعاء قابل للإزالة وغطاء.",
     },
-    category: "potty",
-    ages: ["1-2y", "2-4y", "4y-plus"],
+    category: "baby-essentials",
+    subcategory: "bath-potty",
+    ages: ["1-2y", "2-4y", "4-6y"],
     priceUsd: 19,
   },
   {
@@ -207,8 +234,9 @@ export const sampleProducts: Product[] = [
       en: "Bed, wardrobe and dresser in natural wood. Delivery and assembly included.",
       ar: "سرير وخزانة وتسريحة من الخشب الطبيعي. يشمل التوصيل والتركيب.",
     },
-    category: "beds",
-    ages: ["2-4y", "4y-plus"],
+    category: "baby-essentials",
+    subcategory: "beds",
+    ages: ["2-4y", "4-6y"],
     priceUsd: 890,
   },
 ];

@@ -9,9 +9,9 @@ import type { CategoryIcon as CategoryIconName } from "@/data/catalog";
 
 // TODO(owner): replace with real slide photos or a video.
 const slideArt: { tint: string; dot: string; art: string; icon: CategoryIconName; href: string }[] = [
-  { tint: "bg-pastel-peach", dot: "bg-[#e3b3a1]", art: "text-[#e9b9a6]", icon: "stroller", href: "/category/strollers" },
-  { tint: "bg-pastel-blue", dot: "bg-[#a9c8e2]", art: "text-[#b3d0e8]", icon: "carSeat", href: "/category/car-seats" },
-  { tint: "bg-pastel-mint", dot: "bg-[#a8d5bc]", art: "text-[#b2dbc4]", icon: "bed", href: "/category/beds" },
+  { tint: "bg-pastel-peach", dot: "bg-[#e3b3a1]", art: "text-[#e9b9a6]", icon: "stroller", href: "/category/baby-essentials?sub=strollers" },
+  { tint: "bg-pastel-blue", dot: "bg-[#a9c8e2]", art: "text-[#b3d0e8]", icon: "carSeat", href: "/category/baby-essentials?sub=car-seats" },
+  { tint: "bg-pastel-mint", dot: "bg-[#a8d5bc]", art: "text-[#b2dbc4]", icon: "bed", href: "/category/baby-essentials?sub=beds" },
 ];
 
 const INTERVAL_MS = 6000;

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { getCategory } from "@/data/catalog";
+import { getCategory, getSubcategory } from "@/data/catalog";
 import type { Product } from "@/data/products";
 import { CategoryIcon, HeartIcon } from "@/components/icons";
 import { useCatalog } from "@/components/catalog-provider";
@@ -158,7 +158,7 @@ export function ProductCard({ product }: { product: Product }) {
       <Link href={href} className="mt-1 min-h-[38px] text-sm font-bold leading-[1.35]">
         {product.name[locale]}
       </Link>
-      <div className="text-xs text-muted">{category?.name[locale]}</div>
+      <div className="text-xs text-muted">{getSubcategory(product.category, product.subcategory)?.name[locale] ?? category?.name[locale]}</div>
       <PriceTag product={product} className="text-base" />
       <AddToCartButton productId={product.id} className="mt-1 h-11 text-sm" />
     </article>

@@ -4,7 +4,6 @@ import { categories } from "@/data/catalog";
 import {
   FacebookIcon,
   InstagramIcon,
-  BearMascot,
   StarIcon,
   TikTokIcon,
 } from "@/components/icons";
@@ -99,48 +98,18 @@ export function BrandsMarquee({ locale }: { locale: Locale }) {
 }
 
 
-/** Playful wavy divider with stars and the mascot in the middle. */
+/** Brand separator artwork from the owner (public/brand/separator.jpg), cropped to the illustrated band. */
 export function WavySeparator() {
-  const stars = [
-    { x: 4, y: 62, c: "#F25C54", s: 7 },
-    { x: 14, y: 30, c: "#FFD449", s: 9 },
-    { x: 24, y: 70, c: "#F25C54", s: 7 },
-    { x: 30, y: 38, c: "#FFD449", s: 6 },
-    { x: 38, y: 14, c: "#3A9AD9", s: 9 },
-    { x: 58, y: 4, c: "#F25C54", s: 8 },
-    { x: 66, y: 12, c: "#FFD449", s: 11 },
-    { x: 72, y: 34, c: "#3A9AD9", s: 9 },
-    { x: 78, y: 48, c: "#FFD449", s: 6 },
-    { x: 86, y: 66, c: "#F25C54", s: 7 },
-    { x: 93, y: 28, c: "#FFD449", s: 9 },
-  ];
   return (
-    <div aria-hidden className="relative mx-auto mt-12 h-36 max-w-6xl overflow-hidden">
-      <svg viewBox="0 0 400 120" preserveAspectRatio="none" className="absolute inset-0 size-full">
-        <path
-          d="M0 78 C 60 60, 110 95, 160 70 S 185 20, 205 40 S 215 75, 235 60 S 245 30, 230 32 S 225 70, 260 72 S 340 60, 400 74"
-          fill="none"
-          stroke="#3A9AD9"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
-      {stars.map((s, i) => (
-        <svg
-          key={i}
-          width={s.s}
-          height={s.s}
-          viewBox="0 0 24 24"
-          className="absolute"
-          style={{ left: `${s.x}%`, top: `${s.y}%`, color: s.c }}
-        >
-          <path fill="currentColor" d="M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z" />
-        </svg>
-      ))}
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-        <BearMascot />
-      </div>
+    <div aria-hidden className="mx-auto mt-10 max-w-6xl overflow-hidden">
+      {/* eslint-disable-next-line @next/next/no-img-element -- static decorative image */}
+      <img
+        src="/brand/separator.jpg"
+        alt=""
+        width={1051}
+        height={374}
+        className="aspect-[1051/190] w-full object-cover object-center"
+      />
     </div>
   );
 }

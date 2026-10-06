@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { ageGroups, categories } from "@/data/catalog";
+import { ageGroups, categories, getCategory } from "@/data/catalog";
 import type { ProductRow } from "@/data/products";
 import { PRODUCT_IMAGES_BUCKET, getSupabase } from "@/lib/supabase";
 
@@ -14,7 +14,9 @@ export const emptyRow: ProductRow = {
   description_en: "",
   description_ar: "",
   category: categories[0].slug,
+  subcategory: "",
   ages: [],
+  genders: [],
   price_usd: "",
   compare_at_usd: null,
   images: [],
@@ -134,7 +136,9 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
       description_en: row.description_en.trim(),
       description_ar: row.description_ar.trim(),
       category: row.category,
+      subcategory: row.subcategory ?? "",
       ages: row.ages,
+      genders: row.genders ?? [],
       price_usd: price,
       compare_at_usd: compare,
       images: row.images,
@@ -232,7 +236,11 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
         </Field>
 
         <Field label="Category *">
-          <select className={input} value={row.category} onChange={(e) => set("category", e.target.value)}>
+          <select
+            className={input}
+            value={row.category}
+            onChange={(e) => setRow((r) => ({ ...r, category: e.target.value, subcategory: "" }))}
+          >
             {categories.map((c) => (
               <option key={c.slug} value={c.slug}>
                 {c.name.en}
@@ -240,6 +248,18 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
             ))}
           </select>
         </Field>
+        {(getCategory(row.category)?.subs.length ?? 0) > 0 && (
+          <Field label="Subcategory">
+            <select className={input} value={row.subcategory ?? ""} onChange={(e) => set("subcategory", e.target.value)}>
+              <option value="">— Choose —</option>
+              {getCategory(row.category)!.subs.map((s) => (
+                <option key={s.slug} value={s.slug}>
+                  {s.name.en}
+                </option>
+              ))}
+            </select>
+          </Field>
+        )}
 
         <Field label="Price (USD) *">
           <input
@@ -281,11 +301,37 @@ export function ProductForm({ initial, onDone, onCancel }: { initial: ProductRow
                   checked={on}
                   onChange={() => set("ages", on ? row.ages.filter((x) => x !== a.slug) : [...row.ages, a.slug])}
                 />
-                {a.label} {a.unit}
+                {a.label} {a.sub.en}
               </label>
             );
           })}
         </div>
+      </fieldset>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-2 text-sm font-bold">For boys or girls</legend>
+        <div className="flex flex-wrap gap-2">
+          {(
+            [
+              ["boy", "👦 Boy"],
+              ["girl", "👧 Girl"],
+            ] as const
+          ).map(([g, label]) => {
+            const on = (row.genders ?? []).includes(g);
+            return (
+              <label key={g} className={`flex h-10 cursor-pointer items-center gap-2 rounded-full px-4 text-sm font-bold ${on ? "bg-navy text-white" : "bg-surface"}`}>
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={on}
+                  onChange={() => set("genders", on ? (row.genders ?? []).filter((x) => x !== g) : [...(row.genders ?? []), g])}
+                />
+                {label}
+              </label>
+            );
+          })}
+        </div>
+        <span className="text-xs text-muted">Tick both (or neither) if it suits boys and girls.</span>
       </fieldset>
 
       <div className="grid gap-4 sm:grid-cols-2">

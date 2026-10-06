@@ -6,7 +6,7 @@ import { useCatalog } from "@/components/catalog-provider";
 import { AgeIcon, ArrowIcon, PlusIcon } from "@/components/icons";
 import { PriceTag, ProductImage, productHref } from "@/components/product-card";
 import { useDict, useStore } from "@/components/store-provider";
-import { ageGroups, getCategory } from "@/data/catalog";
+import { ageGroups, getCategory, getSubcategory } from "@/data/catalog";
 
 /** Pick an age, then swipe through the matching products. */
 export function ShopByAge({ title }: { title?: string }) {
@@ -66,7 +66,7 @@ export function ShopByAge({ title }: { title?: string }) {
                 <span dir="ltr" className="text-[15px] leading-tight font-extrabold">
                   {a.label}
                 </span>
-                <span className="text-[11px] leading-tight font-bold text-ink-soft">{a.unit === "months" ? t.age.months : t.age.years}</span>
+                <span className="text-[11px] leading-tight font-bold text-ink-soft">{a.sub[locale]}</span>
               </button>
             );
           })}
@@ -86,7 +86,7 @@ export function ShopByAge({ title }: { title?: string }) {
                     <ProductImage product={p} iconSize={56} cycle className="aspect-square" />
                   </Link>
                   <div className="flex flex-1 flex-col p-3">
-                    <span className="text-xs text-muted">{getCategory(p.category)?.shortName[locale]}</span>
+                    <span className="text-xs text-muted">{getSubcategory(p.category, p.subcategory)?.name[locale] ?? getCategory(p.category)?.shortName[locale]}</span>
                     <Link href={productHref(locale, p.slug)} className="mt-0.5 line-clamp-2 min-h-[2.6em] text-sm leading-[1.3] font-bold">
                       {p.name[locale]}
                     </Link>

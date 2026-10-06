@@ -50,6 +50,10 @@ create table if not exists public.products (
   updated_at timestamptz not null default now()
 );
 
+alter table public.products add column if not exists subcategory text not null default '';
+alter table public.products add column if not exists genders text[] not null default '{}';
+alter table public.products add column if not exists sold_count integer not null default 0;
+
 create or replace function public.touch_updated_at()
 returns trigger language plpgsql as $$
 begin
@@ -155,6 +159,8 @@ begin
       'price', p.price_usd, 'qty', qty
     );
     sum_usd := sum_usd + p.price_usd * qty;
+    -- Counted for the "Best selling" sort.
+    update public.products set sold_count = sold_count + qty where id = p.id;
   end loop;
 
   insert into public.orders (user_id, customer_name, phone, city, address, notes, payment_method, delivery_option, items, total_usd, locale)

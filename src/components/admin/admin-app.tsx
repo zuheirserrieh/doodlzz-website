@@ -19,7 +19,7 @@ function Card({ children }: { children: ReactNode }) {
   return (
     <div className="mx-auto mt-16 flex max-w-sm flex-col gap-4 rounded-3xl bg-white p-6 shadow-sm">
       <div className="flex items-baseline gap-2">
-        <Logo className="text-[28px]" />
+        <Logo height={42} />
         <span className="text-sm font-extrabold uppercase tracking-[0.06em] text-muted">Admin</span>
       </div>
       {children}
@@ -89,7 +89,7 @@ export function AdminApp() {
     <div className="min-h-dvh pb-16">
       <header className="sticky top-0 z-20 border-b border-line bg-white">
         <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-4">
-          <Logo className="text-2xl" />
+          <Logo height={38} />
           <span className="text-xs font-extrabold uppercase tracking-[0.06em] text-muted">Admin</span>
           <span className="flex-1" />
           <Link href="/en" target="_blank" className="hidden text-sm font-bold sm:inline">

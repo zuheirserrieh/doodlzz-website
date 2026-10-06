@@ -60,7 +60,7 @@ export function Header() {
             <MenuIcon />
           </button>
           <Link href={`/${locale}`} aria-label={t.nav.home} className="flex-1 hover:text-navy">
-            <Logo className="text-[28px]" />
+            <Logo height={46} />
           </Link>
           <Link href={`/${locale}/account`} aria-label={t.account.title} className={iconButton}>
             <UserIcon />

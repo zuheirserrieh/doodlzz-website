@@ -10,11 +10,10 @@ export const site = {
   phoneTel: "+96181727746",
   email: "doodlzzlb@gmail.com",
   social: {
-    // TODO(owner): real handles.
-    handle: "@doodlzz",
-    instagram: "https://instagram.com/doodlzz",
-    facebook: "https://facebook.com/doodlzz",
-    tiktok: "https://tiktok.com/@doodlzz",
+    handle: "@doodlzz.lb",
+    instagram: "https://www.instagram.com/doodlzz.lb",
+    facebook: "https://www.facebook.com/share/1EyNdhXWb4/",
+    tiktok: "https://www.tiktok.com/@doodlzz4",
   },
 } as const;
 

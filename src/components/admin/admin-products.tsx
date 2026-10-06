@@ -63,6 +63,7 @@ export function AdminProducts() {
         description_en: p.description.en,
         description_ar: p.description.ar,
         category: p.category,
+        subcategory: p.subcategory ?? "",
         ages: p.ages,
         price_usd: p.priceUsd,
         best_seller: Boolean(p.bestSeller),

@@ -85,7 +85,7 @@ export function MenuDrawer() {
         }`}
       >
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-line ps-4 pe-2">
-          <Logo className="text-[28px]" />
+          <Logo height={42} />
           <button
             type="button"
             aria-label={t.nav.closeMenu}
@@ -119,7 +119,7 @@ export function MenuDrawer() {
               <Link key={a.slug} href={href(`/shop?age=${a.slug}`)} onClick={close} className={subRow}>
                 <AgeIcon slug={a.slug} size={26} />
                 <span>
-                  <span dir="ltr">{a.label}</span> {a.unit === "months" ? t.age.months : t.age.years}
+                  <span dir="ltr">{a.label}</span> {a.sub[locale]}
                 </span>
               </Link>
             ))}

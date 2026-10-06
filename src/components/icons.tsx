@@ -19,6 +19,85 @@ function stroke(size: number, viewBox: string, strokeWidth: number, props: SVGPr
 }
 
 const categoryPaths: Record<CategoryIconName, ReactNode> = {
+  baby: (
+    <>
+      <circle cx="16" cy="11" r="6" />
+      <path d="M13.5 10.5h.01M18.5 10.5h.01M14 13.5c1.2 1 2.8 1 4 0" />
+      <path d="M8 28c0-4.4 3.6-8 8-8s8 3.6 8 8" />
+      <path d="M16 5c1-1.5 3-1.5 3 0" />
+    </>
+  ),
+  girls: (
+    <>
+      <circle cx="16" cy="9" r="4.5" />
+      <path d="M10 9.5c-3-1-4.5 1-4 3M22 9.5c3-1 4.5 1 4 3" />
+      <path d="M11 28l2.5-12h5L21 28z" />
+      <path d="M12 20h8" />
+    </>
+  ),
+  boys: (
+    <>
+      <path d="M4 20v-4l3-6h12l5 6h4v4z" />
+      <circle cx="10" cy="22" r="3" />
+      <circle cx="23" cy="22" r="3" />
+      <path d="M9 16h14" />
+    </>
+  ),
+  rideOn: (
+    <>
+      <circle cx="8" cy="22" r="5" />
+      <circle cx="24" cy="22" r="5" />
+      <path d="M8 22l5-9h9l2 9M13 13l3 9h6M11 9h4M22 13l-1.5-4h3" />
+    </>
+  ),
+  school: (
+    <>
+      <path d="M4 7h9a3 3 0 0 1 3 3v17a2.5 2.5 0 0 0-2.5-2.5H4z" />
+      <path d="M28 7h-9a3 3 0 0 0-3 3v17a2.5 2.5 0 0 1 2.5-2.5H28z" />
+      <path d="M7.5 12h5M7.5 16h5M19.5 12h5M19.5 16h5" />
+    </>
+  ),
+  sport: (
+    <>
+      <circle cx="16" cy="16" r="11" />
+      <path d="M16 10l5 3.5-2 6h-6l-2-6z" />
+      <path d="M16 5v5M26.5 13l-5.5.5M22.5 25l-3.5-5.5M9.5 25l3.5-5.5M5.5 13l5.5.5" />
+    </>
+  ),
+  outdoor: (
+    <>
+      <path d="M5 28V8h6v20" />
+      <path d="M5 13h6M5 18h6M5 23h6" />
+      <path d="M11 8c6 0 7 4 9 10s4 9 8 10H11" />
+    </>
+  ),
+  home: (
+    <>
+      <path d="M4 15 16 5l12 10" />
+      <path d="M7 13v14h18V13" />
+      <path d="M13 27v-7h6v7" />
+    </>
+  ),
+  camping: (
+    <>
+      <path d="M3 27 16 6l13 21z" />
+      <path d="M16 27l-5-8 5-8 5 8-5 8" />
+      <path d="M1 27h30" />
+    </>
+  ),
+  winter: (
+    <>
+      <path d="M16 3v26M4.7 9.5l22.6 13M4.7 22.5l22.6-13" />
+      <path d="M12.5 4.5 16 8l3.5-3.5M12.5 27.5 16 24l3.5 3.5" />
+    </>
+  ),
+  adult: (
+    <>
+      <rect x="4" y="4" width="16" height="16" rx="3" />
+      <rect x="12" y="12" width="16" height="16" rx="3" fill="white" />
+      <path d="M8.5 8.5h.01M15.5 15.5h.01M17 21h.01M21 17h.01M23 23h.01" strokeWidth="3" />
+    </>
+  ),
   stroller: (
     <>
       <path d="M4 6h4l3 12h15" />
@@ -311,7 +390,48 @@ export function AgeIcon({ slug, size = 30 }: { slug: string; size?: number }) {
           <path d="M12 9h4" />
         </svg>
       );
-    default: // 4+: bike
+    case "4-6y": // bike
+      return (
+        <svg {...common} strokeLinejoin="round" strokeLinecap="round">
+          <circle cx="8" cy="22" r="5" fill="#B9E4C9" />
+          <circle cx="24" cy="22" r="5" fill="#B9E4C9" />
+          <path d="M8 22l5-9h9l2 9M13 13l3 9h6M11 9h4M22 13l-1.5-4h3" fill="none" />
+        </svg>
+      );
+    case "6-8y": // scooter
+      return (
+        <svg {...common} strokeLinejoin="round" strokeLinecap="round">
+          <path d="M22 5h4M24 5l-3 19H8" fill="none" />
+          <circle cx="7" cy="25" r="3" fill="#F7A9A0" />
+          <circle cx="22" cy="25" r="3" fill="#F7A9A0" />
+        </svg>
+      );
+    case "8-11y": // skateboard
+      return (
+        <svg {...common} strokeLinejoin="round" strokeLinecap="round">
+          <path d="M3 15h26a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" fill="#FFD449" />
+          <circle cx="9" cy="22" r="2.5" fill="#A7C7F2" />
+          <circle cx="23" cy="22" r="2.5" fill="#A7C7F2" />
+        </svg>
+      );
+    case "teens": // headphones
+      return (
+        <svg {...common} strokeLinejoin="round" strokeLinecap="round">
+          <path d="M6 20v-4a10 10 0 0 1 20 0v4" fill="none" />
+          <rect x="4" y="18" width="6" height="9" rx="2" fill="#C9B6F2" />
+          <rect x="22" y="18" width="6" height="9" rx="2" fill="#C9B6F2" />
+        </svg>
+      );
+    case "adults": // dumbbell
+      return (
+        <svg {...common} strokeLinejoin="round" strokeLinecap="round">
+          <path d="M10 16h12" />
+          <rect x="5" y="9" width="5" height="14" rx="1.5" fill="#8FD3C1" />
+          <rect x="22" y="9" width="5" height="14" rx="1.5" fill="#8FD3C1" />
+          <path d="M3 13v6M29 13v6" />
+        </svg>
+      );
+    default: // bike
       return (
         <svg {...common} strokeLinejoin="round" strokeLinecap="round">
           <circle cx="8" cy="22" r="5" fill="#B9E4C9" />

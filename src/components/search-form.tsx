@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import { ChevronIcon, SearchIcon } from "@/components/icons";
 import { useDict, useStore } from "@/components/store-provider";
-import { ageGroups, categories } from "@/data/catalog";
+import { ageGroups, ageName, categories } from "@/data/catalog";
 
 /** Scope values look like "age:0-6m" or "category:strollers"; "" means everything. */
 function parseScope(scope: string) {
@@ -27,7 +27,7 @@ export function SearchForm({
   const [scope, setScope] = useState(defaultScope);
   const [query, setQuery] = useState(defaultQuery);
 
-  const ageLabel = (a: (typeof ageGroups)[number]) => `${a.label} ${a.unit === "months" ? t.age.months : t.age.years}`;
+  const ageLabel = (a: (typeof ageGroups)[number]) => ageName(a, locale);
   const parsed = parseScope(scope);
   const scopeLabel = !parsed
     ? t.search.all

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { CategoryView } from "@/components/category-view";
 import { categories, getCategory } from "@/data/catalog";
 import { isLocale, locales } from "@/lib/i18n";
@@ -21,5 +22,10 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/category
 export default async function CategoryPage({ params }: PageProps<"/[locale]/category/[slug]">) {
   const { locale, slug } = await params;
   if (!isLocale(locale) || !getCategory(slug)) notFound();
-  return <CategoryView slug={slug} />;
+  // useSearchParams (for ?sub=) needs a Suspense boundary in a static export.
+  return (
+    <Suspense>
+      <CategoryView slug={slug} />
+    </Suspense>
+  );
 }

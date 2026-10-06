@@ -9,6 +9,7 @@ import { ChevronIcon, CloseIcon, SearchIcon, SwapIcon, TruckIcon, WhatsAppIcon }
 import { AddToCartButton, PriceTag, ProductBadge, ProductGrid, ProductImage, WishButton } from "@/components/product-card";
 import { useDict, useStore } from "@/components/store-provider";
 import { ageGroups, getCategory, getSubcategory } from "@/data/catalog";
+import { isVideo } from "@/lib/media";
 import { whatsappLink } from "@/lib/site";
 
 export function ProductView() {
@@ -72,7 +73,11 @@ export function ProductView() {
       <div className="mt-2 grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-10">
         <div>
           <div className="relative">
-            {current ? (
+            {current && isVideo(current) ? (
+              <div className="aspect-square w-full overflow-hidden rounded-3xl bg-black">
+                <video key={current} src={current} controls playsInline preload="metadata" className="size-full object-contain" />
+              </div>
+            ) : current ? (
               <button
                 type="button"
                 onClick={() => setZoom(true)}
@@ -103,7 +108,16 @@ export function ProductView() {
                   onClick={() => setPhoto(i)}
                   className={`relative aspect-square w-[calc(33.333%-6px)] max-w-32 flex-none cursor-pointer overflow-hidden rounded-xl bg-white ring-2 ${i === photo ? "ring-navy" : "ring-line"}`}
                 >
-                  <Image src={src} alt="" fill unoptimized sizes="128px" className="object-contain" />
+                  {isVideo(src) ? (
+                    <>
+                      <video src={`${src}#t=0.5`} muted playsInline preload="metadata" className="pointer-events-none size-full object-cover" />
+                      <span className="absolute inset-0 flex items-center justify-center bg-navy/25 text-2xl text-white" aria-hidden>
+                        ▶
+                      </span>
+                    </>
+                  ) : (
+                    <Image src={src} alt="" fill unoptimized sizes="128px" className="object-contain" />
+                  )}
                 </button>
               ))}
             </div>
@@ -219,7 +233,11 @@ export function ProductView() {
             </button>
           </div>
           <div className="relative flex-1" onClick={() => setZoom(false)}>
-            <Image src={current} alt={product.name[locale]} fill unoptimized sizes="100vw" className="object-contain" />
+            {isVideo(current) ? (
+              <video key={current} src={current} controls playsInline className="absolute inset-0 size-full object-contain" onClick={(e) => e.stopPropagation()} />
+            ) : (
+              <Image src={current} alt={product.name[locale]} fill unoptimized sizes="100vw" className="object-contain" />
+            )}
           </div>
           {images.length > 1 && (
             <div className="flex items-center justify-center gap-4 p-4 text-white">

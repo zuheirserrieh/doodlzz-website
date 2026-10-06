@@ -7,6 +7,7 @@ import { useCatalog } from "@/components/catalog-provider";
 import { formatPrice } from "@/components/store-provider";
 import { getCategory } from "@/data/catalog";
 import { sampleProducts, type ProductRow } from "@/data/products";
+import { photosOf } from "@/lib/media";
 import { getSupabase } from "@/lib/supabase";
 
 export function AdminProducts() {
@@ -123,7 +124,7 @@ export function AdminProducts() {
         {visible.map((r) => (
           <li key={r.id} className={`flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm ${r.active ? "" : "opacity-60"}`}>
             <div className={`relative size-16 flex-none overflow-hidden rounded-xl ${getCategory(r.category)?.tint ?? "bg-surface"}`}>
-              {r.images[0] && <Image src={r.images[0]} alt="" fill unoptimized sizes="64px" className="object-cover" />}
+              {photosOf(r.images)[0] && <Image src={photosOf(r.images)[0]} alt="" fill unoptimized sizes="64px" className="object-cover" />}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate font-extrabold">{r.name_en}</p>

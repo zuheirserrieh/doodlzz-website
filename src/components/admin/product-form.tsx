@@ -5,6 +5,7 @@ import { useState, type FormEvent, type ReactNode } from "react";
 import { ageGroups, categories, getCategory } from "@/data/catalog";
 import type { ProductRow } from "@/data/products";
 import { ImageCropper } from "@/components/admin/image-cropper";
+import { MAX_VIDEO_MB, isVideo } from "@/lib/media";
 import { RelatedPicker } from "@/components/admin/related-picker";
 import { PRODUCT_IMAGES_BUCKET, getSupabase } from "@/lib/supabase";
 
@@ -104,7 +105,33 @@ export function ProductForm({
   function queueFiles(files: FileList | null) {
     if (!files?.length) return;
     setError("");
-    setCropQueue((q) => [...q, ...Array.from(files).map((file) => ({ src: URL.createObjectURL(file), file }))]);
+    const all = Array.from(files);
+    // Videos skip the cropper and upload as they are; photos go through the cropper.
+    all.filter((f) => f.type.startsWith("video/")).forEach((f) => void uploadVideo(f));
+    const photos = all.filter((f) => !f.type.startsWith("video/"));
+    setCropQueue((q) => [...q, ...photos.map((file) => ({ src: URL.createObjectURL(file), file }))]);
+  }
+
+  async function uploadVideo(file: File) {
+    const supabase = getSupabase();
+    if (!supabase) return;
+    if (file.size > MAX_VIDEO_MB * 1024 * 1024) {
+      setError(`"${file.name}" is ${Math.round(file.size / 1024 / 1024)} MB. Videos can be up to ${MAX_VIDEO_MB} MB; shorten or compress it first.`);
+      return;
+    }
+    setUploading((n) => n + 1);
+    const ext = (file.name.split(".").pop() ?? "mp4").toLowerCase();
+    const path = `products/${crypto.randomUUID()}.${ext}`;
+    const { error: err } = await supabase.storage
+      .from(PRODUCT_IMAGES_BUCKET)
+      .upload(path, file, { contentType: file.type || "video/mp4", cacheControl: "31536000" });
+    if (err) {
+      setError(`Video upload failed: ${err.message}`);
+    } else {
+      const url = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl;
+      setRow((r) => ({ ...r, images: [...r.images, url] }));
+    }
+    setUploading((n) => n - 1);
   }
 
   function nextCrop() {
@@ -232,7 +259,14 @@ export function ProductForm({
         <div className="flex flex-wrap gap-2">
           {row.images.map((src, i) => (
             <div key={src} className="relative size-24 overflow-hidden rounded-xl bg-surface">
-              <Image src={src} alt="" fill unoptimized sizes="96px" className="object-cover" />
+              {isVideo(src) ? (
+                <>
+                  <video src={`${src}#t=0.5`} muted playsInline preload="metadata" className="size-full object-cover" />
+                  <span className="pointer-events-none absolute end-1 top-1 rounded-full bg-navy/80 px-1.5 text-[10px] font-extrabold text-white">▶ Video</span>
+                </>
+              ) : (
+                <Image src={src} alt="" fill unoptimized sizes="96px" className="object-cover" />
+              )}
               {i === 0 && <span className="absolute start-1 top-1 rounded-full bg-navy px-2 text-[10px] font-extrabold text-white">Main</span>}
               <div className="absolute inset-x-1 bottom-1 flex justify-between">
                 <span className="flex gap-1">
@@ -241,13 +275,15 @@ export function ProductForm({
                       Main
                     </button>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => setCropQueue((q) => [...q, { src, replaceIndex: i }])}
-                    className="cursor-pointer rounded-full bg-white/90 px-2 text-[10px] font-extrabold"
-                  >
-                    Crop
-                  </button>
+                  {!isVideo(src) && (
+                    <button
+                      type="button"
+                      onClick={() => setCropQueue((q) => [...q, { src, replaceIndex: i }])}
+                      className="cursor-pointer rounded-full bg-white/90 px-2 text-[10px] font-extrabold"
+                    >
+                      Crop
+                    </button>
+                  )}
                 </span>
                 <button
                   type="button"
@@ -262,11 +298,11 @@ export function ProductForm({
           ))}
           <label className="flex size-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-[#c9cfdc] text-center text-xs font-bold text-muted hover:border-navy">
             <span className="text-2xl leading-none">+</span>
-            {uploading > 0 ? `Uploading ${uploading}…` : "Add photos"}
-            <input type="file" accept="image/*" multiple className="sr-only" onChange={(e) => { queueFiles(e.target.files); e.target.value = ""; }} />
+            {uploading > 0 ? `Uploading ${uploading}…` : "Add photos / videos"}
+            <input type="file" accept="image/*,video/*" multiple className="sr-only" onChange={(e) => { queueFiles(e.target.files); e.target.value = ""; }} />
           </label>
         </div>
-        <span className="text-xs text-muted">The first photo is the main one shown in the shop. Each new photo opens the cropper; tap “Crop” to adjust a photo later.</span>
+        <span className="text-xs text-muted">The first photo is the main one shown in the shop. Each new photo opens the cropper; tap “Crop” to adjust a photo later. Videos (MP4, up to 50 MB) play on the product page; shop cards always show a photo.</span>
         {cropping && <ImageCropper key={cropping.src} src={cropping.src} onDone={(b) => void finishCrop(b)} onCancel={nextCrop} />}
       </section>
 

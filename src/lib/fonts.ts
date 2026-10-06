@@ -1,10 +1,11 @@
-import { Fredoka, Outfit, Plus_Jakarta_Sans, Tajawal } from "next/font/google";
+import { Baloo_Bhaijaan_2, Fredoka, Outfit, Plus_Jakarta_Sans } from "next/font/google";
 
 // One font for the whole site (headings and text). Two candidates while the owner
 // chooses: A is the default, B is previewed with ?font=b (see FontPreviewScript).
 export const fontA = Plus_Jakarta_Sans({ variable: "--font-a", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
 export const fontB = Outfit({ variable: "--font-b", subsets: ["latin"], weight: ["400", "500", "600", "700", "800"] });
-export const fontArabic = Tajawal({ variable: "--font-arabic", subsets: ["arabic"], weight: ["400", "500", "700", "800"] });
+// Arabic: rounded, playful style that matches the bubbly logo.
+export const fontArabic = Baloo_Bhaijaan_2({ variable: "--font-arabic", subsets: ["arabic"], weight: ["400", "500", "600", "700", "800"] });
 // Used only for the "Doodlzz" wordmark in the header and menu.
 export const fontLogo = Fredoka({ variable: "--font-logo", subsets: ["latin"], weight: "600" });
 

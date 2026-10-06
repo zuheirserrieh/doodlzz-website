@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
+import { photosOf } from "@/lib/media";
 import type { ProductRow } from "@/data/products";
 
 /** Search products by name and link them as "Goes well with" items. */
@@ -28,7 +29,7 @@ export function RelatedPicker({
 
   const thumb = (p: ProductRow) => (
     <span className="relative size-10 flex-none overflow-hidden rounded-lg bg-surface">
-      {p.images[0] && <Image src={p.images[0]} alt="" fill unoptimized sizes="40px" className="object-cover" />}
+      {photosOf(p.images)[0] && <Image src={photosOf(p.images)[0]} alt="" fill unoptimized sizes="40px" className="object-cover" />}
     </span>
   );
 

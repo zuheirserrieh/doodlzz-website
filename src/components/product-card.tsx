@@ -8,6 +8,7 @@ import type { Product } from "@/data/products";
 import { CategoryIcon, HeartIcon } from "@/components/icons";
 import { useCatalog } from "@/components/catalog-provider";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
+import { photosOf } from "@/lib/media";
 import type { Locale } from "@/lib/i18n";
 
 /** Product pages use a query string so new products work without rebuilding the static site. */
@@ -31,7 +32,7 @@ export function ProductImage({
   cycle?: boolean;
 }) {
   const category = getCategory(product.category);
-  const images = product.images ?? [];
+  const images = photosOf(product.images); // cards never autoplay videos
   const [index, setIndex] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const canCycle = cycle && images.length > 1;

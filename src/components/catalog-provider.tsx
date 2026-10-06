@@ -7,10 +7,13 @@ import { getSupabase, supabaseConfigured } from "@/lib/supabase";
 
 export type HomeMedia = {
   id: string;
-  section: "moment" | "brand" | "social";
+  section: "moment" | "brand" | "social" | "hero";
   image: string;
   title: string;
   subtitle: string;
+  /** Arabic versions (hero slides); empty = use the English text. */
+  title_ar?: string;
+  subtitle_ar?: string;
   rating: number;
   link: string;
   sort: number;

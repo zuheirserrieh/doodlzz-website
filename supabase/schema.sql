@@ -284,3 +284,10 @@ create policy "home media: public reads active" on public.home_media
 drop policy if exists "home media: admin writes" on public.home_media;
 create policy "home media: admin writes" on public.home_media
   for all using (public.is_admin()) with check (public.is_admin());
+
+-- Hero slideshow slides also live in home_media (section 'hero'), with Arabic text.
+alter table public.home_media add column if not exists title_ar text not null default '';
+alter table public.home_media add column if not exists subtitle_ar text not null default '';
+alter table public.home_media drop constraint if exists home_media_section_check;
+alter table public.home_media add constraint home_media_section_check
+  check (section in ('moment', 'brand', 'social', 'hero'));

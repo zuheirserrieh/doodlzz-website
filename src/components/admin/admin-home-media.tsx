@@ -5,11 +5,18 @@ import { useCallback, useEffect, useState } from "react";
 import { ImageCropper } from "@/components/admin/image-cropper";
 import { shrinkImage } from "@/components/admin/product-form";
 import { useCatalog, type HomeMedia } from "@/components/catalog-provider";
+import { categories } from "@/data/catalog";
 import { PRODUCT_IMAGES_BUCKET, getSupabase } from "@/lib/supabase";
 
 type Section = HomeMedia["section"];
 
 const sections: { id: Section; title: string; help: string; aspect: number }[] = [
+  {
+    id: "hero",
+    title: "Slideshow (top of the home page)",
+    help: "Wide photos work best; the middle of the photo is what shows on phones. Title and text are optional (leave empty for a photo-only banner).",
+    aspect: 4 / 3,
+  },
   {
     id: "moment",
     title: "Real Moments (customer photos & reviews)",
@@ -28,6 +35,12 @@ const sections: { id: Section; title: string; help: string; aspect: number }[] =
     help: "Up to 9 square photos, e.g. from your Instagram. Optional link: the post's address.",
     aspect: 1,
   },
+];
+
+// Where a slide's "Shop now" button can go (category pages, or all products).
+const HERO_LINKS = [
+  { value: "", label: "All products" },
+  ...categories.map((c) => ({ value: `/category/${c.slug}`, label: c.name.en })),
 ];
 
 const input =
@@ -52,19 +65,81 @@ function MediaRow({
   const [title, setTitle] = useState(item.title);
   const [subtitle, setSubtitle] = useState(item.subtitle);
   const [link, setLink] = useState(item.link);
+  const [titleAr, setTitleAr] = useState(item.title_ar ?? "");
+  const [subtitleAr, setSubtitleAr] = useState(item.subtitle_ar ?? "");
   const small = "flex size-9 flex-none cursor-pointer items-center justify-center rounded-full bg-surface text-sm font-extrabold disabled:opacity-30";
 
   return (
     <li className={`flex gap-3 rounded-2xl bg-white p-3 shadow-sm ${item.active ? "" : "opacity-60"}`}>
       <div
         className={`relative flex-none overflow-hidden rounded-xl bg-surface ${
-          item.section === "moment" ? "h-24 w-[72px]" : item.section === "brand" ? "h-12 w-24" : "size-20"
+          item.section === "moment" ? "h-24 w-[72px]" : item.section === "brand" ? "h-12 w-24" : item.section === "hero" ? "h-20 w-28" : "size-20"
         }`}
       >
         <Image src={item.image} alt="" fill unoptimized sizes="96px" className={item.section === "brand" ? "object-contain p-1" : "object-cover"} />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        {item.section === "hero" && (
+          <>
+            <input
+              className={input}
+              placeholder="Title (English), e.g. Summer is here!"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => title !== item.title && onChange({ title })}
+            />
+            <input
+              className={input}
+              dir="rtl"
+              placeholder="العنوان بالعربية"
+              value={titleAr}
+              onChange={(e) => setTitleAr(e.target.value)}
+              onBlur={() => titleAr !== (item.title_ar ?? "") && onChange({ title_ar: titleAr })}
+            />
+            <input
+              className={input}
+              placeholder="Short sentence (English)"
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              onBlur={() => subtitle !== item.subtitle && onChange({ subtitle })}
+            />
+            <input
+              className={input}
+              dir="rtl"
+              placeholder="جملة قصيرة بالعربية"
+              value={subtitleAr}
+              onChange={(e) => setSubtitleAr(e.target.value)}
+              onBlur={() => subtitleAr !== (item.subtitle_ar ?? "") && onChange({ subtitle_ar: subtitleAr })}
+            />
+            <select
+              className={input}
+              value={HERO_LINKS.some((l) => l.value === link) ? link : "custom"}
+              onChange={(e) => {
+                if (e.target.value === "custom") return;
+                setLink(e.target.value);
+                onChange({ link: e.target.value });
+              }}
+            >
+              {HERO_LINKS.map((l) => (
+                <option key={l.value} value={l.value}>
+                  “Shop now” goes to: {l.label}
+                </option>
+              ))}
+              <option value="custom">Other link (type below)</option>
+            </select>
+            {!HERO_LINKS.some((l) => l.value === link) && (
+              <input
+                className={input}
+                dir="ltr"
+                placeholder="/category/sport  or  https://…"
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                onBlur={() => link !== item.link && onChange({ link: link.trim() })}
+              />
+            )}
+          </>
+        )}
         {item.section === "moment" && (
           <>
             <input
@@ -161,7 +236,7 @@ export function AdminHomeMedia() {
       .order("created_at", { ascending: true });
     if (err) {
       setError(
-        err.code === "PGRST205"
+        err.code === "PGRST205" || err.code === "42703"
           ? "The home page table is missing. Run supabase/schema.sql in the Supabase SQL Editor first."
           : err.message,
       );

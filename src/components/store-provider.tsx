@@ -25,6 +25,9 @@ type Store = {
   /** Note typed in the cart panel; carried into the checkout notes. */
   orderNote: string;
   setOrderNote: (note: string) => void;
+  /** Customer wants the order gift-wrapped. */
+  giftWrap: boolean;
+  setGiftWrap: (on: boolean) => void;
 };
 
 const StoreContext = createContext<Store | null>(null);
@@ -32,6 +35,7 @@ const StoreContext = createContext<Store | null>(null);
 const CART_KEY = "dz-cart";
 const WISHLIST_KEY = "dz-wishlist";
 const NOTE_KEY = "dz-order-note";
+const WRAP_KEY = "dz-gift-wrap";
 
 function readStorage<T>(key: string, fallback: T): T {
   try {
@@ -57,6 +61,11 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [orderNote, setOrderNoteState] = useState("");
+  const [giftWrap, setGiftWrapState] = useState(false);
+  const setGiftWrap = useCallback((on: boolean) => {
+    setGiftWrapState(on);
+    writeStorage(WRAP_KEY, on);
+  }, []);
   const setOrderNote = useCallback((note: string) => {
     setOrderNoteState(note);
     writeStorage(NOTE_KEY, note);
@@ -68,6 +77,7 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
     setCart(readStorage<CartLine[]>(CART_KEY, []));
     setWishlist(readStorage<string[]>(WISHLIST_KEY, []));
     setOrderNoteState(readStorage<string>(NOTE_KEY, ""));
+    setGiftWrapState(readStorage<boolean>(WRAP_KEY, false));
     setHydrated(true);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
@@ -175,8 +185,10 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
       setCartOpen,
       orderNote,
       setOrderNote,
+      giftWrap,
+      setGiftWrap,
     }),
-    [locale, cart, addToCart, setQty, removeFromCart, clearCart, wishlist, isWished, toggleWish, menuOpen, cartOpen, orderNote, setOrderNote],
+    [locale, cart, addToCart, setQty, removeFromCart, clearCart, wishlist, isWished, toggleWish, menuOpen, cartOpen, orderNote, setOrderNote, giftWrap, setGiftWrap],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

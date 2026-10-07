@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useCatalog } from "@/components/catalog-provider";
+import { ScrollArrows } from "@/components/scroll-row";
 import { AgeIcon, ArrowIcon, PlusIcon } from "@/components/icons";
 import { PriceTag, ProductImage, productHref } from "@/components/product-card";
 import { useDict, useStore } from "@/components/store-provider";
@@ -76,6 +77,7 @@ export function ShopByAge({ title }: { title?: string }) {
           {ready && list.length === 0 ? (
             <p className="rounded-2xl bg-white px-2 py-10 text-center text-sm text-muted">{t.age.empty}</p>
           ) : (
+            <div className="relative">
             <div ref={trackRef} onScroll={onScroll} className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto">
               {list.map((p) => (
                 <article
@@ -104,6 +106,8 @@ export function ShopByAge({ title }: { title?: string }) {
                   </div>
                 </article>
               ))}
+            </div>
+            <ScrollArrows key={active} target={trackRef} />
             </div>
           )}
           {list.length > 2 && (

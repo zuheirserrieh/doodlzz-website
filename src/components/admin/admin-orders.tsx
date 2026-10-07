@@ -16,6 +16,8 @@ type Order = {
   notes: string;
   payment_method: "cash" | "whish";
   delivery_option?: "standard" | "express" | "sameday";
+  gift_wrap?: boolean;
+  gift_wrap_fee?: number;
   items: OrderItem[];
   total_usd: number;
   status: string;
@@ -120,6 +122,11 @@ export function AdminOrders() {
               <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-extrabold">
                 {o.payment_method === "cash" ? "💵 Cash on delivery" : "📱 Whish Money"}
               </span>
+              {o.gift_wrap && (
+                <span className="rounded-full bg-pastel-peach px-2.5 py-0.5 text-xs font-extrabold">
+                  🎁 Gift wrap{Number(o.gift_wrap_fee) > 0 ? ` (+${formatPrice(Number(o.gift_wrap_fee))})` : " (free)"}
+                </span>
+              )}
               {o.delivery_option && (
                 <span className="rounded-full bg-pastel-blue px-2.5 py-0.5 text-xs font-extrabold">{deliveryLabels[o.delivery_option]}</span>
               )}

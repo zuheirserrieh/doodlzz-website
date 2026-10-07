@@ -57,6 +57,9 @@ alter table public.products add column if not exists sold_count integer not null
 alter table public.products add column if not exists limited_quantity boolean not null default false;
 alter table public.products add column if not exists last_piece boolean not null default false;
 alter table public.products add column if not exists related uuid[] not null default '{}';
+alter table public.products add column if not exists brand text not null default '';
+alter table public.products add column if not exists colors text[] not null default '{}';
+alter table public.products add column if not exists on_offer boolean not null default false;
 
 -- Data fixes for older setups (safe to repeat: they only touch old values).
 -- The old categories became subcategories of "Baby Essentials".
@@ -111,6 +114,9 @@ create table if not exists public.orders (
 alter table public.orders add column if not exists delivery_option text not null default 'standard'
   check (delivery_option in ('standard', 'express', 'sameday'));
 
+alter table public.orders add column if not exists gift_wrap boolean not null default false;
+alter table public.orders add column if not exists gift_wrap_fee numeric(10, 2) not null default 0;
+
 create index if not exists orders_created_at_idx on public.orders (created_at desc);
 create index if not exists orders_user_idx on public.orders (user_id);
 
@@ -128,6 +134,28 @@ drop policy if exists "orders: admin deletes" on public.orders;
 create policy "orders: admin deletes" on public.orders
   for delete using (public.is_admin());
 
+-- ─────────────────────────────────────────────────────────────
+-- Shop settings edited in /admin → Settings (e.g. gift wrap price).
+-- ─────────────────────────────────────────────────────────────
+create table if not exists public.site_settings (
+  key text primary key,
+  value jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+insert into public.site_settings (key, value) values ('gift_wrap', '{"enabled": true, "price": 0}')
+on conflict (key) do nothing;
+
+alter table public.site_settings enable row level security;
+
+drop policy if exists "site settings: public read" on public.site_settings;
+create policy "site settings: public read" on public.site_settings
+  for select using (true);
+
+drop policy if exists "site settings: admin writes" on public.site_settings;
+create policy "site settings: admin writes" on public.site_settings
+  for all using (public.is_admin()) with check (public.is_admin());
+
 -- Customers never insert into orders directly. place_order() looks up the real
 -- prices in the database, so a tampered cart can't change what is charged.
 create or replace function public.place_order(customer jsonb, cart jsonb, order_locale text default 'en')
@@ -143,6 +171,9 @@ declare
   lines jsonb := '[]'::jsonb;
   sum_usd numeric(10, 2) := 0;
   new_id bigint;
+  wrap jsonb;
+  wrap_fee numeric(10, 2) := 0;
+  wants_wrap boolean := coalesce((customer ->> 'gift_wrap')::boolean, false);
 begin
   if jsonb_typeof(cart) <> 'array' or jsonb_array_length(cart) = 0 then
     raise exception 'Cart is empty';
@@ -176,7 +207,18 @@ begin
     update public.products set sold_count = sold_count + qty where id = p.id;
   end loop;
 
-  insert into public.orders (user_id, customer_name, phone, city, address, notes, payment_method, delivery_option, items, total_usd, locale)
+  -- Optional gift wrap: price comes from the settings, never from the browser.
+  if wants_wrap then
+    select value into wrap from public.site_settings where key = 'gift_wrap';
+    if wrap is null or coalesce((wrap ->> 'enabled')::boolean, false) = false then
+      wants_wrap := false;
+    else
+      wrap_fee := greatest(0, coalesce((wrap ->> 'price')::numeric, 0));
+      sum_usd := sum_usd + wrap_fee;
+    end if;
+  end if;
+
+  insert into public.orders (user_id, customer_name, phone, city, address, notes, payment_method, delivery_option, gift_wrap, gift_wrap_fee, items, total_usd, locale)
   values (
     auth.uid(),
     left(trim(customer ->> 'name'), 120),
@@ -186,6 +228,8 @@ begin
     left(coalesce(trim(customer ->> 'notes'), ''), 600),
     customer ->> 'payment',
     case when customer ->> 'delivery' in ('express', 'sameday') then customer ->> 'delivery' else 'standard' end,
+    wants_wrap,
+    wrap_fee,
     lines,
     sum_usd,
     case when order_locale = 'ar' then 'ar' else 'en' end

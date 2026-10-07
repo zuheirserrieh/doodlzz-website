@@ -125,6 +125,13 @@ export function MenuDrawer() {
             ))}
           </Expandable>
 
+          <Link href={href("/shop?tab=offers")} onClick={close} className={row}>
+            <span className="flex-1">
+              {t.menu.offers} <span aria-hidden>🏷️</span>
+            </span>
+            {chevron}
+          </Link>
+
           <div className="my-3 h-0.5 rounded-full bg-brand-blue" role="separator" />
 
           <Link href={href("/about")} onClick={close} className={row}>

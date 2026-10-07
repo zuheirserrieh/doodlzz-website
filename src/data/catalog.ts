@@ -243,3 +243,27 @@ export function getAgeGroup(slug: string) {
 export function ageName(a: AgeGroup, locale: "en" | "ar") {
   return `${a.label} ${a.sub[locale]}`;
 }
+
+export type ColorOption = { slug: string; name: { en: string; ar: string }; hex: string };
+
+/** Basic colours the owner can tick per product (shown as swatches with names). */
+export const colorPalette: ColorOption[] = [
+  { slug: "red", name: { en: "Red", ar: "أحمر" }, hex: "#E53935" },
+  { slug: "pink", name: { en: "Pink", ar: "زهري" }, hex: "#F48FB1" },
+  { slug: "purple", name: { en: "Purple", ar: "بنفسجي" }, hex: "#8E44AD" },
+  { slug: "blue", name: { en: "Blue", ar: "أزرق" }, hex: "#1E63D6" },
+  { slug: "light-blue", name: { en: "Light blue", ar: "أزرق فاتح" }, hex: "#8CCBF2" },
+  { slug: "green", name: { en: "Green", ar: "أخضر" }, hex: "#2E9E58" },
+  { slug: "yellow", name: { en: "Yellow", ar: "أصفر" }, hex: "#FFD233" },
+  { slug: "orange", name: { en: "Orange", ar: "برتقالي" }, hex: "#FF8A1F" },
+  { slug: "brown", name: { en: "Brown", ar: "بني" }, hex: "#8B5A2B" },
+  { slug: "beige", name: { en: "Beige", ar: "بيج" }, hex: "#E8D7B8" },
+  { slug: "grey", name: { en: "Grey", ar: "رمادي" }, hex: "#9AA0A6" },
+  { slug: "black", name: { en: "Black", ar: "أسود" }, hex: "#1F1F1F" },
+  { slug: "white", name: { en: "White", ar: "أبيض" }, hex: "#FFFFFF" },
+  { slug: "multicolor", name: { en: "Multicolor", ar: "متعدد الألوان" }, hex: "conic-gradient(#E53935,#FFD233,#2E9E58,#1E63D6,#8E44AD,#E53935)" },
+];
+
+export function getColor(slug: string) {
+  return colorPalette.find((c) => c.slug === slug);
+}

@@ -23,6 +23,11 @@ export type Product = {
   bestSeller?: boolean;
   isNew?: boolean;
   limitedQuantity?: boolean;
+  onOffer?: boolean;
+  /** Shown on the product page only when filled. */
+  brand?: string;
+  /** Colour slugs from the palette in catalog.ts. */
+  colors?: string[];
   lastPiece?: boolean;
   /** Ids of products shown under "Goes well with" (picked in the admin panel). */
   related?: string[];
@@ -50,6 +55,9 @@ export type ProductRow = {
   best_seller: boolean;
   is_new: boolean;
   limited_quantity?: boolean | null;
+  on_offer?: boolean | null;
+  brand?: string | null;
+  colors?: string[] | null;
   last_piece?: boolean | null;
   related?: string[] | null;
   active: boolean;
@@ -74,6 +82,9 @@ export function fromRow(row: ProductRow): Product {
     bestSeller: row.best_seller,
     isNew: row.is_new,
     limitedQuantity: row.limited_quantity ?? false,
+    onOffer: row.on_offer ?? false,
+    brand: row.brand ?? "",
+    colors: row.colors ?? [],
     lastPiece: row.last_piece ?? false,
     related: row.related ?? [],
     images: row.images ?? [],

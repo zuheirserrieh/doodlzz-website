@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CategoryTile } from "@/components/category-tile";
+import { ScrollRow } from "@/components/scroll-row";
 import { categories } from "@/data/catalog";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
@@ -16,16 +17,16 @@ export function CategoryGrid({ locale }: { locale: Locale }) {
         </Link>
       </div>
       {/* Two rows that swipe sideways, so every category is reachable from the home page. */}
-      <div className="no-scrollbar -mx-4 mt-4 grid snap-x snap-mandatory auto-cols-[108px] grid-flow-col grid-rows-2 gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 md:auto-cols-[132px]">
+      <ScrollRow className="no-scrollbar -mx-4 mt-4 grid snap-x snap-mandatory auto-cols-[108px] grid-flow-col grid-rows-2 gap-3 overflow-x-auto scroll-px-4 px-4 pb-1 md:auto-cols-[132px]">
         {categories.map((c) => (
           <CategoryTile key={c.slug} category={c} locale={locale} />
         ))}
-      </div>
+      </ScrollRow>
     </section>
   );
 }
 
-/** Brand separator artwork from the owner (public/brand/separator.jpg), cropped to the illustrated band. */
+/** Brand separator artwork from the owner (public/brand/separator.jpg), shown in full. */
 export function WavySeparator() {
   return (
     <div aria-hidden className="mx-auto mt-10 max-w-6xl overflow-hidden">
@@ -33,9 +34,9 @@ export function WavySeparator() {
       <img
         src="/brand/separator.jpg"
         alt=""
-        width={1051}
-        height={374}
-        className="aspect-[1051/190] w-full object-cover object-center"
+        width={1052}
+        height={271}
+        className="h-auto w-full"
       />
     </div>
   );

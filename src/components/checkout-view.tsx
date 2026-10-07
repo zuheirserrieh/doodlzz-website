@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useCartLines } from "@/components/cart-view";
-import { useAuth } from "@/components/catalog-provider";
+import { useAuth, useCatalog } from "@/components/catalog-provider";
+import { GiftWrapToggle, useGiftWrapFee } from "@/components/gift-wrap-toggle";
 import { TruckIcon, WhatsAppIcon } from "@/components/icons";
 import { ProductImage, productHref } from "@/components/product-card";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
@@ -33,7 +34,9 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 export function CheckoutView() {
-  const { locale, clearCart, orderNote, setOrderNote } = useStore();
+  const { locale, clearCart, orderNote, setOrderNote, giftWrap, setGiftWrap } = useStore();
+  const { giftWrap: giftWrapSetting } = useCatalog();
+  const wrapFee = useGiftWrapFee();
   const t = useDict();
   const price = usePrice();
   const { lines, subtotal, ready } = useCartLines();
@@ -77,6 +80,9 @@ export function CheckoutView() {
         `• ${l.qty} × ${l.product.name[locale]} — ${price(l.product.priceUsd * l.qty)}`,
         `  ${window.location.origin}${productHref(locale, l.product.slug)}`,
       ]),
+      ...(giftWrap && giftWrapSetting.enabled
+        ? [`🎁 ${t.checkout.msgGiftWrap}: ${giftWrapSetting.price > 0 ? price(giftWrapSetting.price) : t.checkout.free}`]
+        : []),
       `${t.checkout.total}: ${price(total)} ${t.checkout.msgDeliveryNote}`,
       "",
       `🚚 ${t.checkout.msgDelivery}: ${delivery.label} (${delivery.time})`,
@@ -100,12 +106,12 @@ export function CheckoutView() {
     setError("");
 
     let orderId: number | null = null;
-    let total = subtotal;
+    let total = subtotal + wrapFee;
     const supabase = getSupabase();
     if (supabase) {
       // Saved in the database first so the manager also sees it in the admin panel.
       const { data, error: rpcError } = await supabase.rpc("place_order", {
-        customer: { ...form, payment },
+        customer: { ...form, payment, gift_wrap: giftWrap && giftWrapSetting.enabled },
         cart: lines.map((l) => ({ id: l.product.id, qty: l.qty })),
         order_locale: locale,
       });
@@ -128,6 +134,7 @@ export function CheckoutView() {
     }
     clearCart();
     setOrderNote("");
+    setGiftWrap(false);
     setDone({ id: orderId, link });
     setBusy(null);
     window.location.href = link;
@@ -201,11 +208,12 @@ export function CheckoutView() {
           <Field label={t.checkout.city}>
             <input className={input} required autoComplete="address-level2" maxLength={80} value={form.city} onChange={(e) => set("city", e.target.value)} />
           </Field>
-          <Field label={t.checkout.address}>
+          <Field label={t.checkout.address} hint={t.checkout.addressHint}>
             <textarea
               className={`${input} h-24 py-3`}
               required
               autoComplete="street-address"
+              placeholder={t.checkout.addressHint}
               maxLength={400}
               value={form.address}
               onChange={(e) => set("address", e.target.value)}
@@ -258,8 +266,9 @@ export function CheckoutView() {
         </ul>
         <div className="flex items-baseline justify-between border-t border-[#dfe3ea] pt-3 text-lg font-extrabold">
           <span>{t.checkout.total}</span>
-          <span>{price(subtotal)}</span>
+          <span>{price(subtotal + wrapFee)}</span>
         </div>
+        <GiftWrapToggle className="bg-white" />
         <p className="rounded-xl bg-white p-3 text-sm font-bold">{t.checkout.confirmNote}</p>
         {error && (
           <p role="alert" className="rounded-xl bg-pastel-peach p-3 text-sm font-bold text-accent-dark">

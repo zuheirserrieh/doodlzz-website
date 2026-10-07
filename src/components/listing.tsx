@@ -215,6 +215,7 @@ export function Listing({
                 </div>
               </fieldset>
 
+              {products.length > 1 && (
               <fieldset>
                 <legend className="mb-1 font-extrabold">{t.listing.price}</legend>
                 <p className="text-sm text-muted">{t.listing.highestPrice(price(maxPrice))}</p>
@@ -254,7 +255,7 @@ export function Listing({
                       max={maxPrice}
                       aria-label={t.listing.priceFrom}
                       value={priceMin}
-                      onChange={(e) => setPriceMin(Math.max(0, Math.min(Number(e.target.value) || 0, hiPrice)))}
+                      onChange={(e) => setPriceMin(e.target.value === "" ? 0 : Math.max(0, Math.min(Number(e.target.value) || 0, hiPrice)))}
                       className="h-11 w-full rounded-full bg-surface px-4 font-semibold outline-none focus:ring-2 focus:ring-navy/20"
                     />
                   </label>
@@ -267,12 +268,13 @@ export function Listing({
                       max={maxPrice}
                       aria-label={t.listing.priceTo}
                       value={hiPrice}
-                      onChange={(e) => setPriceMax(Math.max(priceMin, Math.min(Number(e.target.value) || 0, maxPrice)))}
+                      onChange={(e) => setPriceMax(e.target.value === "" ? null : Math.max(priceMin, Math.min(Number(e.target.value) || 0, maxPrice)))}
                       className="h-11 w-full rounded-full bg-surface px-4 font-semibold outline-none focus:ring-2 focus:ring-navy/20"
                     />
                   </label>
                 </div>
               </fieldset>
+              )}
 
               <fieldset>
                 <legend className="mb-2.5 font-extrabold">{t.listing.age}</legend>

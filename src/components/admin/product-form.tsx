@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { ageGroups, categories, getCategory } from "@/data/catalog";
+import { ageGroups, categories, colorPalette, getCategory } from "@/data/catalog";
 import type { ProductRow } from "@/data/products";
 import { ImageCropper } from "@/components/admin/image-cropper";
 import { MAX_VIDEO_MB, isVideo } from "@/lib/media";
@@ -26,7 +26,10 @@ export const emptyRow: ProductRow = {
   best_seller: false,
   limited_quantity: false,
   last_piece: false,
+  on_offer: false,
   related: [],
+  brand: "",
+  colors: [],
   is_new: true,
   active: true,
   sort: 0,
@@ -212,6 +215,9 @@ export function ProductForm({
       best_seller: row.best_seller,
       limited_quantity: Boolean(row.limited_quantity),
       last_piece: Boolean(row.last_piece),
+      on_offer: Boolean(row.on_offer),
+      brand: (row.brand ?? "").trim(),
+      colors: row.colors ?? [],
       related: row.related ?? [],
       is_new: row.is_new,
       active: row.active,
@@ -421,6 +427,36 @@ export function ProductForm({
         <span className="text-xs text-muted">Tick both (or neither) if it suits boys and girls.</span>
       </fieldset>
 
+      <Field label="Brand" hint="Optional. Shown on the product page only when filled.">
+        <input className={input} value={row.brand ?? ""} onChange={(e) => set("brand", e.target.value)} placeholder="e.g. Chicco" />
+      </Field>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className="mb-2 text-sm font-bold">Available colors</legend>
+        <div className="flex flex-wrap gap-2">
+          {colorPalette.map((c) => {
+            const on = (row.colors ?? []).includes(c.slug);
+            return (
+              <label
+                key={c.slug}
+                className={`flex h-10 cursor-pointer items-center gap-2 rounded-full border-2 ps-1.5 pe-3 text-sm font-bold ${on ? "border-navy bg-surface" : "border-line bg-white"}`}
+              >
+                <input
+                  type="checkbox"
+                  className="sr-only"
+                  checked={on}
+                  onChange={() => set("colors", on ? (row.colors ?? []).filter((x) => x !== c.slug) : [...(row.colors ?? []), c.slug])}
+                />
+                <span className="size-6 rounded-full ring-1 ring-black/15" style={{ background: c.hex }} aria-hidden />
+                {c.name.en}
+                {on && <span aria-hidden>✓</span>}
+              </label>
+            );
+          })}
+        </div>
+        <span className="text-xs text-muted">Tap the colors this product comes in. Leave all empty to hide colors.</span>
+      </fieldset>
+
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Description (English)">
           <textarea className={`${input} h-32 py-2`} value={row.description_en} onChange={(e) => set("description_en", e.target.value)} />
@@ -439,6 +475,7 @@ export function ProductForm({
             ["is_new", "New arrival"],
             ["limited_quantity", "Limited quantity"],
             ["last_piece", "Last piece"],
+            ["on_offer", "Offer"],
           ] as const
         ).map(([key, label]) => (
           <label key={key} className="flex min-h-10 cursor-pointer items-center gap-2 font-bold">

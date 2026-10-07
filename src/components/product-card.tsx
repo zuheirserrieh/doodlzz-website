@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { getCategory, getSubcategory } from "@/data/catalog";
+import { getCategory } from "@/data/catalog";
 import type { Product } from "@/data/products";
 import { CategoryIcon, HeartIcon } from "@/components/icons";
 import { useCatalog } from "@/components/catalog-provider";
@@ -85,11 +85,12 @@ export function ProductBadge({ product }: { product: Product }) {
       ? { text: t.product.badgeLimited, cls: "bg-[#F59E0B] text-navy" }
       : null;
   const label = product.bestSeller ? t.product.badgeBest : product.isNew ? t.product.badgeNew : null;
-  if (!urgent && !label) return null;
+  if (!urgent && !label && !product.onOffer) return null;
   const pill = "w-fit rounded-full px-[9px] py-1 text-[11px] font-extrabold";
   return (
     <span className="flex flex-col items-start gap-1">
       {urgent && <span className={`${pill} ${urgent.cls}`}>{urgent.text}</span>}
+      {product.onOffer && <span className={`${pill} bg-[#2E9E58] text-white`}>{t.product.badgeOffer}</span>}
       {label && <span className={`${pill} bg-badge text-navy`}>{label}</span>}
     </span>
   );
@@ -152,7 +153,6 @@ export function AddToCartButton({ productId, className = "" }: { productId: stri
 
 export function ProductCard({ product }: { product: Product }) {
   const { locale } = useStore();
-  const category = getCategory(product.category);
   const href = productHref(locale, product.slug);
 
   return (
@@ -169,7 +169,6 @@ export function ProductCard({ product }: { product: Product }) {
       <Link href={href} className="mt-1 min-h-[38px] text-sm font-bold leading-[1.35]">
         {product.name[locale]}
       </Link>
-      <div className="text-xs text-muted">{getSubcategory(product.category, product.subcategory)?.name[locale] ?? category?.name[locale]}</div>
       <PriceTag product={product} className="text-base" />
       <AddToCartButton productId={product.id} className="mt-1 h-11 text-sm" />
     </article>

@@ -6,6 +6,7 @@ import { AdminCategories } from "@/components/admin/admin-categories";
 import { AdminHomeMedia } from "@/components/admin/admin-home-media";
 import { AdminOrders } from "@/components/admin/admin-orders";
 import { AdminProducts } from "@/components/admin/admin-products";
+import { AdminSettings } from "@/components/admin/admin-settings";
 import { useAuth } from "@/components/catalog-provider";
 import { AuthForm, NewPasswordForm } from "@/components/auth-form";
 import { Logo } from "@/components/logo";
@@ -14,7 +15,7 @@ import { supabaseConfigured } from "@/lib/supabase";
 
 const authTexts = getDictionary("en").account.auth;
 
-type Tab = "orders" | "products" | "categories" | "home";
+type Tab = "orders" | "products" | "categories" | "home" | "settings";
 
 function Card({ children }: { children: ReactNode }) {
   return (
@@ -117,8 +118,11 @@ export function AdminApp() {
           <button type="button" role="tab" aria-selected={tab === "home"} onClick={() => setTab("home")} className={tabClass("home")}>
             Home page
           </button>
+          <button type="button" role="tab" aria-selected={tab === "settings"} onClick={() => setTab("settings")} className={tabClass("settings")}>
+            Settings
+          </button>
         </div>
-        <div className="mt-5">{tab === "orders" ? <AdminOrders /> : tab === "products" ? <AdminProducts /> : tab === "categories" ? <AdminCategories /> : <AdminHomeMedia />}</div>
+        <div className="mt-5">{tab === "orders" ? <AdminOrders /> : tab === "products" ? <AdminProducts /> : tab === "categories" ? <AdminCategories /> : tab === "home" ? <AdminHomeMedia /> : <AdminSettings />}</div>
       </div>
     </div>
   );

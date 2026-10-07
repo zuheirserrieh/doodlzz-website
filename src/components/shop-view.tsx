@@ -23,6 +23,7 @@ export function ShopView() {
   if (category) list = list.filter((p) => p.category === category.slug);
   if (tab === "best") list = list.filter((p) => p.bestSeller);
   if (tab === "new") list = list.filter((p) => p.isNew);
+  if (tab === "offers") list = list.filter((p) => p.onOffer);
 
   let title = t.listing.allProducts;
   if (q) title = t.listing.searchFor(q);
@@ -30,6 +31,7 @@ export function ShopView() {
   else if (age) title = t.listing.ageTitle(ageName(age, locale));
   else if (tab === "best") title = t.picked.best;
   else if (tab === "new") title = t.picked.fresh;
+  else if (tab === "offers") title = t.menu.offers;
 
   return (
     <>

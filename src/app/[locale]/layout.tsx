@@ -8,7 +8,7 @@ import { MenuDrawer } from "@/components/menu-drawer";
 import { StoreProvider } from "@/components/store-provider";
 import { WhatsAppFab } from "@/components/whatsapp-fab";
 import { dirOf, getDictionary, isLocale, locales } from "@/lib/i18n";
-import { fontPreviewScript, fontVariables } from "@/lib/fonts";
+import { fontPreviewScript, fontVariables, splashScript } from "@/lib/fonts";
 import "../globals.css";
 
 // Only the pages generated at build time exist; anything else is a 404.
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
       siteName: "Doodlzz",
       locale: locale === "ar" ? "ar_LB" : "en_US",
       type: "website",
-      images: [{ url: "/brand/logo-doodles.jpg", width: 524, height: 435, alt: "Doodlzz" }],
+      images: [{ url: "/brand/logo-doodlzz.jpg", width: 1280, height: 799, alt: "Doodlzz" }],
     },
     alternates: { languages: { en: "/en", ar: "/ar" } },
   };
@@ -55,9 +55,14 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       suppressHydrationWarning
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: fontPreviewScript }} />
+        <script dangerouslySetInnerHTML={{ __html: fontPreviewScript + splashScript }} />
       </head>
       <body className="site-bg min-h-dvh">
+        {/* Entrance animation (CSS only, see globals.css). */}
+        <div id="dz-splash" aria-hidden>
+          {/* eslint-disable-next-line @next/next/no-img-element -- static brand image */}
+          <img src="/brand/round-logo-2.jpg" alt="" width={1254} height={1254} fetchPriority="high" />
+        </div>
         <CatalogProvider>
         <StoreProvider locale={locale}>
           <div className="flex min-h-dvh flex-col">

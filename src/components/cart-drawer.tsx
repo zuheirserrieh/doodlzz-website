@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCartLines } from "@/components/cart-view";
+import { GiftWrapToggle, useGiftWrapFee } from "@/components/gift-wrap-toggle";
 import { ChevronIcon, CloseIcon, MinusIcon, PlusIcon } from "@/components/icons";
 import { ProductImage, productHref } from "@/components/product-card";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
@@ -14,6 +15,7 @@ export function CartDrawer() {
   const t = useDict();
   const price = usePrice();
   const { lines, subtotal } = useCartLines();
+  const wrapFee = useGiftWrapFee();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -132,9 +134,10 @@ export function CartDrawer() {
                   className="h-20 rounded-xl border border-[#dfe3ea] p-3 text-sm outline-none focus:border-navy"
                 />
               )}
+              <GiftWrapToggle />
               <div className="flex items-baseline justify-between">
                 <span className="font-extrabold">{t.cartDrawer.estimatedTotal}</span>
-                <span className="text-lg font-extrabold">{price(subtotal)}</span>
+                <span className="text-lg font-extrabold">{price(subtotal + wrapFee)}</span>
               </div>
               <p className="-mt-2 text-xs text-muted">{t.cartDrawer.feesNote}</p>
               <div className="grid grid-cols-2 gap-2.5">

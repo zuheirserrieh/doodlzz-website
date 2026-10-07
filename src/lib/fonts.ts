@@ -16,3 +16,6 @@ export const fontVariables = [fontA, fontB, fontArabic, fontLogo].map((f) => f.v
  * (or ?font=a to go back). The choice is remembered while browsing.
  */
 export const fontPreviewScript = `try{var m=location.search.match(/[?&]font=(a|b)/);if(m)localStorage.setItem("dz-font",m[1]);var f=localStorage.getItem("dz-font");if(f==="b")document.documentElement.setAttribute("data-font","b")}catch(e){}`;
+
+/** Show the entrance animation only on the first page of a visit. */
+export const splashScript = `try{if(sessionStorage.getItem("dz-splash"))document.documentElement.classList.add("dz-no-splash");else sessionStorage.setItem("dz-splash","1")}catch(e){}`;

@@ -5,12 +5,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useCatalog } from "@/components/catalog-provider";
-import { ChevronIcon, CloseIcon, MinusIcon, PaymentIcon, PlusIcon, SearchIcon, TruckIcon, WhatsAppIcon } from "@/components/icons";
+import { ChevronIcon, CloseIcon, MinusIcon, PaymentIcon, PlusIcon, SearchIcon, TruckIcon } from "@/components/icons";
 import { PriceTag, ProductBadge, ProductGrid, ProductImage, WishButton } from "@/components/product-card";
 import { useDict, useStore } from "@/components/store-provider";
-import { ageGroups, getCategory, getSubcategory } from "@/data/catalog";
+import { ageGroups, getCategory, getColor, getSubcategory } from "@/data/catalog";
 import { isVideo } from "@/lib/media";
-import { whatsappLink } from "@/lib/site";
 
 export function ProductView() {
   const { locale, addToCart } = useStore();
@@ -65,7 +64,7 @@ export function ProductView() {
   const current = images[Math.min(photo, images.length - 1)];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-4">
+    <div className="mx-3 mt-3 max-w-6xl rounded-3xl bg-white/90 p-3 shadow-sm sm:mx-4 md:mx-auto md:p-6">
       {category && (
         <Link href={`/${locale}/category/${category.slug}${sub ? `?sub=${sub.slug}` : ""}`} className="inline-flex min-h-11 items-center gap-1 text-sm font-bold text-muted">
           <ChevronIcon size={16} className="rotate-180 rtl:rotate-0" />
@@ -147,7 +146,7 @@ export function ProductView() {
           )}
         </div>
 
-        <div className="flex flex-col gap-4 rounded-3xl bg-white/85 p-4 shadow-sm md:p-6">
+        <div className="flex flex-col gap-4">
           <div>
             <p className="text-sm font-bold text-muted">
               {category?.name[locale]}
@@ -163,18 +162,33 @@ export function ProductView() {
             <PriceTag product={product} className="mt-2 text-2xl" />
           </div>
 
-          {product.description[locale] && (
-            <p className="leading-relaxed whitespace-pre-line text-ink-soft">{product.description[locale]}</p>
+          {(product.brand || (product.colors?.length ?? 0) > 0) && (
+            <dl className="flex flex-col gap-2.5 text-sm">
+              {product.brand && (
+                <div className="flex items-center gap-2">
+                  <dt className="font-bold text-muted">{t.product.brand}:</dt>
+                  <dd className="font-extrabold">{product.brand}</dd>
+                </div>
+              )}
+              {(product.colors?.length ?? 0) > 0 && (
+                <div className="flex flex-wrap items-center gap-2">
+                  <dt className="font-bold text-muted">{t.product.colors}:</dt>
+                  {product.colors!.map((slug) => {
+                    const c = getColor(slug);
+                    if (!c) return null;
+                    return (
+                      <dd key={slug} className="flex items-center gap-1.5 rounded-full border border-line bg-white py-1 ps-1 pe-3 font-bold">
+                        <span className="size-5 rounded-full ring-1 ring-black/15" style={{ background: c.hex }} aria-hidden />
+                        {c.name[locale]}
+                      </dd>
+                    );
+                  })}
+                </div>
+              )}
+            </dl>
           )}
-          {product.description[other] && product.description[other] !== product.description[locale] && (
-            <p
-              lang={other}
-              dir={other === "ar" ? "rtl" : "ltr"}
-              className="rounded-2xl bg-surface p-3.5 leading-relaxed whitespace-pre-line text-ink-soft"
-            >
-              {product.description[other]}
-            </p>
-          )}
+
+          <DescriptionCard en={product.description.en} ar={product.description.ar} locale={locale} />
 
           {ages.length > 0 && (
             <div>
@@ -191,26 +205,32 @@ export function ProductView() {
 
           <div className="flex flex-col gap-2.5 pt-1">
             <div className="flex gap-2.5">
-              <div role="group" aria-label={t.cart.quantity} className="flex h-[52px] flex-none items-center rounded-full border-2 border-line bg-white">
-                <button
-                  type="button"
-                  aria-label={t.cart.decrease}
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  className="flex size-11 cursor-pointer items-center justify-center rounded-full"
-                >
-                  <MinusIcon />
-                </button>
-                <span className="min-w-7 text-center text-base font-extrabold" aria-live="polite">
+              <div
+                role="group"
+                aria-label={t.cart.quantity}
+                className="flex h-[52px] w-[92px] flex-none overflow-hidden rounded-full border-2 border-brand-blue bg-white"
+              >
+                <span className="flex flex-1 items-center justify-center text-lg font-extrabold" aria-live="polite">
                   {qty}
                 </span>
-                <button
-                  type="button"
-                  aria-label={t.cart.increase}
-                  onClick={() => setQty((q) => Math.min(20, q + 1))}
-                  className="flex size-11 cursor-pointer items-center justify-center rounded-full"
-                >
-                  <PlusIcon />
-                </button>
+                <span className="flex w-10 flex-col border-s-2 border-brand-blue">
+                  <button
+                    type="button"
+                    aria-label={t.cart.increase}
+                    onClick={() => setQty((q) => Math.min(20, q + 1))}
+                    className="flex flex-1 cursor-pointer items-center justify-center bg-brand-blue-soft/50 hover:bg-brand-blue-soft"
+                  >
+                    <PlusIcon size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={t.cart.decrease}
+                    onClick={() => setQty((q) => Math.max(1, q - 1))}
+                    className="flex flex-1 cursor-pointer items-center justify-center border-t-2 border-brand-blue bg-brand-blue-soft/50 hover:bg-brand-blue-soft"
+                  >
+                    <MinusIcon size={15} />
+                  </button>
+                </span>
               </div>
               <button
                 type="button"
@@ -234,15 +254,6 @@ export function ProductView() {
             >
               {t.product.buyNow}
             </button>
-            <a
-              href={whatsappLink(t.product.whatsAppMessage(product.name[locale]))}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-[52px] items-center justify-center gap-2 rounded-full border-2 border-whatsapp text-base font-extrabold text-whatsapp hover:bg-whatsapp hover:text-white"
-            >
-              <WhatsAppIcon size={22} />
-              {t.product.orderWhatsApp}
-            </a>
           </div>
 
           <ul className="mt-1 flex flex-col gap-2.5 rounded-2xl border border-brand-blue bg-brand-blue/35 p-4 text-[15px] font-extrabold text-navy backdrop-blur-sm">
@@ -331,5 +342,37 @@ export function ProductView() {
         </div>
       )}
     </div>
+  );
+}
+
+/** Product description in one card; English / العربية tabs when both languages were entered. */
+function DescriptionCard({ en, ar, locale }: { en: string; ar: string; locale: "en" | "ar" }) {
+  const both = Boolean(en && ar && en !== ar);
+  const [lang, setLang] = useState<"en" | "ar">(locale);
+  const text = both ? (lang === "ar" ? ar : en) : en || ar;
+  if (!text) return null;
+  const textLang = both ? lang : en ? "en" : "ar";
+  return (
+    <section className="rounded-2xl border border-line bg-surface/70">
+      {both && (
+        <div role="tablist" className="flex gap-1 border-b border-line p-1.5">
+          {(["en", "ar"] as const).map((l) => (
+            <button
+              key={l}
+              type="button"
+              role="tab"
+              aria-selected={lang === l}
+              onClick={() => setLang(l)}
+              className={`h-9 flex-1 cursor-pointer rounded-xl text-sm font-extrabold ${lang === l ? "bg-white text-navy shadow-sm" : "text-muted"}`}
+            >
+              {l === "en" ? "English" : "العربية"}
+            </button>
+          ))}
+        </div>
+      )}
+      <p lang={textLang} dir={textLang === "ar" ? "rtl" : "ltr"} className="p-4 leading-relaxed whitespace-pre-line text-ink-soft">
+        {text}
+      </p>
+    </section>
   );
 }

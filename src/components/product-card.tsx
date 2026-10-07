@@ -166,7 +166,7 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
         <WishButton productId={product.id} className="absolute end-0.5 top-0.5" />
       </div>
-      <Link href={href} className="mt-1 min-h-[38px] text-sm font-bold leading-[1.35]">
+      <Link href={href} className="mt-1 text-sm font-bold leading-[1.35]">
         {product.name[locale]}
       </Link>
       <PriceTag product={product} className="text-base" />

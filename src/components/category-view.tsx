@@ -43,11 +43,10 @@ export function CategoryView({ slug }: { slug: string }) {
 function SubcategoryLanding({ category }: { category: Category }) {
   const { locale } = useStore();
   const t = useDict();
-  const { products, categoryImages, ready } = useCatalog();
-  const count = (sub: string) => products.filter((p) => p.category === category.slug && p.subcategory === sub).length;
+  const { categoryImages } = useCatalog();
   const base = `/${locale}/category/${category.slug}`;
 
-  const tile = (href: string, name: string, image: string | undefined, n: number | null, key: string) => (
+  const tile = (href: string, name: string, image: string | undefined, key: string) => (
     <Link key={key} href={href} className="group flex flex-col items-center gap-2 text-center">
       <span
         className={`relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-full shadow-sm ring-4 ring-white transition-transform group-hover:scale-[1.03] ${category.tint}`}
@@ -60,7 +59,6 @@ function SubcategoryLanding({ category }: { category: Category }) {
       </span>
       <span className="rounded-lg bg-white/90 px-2 py-0.5 text-[13px] leading-tight font-bold">
         {name}
-        {ready && n !== null && <span className="ms-1 font-semibold text-muted">({n})</span>}
       </span>
     </Link>
   );
@@ -70,8 +68,8 @@ function SubcategoryLanding({ category }: { category: Category }) {
       <div className="rounded-3xl bg-white/85 p-4 shadow-sm md:p-6">
         <h1 className="font-display text-[28px] leading-tight font-bold">{category.name[locale]}</h1>
         <div className="mt-5 grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 md:grid-cols-6">
-          {tile(`${base}?sub=all`, t.listing.viewAll, categoryImages[category.slug], null, "all")}
-          {category.subs.map((s) => tile(`${base}?sub=${s.slug}`, s.name[locale], categoryImages[s.slug], count(s.slug), s.slug))}
+          {tile(`${base}?sub=all`, t.listing.viewAll, categoryImages[category.slug], "all")}
+          {category.subs.map((s) => tile(`${base}?sub=${s.slug}`, s.name[locale], categoryImages[s.slug], s.slug))}
         </div>
       </div>
     </div>

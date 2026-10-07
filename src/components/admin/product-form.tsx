@@ -219,7 +219,7 @@ export function ProductForm({
       last_piece: Boolean(row.last_piece),
       on_offer: Boolean(row.on_offer),
       gift_wrap: Boolean(row.gift_wrap),
-      gift_wrap_price: Math.max(0, Number(row.gift_wrap_price) || 0),
+      gift_wrap_price: Math.min(10, Math.max(0, Number(row.gift_wrap_price) || 0)),
       brand: (row.brand ?? "").trim(),
       colors: row.colors ?? [],
       related: row.related ?? [],
@@ -442,13 +442,14 @@ export function ProductForm({
           <span aria-hidden>🎁</span> Offer gift wrapping for this product
         </label>
         {row.gift_wrap && (
-          <Field label="Gift wrap price per item (USD)" hint="0 = shown as FREE. Customers switch it on per item; it's added to the total and the WhatsApp message.">
+          <Field label="Gift wrap price per item (USD)" hint="0 = FREE, or $0.25 steps up to $10. Customers switch it on per item; it's added to the total and the WhatsApp message.">
             <input
               className={`${input} w-36`}
               type="number"
               inputMode="decimal"
               min="0"
-              step="0.5"
+              step="0.25"
+              max="10"
               dir="ltr"
               value={row.gift_wrap_price ?? 0}
               onChange={(e) => set("gift_wrap_price", e.target.value)}

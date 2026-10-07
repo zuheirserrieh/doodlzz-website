@@ -139,7 +139,6 @@ export function CartDrawer() {
                 <span className="font-extrabold">{t.cartDrawer.estimatedTotal}</span>
                 <span className="text-lg font-extrabold">{price(subtotal)}</span>
               </div>
-              <p className="-mt-2 text-xs text-muted">{t.cartDrawer.feesNote}</p>
               <div className="grid grid-cols-2 gap-2.5">
                 <Link href={`/${locale}/cart`} className="flex h-12 items-center justify-center rounded-full bg-surface text-sm font-extrabold">
                   {t.cartDrawer.viewCart}

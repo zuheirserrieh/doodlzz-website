@@ -34,7 +34,7 @@ export function AccountView() {
   }, [session]);
 
   const shell = (children: ReactNode) => (
-    <div className="mx-auto flex max-w-md flex-col gap-5 px-4 pt-8">
+    <div className="mx-4 mt-6 flex max-w-md flex-col gap-5 rounded-3xl bg-white/85 p-5 shadow-sm sm:mx-auto">
       <h1 className="font-display text-[28px] font-bold">{t.account.title}</h1>
       {children}
     </div>
@@ -86,7 +86,7 @@ export function AccountView() {
         ) : (
           <ul className="mt-3 flex flex-col gap-3">
             {orders.map((o) => (
-              <li key={o.id} className="rounded-2xl border border-line p-4">
+              <li key={o.id} className="rounded-2xl border border-line bg-white/90 p-4 shadow-sm">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-extrabold">{t.account.orderNo(o.id)}</span>
                   <span className="rounded-full bg-pastel-blue px-3 py-1 text-xs font-extrabold">

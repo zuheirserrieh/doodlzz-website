@@ -46,7 +46,7 @@ export function CartView() {
     <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 px-4 pt-6 md:grid-cols-[minmax(0,1fr)_340px]">
       <div>
         <h1 className="font-display text-[28px] font-bold">{t.cart.title}</h1>
-        <ul className="mt-4 flex flex-col">
+        <ul className="mt-4 flex flex-col rounded-3xl bg-white/90 px-4 shadow-sm">
           {lines.map(({ product, qty }) => renderLine(product, qty))}
         </ul>
       </div>

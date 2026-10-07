@@ -147,7 +147,7 @@ export function ProductView() {
           )}
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 rounded-3xl bg-white/85 p-4 shadow-sm md:p-6">
           <div>
             <p className="text-sm font-bold text-muted">
               {category?.name[locale]}

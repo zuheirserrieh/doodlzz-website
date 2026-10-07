@@ -18,7 +18,7 @@ export default async function DeliveryPage({ params }: PageProps<"/[locale]/deli
   const page = t.deliveryPage;
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-9 px-4 pt-8">
+    <div className="mx-4 mt-6 flex max-w-2xl flex-col gap-9 rounded-3xl bg-white/85 p-5 shadow-sm md:mx-auto md:p-8">
       <h1 className="font-display text-3xl font-extrabold">{page.title}</h1>
 
       <section id="delivery" className="flex scroll-mt-28 flex-col gap-3">

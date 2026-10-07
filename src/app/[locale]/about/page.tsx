@@ -17,7 +17,7 @@ export default async function AboutPage({ params }: PageProps<"/[locale]/about">
   const t = getDictionary(locale);
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col items-center gap-5 px-4 pt-8">
+    <div className="mx-4 mt-6 flex max-w-2xl flex-col items-center gap-5 rounded-3xl bg-white/85 p-5 shadow-sm md:mx-auto md:p-8">
       <img src="/brand/doodlzz-logo.jpg" alt="Doodlzz" width={940} height={788} className="w-64 max-w-full" />
       <h1 className="self-start font-display text-3xl font-extrabold">{t.about.title}</h1>
       {t.about.paragraphs.map((p) => (

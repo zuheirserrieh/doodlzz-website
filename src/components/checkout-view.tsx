@@ -176,7 +176,7 @@ export function CheckoutView() {
 
   return (
     <form onSubmit={submit} className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 px-4 pt-6 md:grid-cols-[minmax(0,1fr)_380px]">
-      <div className="flex flex-col gap-7">
+      <div className="flex flex-col gap-7 rounded-3xl bg-white/85 p-4 shadow-sm md:p-6">
         <h1 className="font-display text-[28px] font-bold">{t.checkout.title}</h1>
 
         <fieldset className="flex flex-col gap-4">
@@ -226,7 +226,7 @@ export function CheckoutView() {
             return (
               <label
                 key={key}
-                className={`flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 ${on ? "border-navy bg-surface" : "border-[#dfe3ea]"}`}
+                className={`flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 ${on ? "border-navy bg-surface" : "border-[#dfe3ea] bg-white"}`}
               >
                 <input type="radio" name="delivery" checked={on} onChange={() => set("delivery", key)} className="size-5 accent-navy" />
                 <span className="flex flex-col">

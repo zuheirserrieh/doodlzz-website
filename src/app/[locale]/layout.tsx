@@ -23,8 +23,18 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
   if (!isLocale(locale)) return {};
   const t = getDictionary(locale);
   return {
-    title: { default: "Doodlzz — Baby & Kids Store in Lebanon", template: "%s · Doodlzz" },
-    description: t.hero.slides[0].text,
+    // Short title + description: this is what WhatsApp/Instagram show when the link is shared.
+    metadataBase: new URL("https://doodlzz-website.doodlzzlb.workers.dev"),
+    title: { default: t.meta.title, template: "%s · Doodlzz" },
+    description: t.meta.description,
+    openGraph: {
+      title: t.meta.title,
+      description: t.meta.description,
+      siteName: "Doodlzz",
+      locale: locale === "ar" ? "ar_LB" : "en_US",
+      type: "website",
+      images: [{ url: "/brand/logo-doodles.jpg", width: 524, height: 435, alt: "Doodlzz" }],
+    },
     alternates: { languages: { en: "/en", ar: "/ar" } },
   };
 }

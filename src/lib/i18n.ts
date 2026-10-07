@@ -14,6 +14,10 @@ export function dirOf(locale: Locale) {
 export type Localized = Record<Locale, string>;
 
 const en = {
+  meta: {
+    title: "Shop Online With Doodlzz",
+    description: "Toys, baby essentials, sports & outdoor gear, delivered all over Lebanon. Pay cash on delivery or by Whish.",
+  },
   announcements: ["Delivery available all over Lebanon 🇱🇧", "Payment via Cash on Delivery or by WhishMoney"],
   nav: {
     openMenu: "Open menu",
@@ -215,7 +219,7 @@ const en = {
     deliveryTitle: "Delivery time & fees",
     deliveryOptions: {
       standard: { label: "Standard", time: "2 to 5 working days", fee: "$4 to $5 depending on the location" },
-      express: { label: "Extra fast", time: "Within 2 days", fee: "Double the standard fee" },
+      express: { label: "Extra fast", time: "Within 2 days", fee: "Double the price of the standard option fees" },
       sameday: { label: "Within 24 hours", time: "Next day at the latest", fee: "Price depends on the distance" },
     } as Record<string, { label: string; time: string; fee: string }>,
     confirmNote: "Please note: Your order will be confirmed, and item availability will be checked via WhatsApp after checkout.",
@@ -334,6 +338,10 @@ const en = {
 export type Dictionary = typeof en;
 
 const ar: Dictionary = {
+  meta: {
+    title: "تسوّق أونلاين مع Doodlzz",
+    description: "ألعاب، مستلزمات الأطفال، معدات رياضية وخارجية، مع التوصيل إلى كل لبنان. الدفع نقداً عند الاستلام أو عبر Whish.",
+  },
   announcements: ["التوصيل متوفر إلى كل لبنان 🇱🇧", "الدفع نقداً عند الاستلام أو عبر WhishMoney"],
   nav: {
     openMenu: "فتح القائمة",
@@ -535,7 +543,7 @@ const ar: Dictionary = {
     deliveryTitle: "وقت التوصيل والرسوم",
     deliveryOptions: {
       standard: { label: "عادي", time: "من 2 إلى 5 أيام عمل", fee: "من 4$ إلى 5$ حسب المنطقة" },
-      express: { label: "سريع جداً", time: "خلال يومين", fee: "ضعف رسوم التوصيل العادي" },
+      express: { label: "سريع جداً", time: "خلال يومين", fee: "ضعف سعر رسوم التوصيل العادي" },
       sameday: { label: "خلال 24 ساعة", time: "في اليوم التالي كحد أقصى", fee: "السعر حسب المسافة" },
     } as Record<string, { label: string; time: string; fee: string }>,
     confirmNote: "ملاحظة: سيتم تأكيد طلبك والتحقق من توفر المنتجات عبر واتساب بعد إتمام الطلب.",

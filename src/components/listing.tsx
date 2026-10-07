@@ -130,7 +130,7 @@ export function Listing({
               return (
                 <Link
                   key={s.slug || "all"}
-                  href={`/${locale}/category/${category.slug}${s.slug ? `?sub=${s.slug}` : ""}`}
+                  href={`/${locale}/category/${category.slug}?sub=${s.slug || "all"}`}
                   aria-current={active ? "page" : undefined}
                   className="flex w-[84px] flex-none flex-col items-center gap-1.5 text-center"
                 >
@@ -145,7 +145,7 @@ export function Listing({
                       <CategoryIcon name={category.icon} size={34} />
                     )}
                   </span>
-                  <span className={`text-xs leading-tight ${active ? "font-extrabold" : "font-semibold"}`}>{s.name[locale]}</span>
+                  <span className={`rounded-md bg-white/85 px-1.5 py-0.5 text-xs leading-tight ${active ? "font-extrabold" : "font-semibold"}`}>{s.name[locale]}</span>
                 </Link>
               );
             })}

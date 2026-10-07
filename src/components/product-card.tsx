@@ -156,7 +156,7 @@ export function ProductCard({ product }: { product: Product }) {
   const href = productHref(locale, product.slug);
 
   return (
-    <article className="flex min-w-0 flex-col gap-1.5">
+    <article className="flex min-w-0 flex-col gap-1.5 rounded-[22px] bg-white/90 p-2 shadow-sm">
       <div className="relative">
         <Link href={href} tabIndex={-1} aria-hidden>
           <ProductImage product={product} cycle className="aspect-square rounded-[18px]" />

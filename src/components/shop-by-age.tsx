@@ -7,7 +7,7 @@ import { ScrollArrows } from "@/components/scroll-row";
 import { AgeIcon, ArrowIcon, PlusIcon } from "@/components/icons";
 import { PriceTag, ProductImage, productHref } from "@/components/product-card";
 import { useDict, useStore } from "@/components/store-provider";
-import { ageGroups, getCategory, getSubcategory } from "@/data/catalog";
+import { ageGroups } from "@/data/catalog";
 
 /** Pick an age, then swipe through the matching products. */
 export function ShopByAge({ title }: { title?: string }) {
@@ -78,7 +78,7 @@ export function ShopByAge({ title }: { title?: string }) {
             <p className="rounded-2xl bg-white px-2 py-10 text-center text-sm text-muted">{t.age.empty}</p>
           ) : (
             <div className="relative">
-            <div ref={trackRef} onScroll={onScroll} className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto">
+            <div ref={trackRef} onScroll={onScroll} className="no-scrollbar flex items-start snap-x snap-mandatory gap-3 overflow-x-auto">
               {list.map((p) => (
                 <article
                   key={p.id}
@@ -87,12 +87,11 @@ export function ShopByAge({ title }: { title?: string }) {
                   <Link href={productHref(locale, p.slug)} tabIndex={-1} aria-hidden>
                     <ProductImage product={p} iconSize={56} cycle className="aspect-square" />
                   </Link>
-                  <div className="flex flex-1 flex-col p-3">
-                    <span className="text-xs text-muted">{getSubcategory(p.category, p.subcategory)?.name[locale] ?? getCategory(p.category)?.shortName[locale]}</span>
-                    <Link href={productHref(locale, p.slug)} className="mt-0.5 line-clamp-2 min-h-[2.6em] text-sm leading-[1.3] font-bold">
+                  <div className="flex flex-col p-3">
+                    <Link href={productHref(locale, p.slug)} className="line-clamp-2 text-sm leading-[1.3] font-bold">
                       {p.name[locale]}
                     </Link>
-                    <div className="mt-auto flex items-center justify-between gap-1 pt-2">
+                    <div className="flex items-center justify-between gap-1 pt-1.5">
                       <PriceTag product={p} className="text-base" />
                       <button
                         type="button"

@@ -5,7 +5,7 @@ import { PhoneIcon, WhatsAppIcon } from "@/components/icons";
 import { formatPrice } from "@/components/store-provider";
 import { getSupabase } from "@/lib/supabase";
 
-type OrderItem = { id: string; name: string; qty: number; price: number };
+type OrderItem = { id: string; name: string; qty: number; price: number; wrap?: boolean; wrap_fee?: number };
 type Order = {
   id: number;
   created_at: string;
@@ -122,11 +122,6 @@ export function AdminOrders() {
               <span className="rounded-full bg-surface px-2.5 py-0.5 text-xs font-extrabold">
                 {o.payment_method === "cash" ? "💵 Cash on delivery" : "📱 Whish Money"}
               </span>
-              {o.gift_wrap && (
-                <span className="rounded-full bg-pastel-peach px-2.5 py-0.5 text-xs font-extrabold">
-                  🎁 Gift wrap{Number(o.gift_wrap_fee) > 0 ? ` (+${formatPrice(Number(o.gift_wrap_fee))})` : " (free)"}
-                </span>
-              )}
               {o.delivery_option && (
                 <span className="rounded-full bg-pastel-blue px-2.5 py-0.5 text-xs font-extrabold">{deliveryLabels[o.delivery_option]}</span>
               )}
@@ -161,6 +156,11 @@ export function AdminOrders() {
                     <li key={n} className="flex justify-between gap-2">
                       <span>
                         {i.qty} × {i.name}
+                        {i.wrap && (
+                          <span className="ms-1 font-bold text-accent">
+                            🎁 gift wrap{Number(i.wrap_fee) > 0 ? ` (+${formatPrice(Number(i.wrap_fee))})` : " (free)"}
+                          </span>
+                        )}
                       </span>
                       <span className="font-bold">{formatPrice(Number(i.price) * i.qty)}</span>
                     </li>

@@ -24,6 +24,10 @@ export type Product = {
   isNew?: boolean;
   limitedQuantity?: boolean;
   onOffer?: boolean;
+  /** Customers can add gift wrap to this product. */
+  giftWrap?: boolean;
+  /** Gift wrap price per unit (0 = free). */
+  giftWrapPrice?: number;
   /** Shown on the product page only when filled. */
   brand?: string;
   /** Colour slugs from the palette in catalog.ts. */
@@ -56,6 +60,8 @@ export type ProductRow = {
   is_new: boolean;
   limited_quantity?: boolean | null;
   on_offer?: boolean | null;
+  gift_wrap?: boolean | null;
+  gift_wrap_price?: number | string | null;
   brand?: string | null;
   colors?: string[] | null;
   last_piece?: boolean | null;
@@ -83,6 +89,8 @@ export function fromRow(row: ProductRow): Product {
     isNew: row.is_new,
     limitedQuantity: row.limited_quantity ?? false,
     onOffer: row.on_offer ?? false,
+    giftWrap: row.gift_wrap ?? false,
+    giftWrapPrice: Number(row.gift_wrap_price ?? 0) || 0,
     brand: row.brand ?? "",
     colors: row.colors ?? [],
     lastPiece: row.last_piece ?? false,

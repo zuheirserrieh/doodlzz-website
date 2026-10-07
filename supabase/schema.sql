@@ -60,6 +60,9 @@ alter table public.products add column if not exists related uuid[] not null def
 alter table public.products add column if not exists brand text not null default '';
 alter table public.products add column if not exists colors text[] not null default '{}';
 alter table public.products add column if not exists on_offer boolean not null default false;
+-- Optional gift wrap per product (price per unit; 0 = free).
+alter table public.products add column if not exists gift_wrap boolean not null default false;
+alter table public.products add column if not exists gift_wrap_price numeric(10, 2) not null default 0 check (gift_wrap_price >= 0);
 
 -- Data fixes for older setups (safe to repeat: they only touch old values).
 -- The old categories became subcategories of "Baby Essentials".
@@ -171,9 +174,9 @@ declare
   lines jsonb := '[]'::jsonb;
   sum_usd numeric(10, 2) := 0;
   new_id bigint;
-  wrap jsonb;
   wrap_fee numeric(10, 2) := 0;
-  wants_wrap boolean := coalesce((customer ->> 'gift_wrap')::boolean, false);
+  line_wrap boolean;
+  line_wrap_fee numeric(10, 2);
 begin
   if jsonb_typeof(cart) <> 'array' or jsonb_array_length(cart) = 0 then
     raise exception 'Cart is empty';
@@ -198,25 +201,18 @@ begin
     if not found then
       raise exception 'A product in the cart is no longer available';
     end if;
+    -- Gift wrap is per item, only if the product offers it; the price comes from the product.
+    line_wrap := coalesce((line ->> 'wrap')::boolean, false) and p.gift_wrap;
+    line_wrap_fee := case when line_wrap then p.gift_wrap_price * qty else 0 end;
     lines := lines || jsonb_build_object(
       'id', p.id, 'slug', p.slug, 'name', p.name_en, 'name_ar', p.name_ar,
-      'price', p.price_usd, 'qty', qty
+      'price', p.price_usd, 'qty', qty, 'wrap', line_wrap, 'wrap_fee', line_wrap_fee
     );
-    sum_usd := sum_usd + p.price_usd * qty;
+    sum_usd := sum_usd + p.price_usd * qty + line_wrap_fee;
+    wrap_fee := wrap_fee + line_wrap_fee;
     -- Counted for the "Best selling" sort.
     update public.products set sold_count = sold_count + qty where id = p.id;
   end loop;
-
-  -- Optional gift wrap: price comes from the settings, never from the browser.
-  if wants_wrap then
-    select value into wrap from public.site_settings where key = 'gift_wrap';
-    if wrap is null or coalesce((wrap ->> 'enabled')::boolean, false) = false then
-      wants_wrap := false;
-    else
-      wrap_fee := greatest(0, coalesce((wrap ->> 'price')::numeric, 0));
-      sum_usd := sum_usd + wrap_fee;
-    end if;
-  end if;
 
   insert into public.orders (user_id, customer_name, phone, city, address, notes, payment_method, delivery_option, gift_wrap, gift_wrap_fee, items, total_usd, locale)
   values (
@@ -228,7 +224,7 @@ begin
     left(coalesce(trim(customer ->> 'notes'), ''), 600),
     customer ->> 'payment',
     case when customer ->> 'delivery' in ('express', 'sameday') then customer ->> 'delivery' else 'standard' end,
-    wants_wrap,
+    wrap_fee > 0 or exists (select 1 from jsonb_array_elements(lines) l where (l ->> 'wrap')::boolean),
     wrap_fee,
     lines,
     sum_usd,

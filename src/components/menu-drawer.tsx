@@ -21,14 +21,14 @@ import { ageGroups, categories } from "@/data/catalog";
 import type { Locale } from "@/lib/i18n";
 import { site, whatsappLink } from "@/lib/site";
 
-const row = "flex min-h-[52px] w-full items-center gap-3 border-b border-brand-blue/60 text-start text-[15px] font-bold";
+const row = "flex min-h-[52px] w-full items-center gap-3 border-b border-line text-start text-[15px] font-bold";
 const subRow = "flex min-h-11 items-center gap-3 ps-3 text-[15px] font-semibold";
 
 /** A menu row that opens a sub-list (Catalog, Shop by age, Contact us). */
 function Expandable({ label, children }: { label: string; children: ReactNode }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-brand-blue/60">
+    <div className="border-b border-line">
       <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className={`${row} cursor-pointer border-b-0`}>
         <span className="flex-1">{label}</span>
         <ChevronIcon className={`text-faint transition-transform ${open ? "rotate-90" : "rtl:rotate-180"}`} />
@@ -80,11 +80,11 @@ export function MenuDrawer() {
         role="dialog"
         aria-modal="true"
         aria-label={t.menu.title}
-        className={`absolute inset-y-0 start-0 flex w-full max-w-[420px] flex-col overflow-y-auto bg-brand-blue-soft/85 pb-8 shadow-xl backdrop-blur-md transition-transform duration-200 ${
+        className={`absolute inset-y-0 start-0 flex w-full max-w-[420px] flex-col overflow-y-auto bg-white pb-8 shadow-xl transition-transform duration-200 ${
           menuOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"
         }`}
       >
-        <div className="flex h-16 shrink-0 items-center justify-between border-b border-brand-blue/60 bg-white/70 ps-4 pe-2">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-line ps-4 pe-2">
           <Logo height={42} />
           <button
             type="button"
@@ -125,14 +125,7 @@ export function MenuDrawer() {
             ))}
           </Expandable>
 
-          <Link href={href("/shop?tab=offers")} onClick={close} className={row}>
-            <span className="flex-1">
-              {t.menu.offers} <span aria-hidden>🏷️</span>
-            </span>
-            {chevron}
-          </Link>
-
-          <div className="my-3 h-0.5 rounded-full bg-brand-blue" role="separator" />
+          <div className="my-3 h-0.5 rounded-full bg-line" role="separator" />
 
           <Link href={href("/about")} onClick={close} className={row}>
             <span className="flex-1">{t.menu.about}</span>
@@ -181,7 +174,7 @@ export function MenuDrawer() {
 
         <div className="flex items-center justify-between px-4 pt-6">
           <span className="text-[15px] font-bold">{t.menu.language}</span>
-          <div role="group" aria-label={t.menu.language} className="flex rounded-full bg-white/80 p-1">
+          <div role="group" aria-label={t.menu.language} className="flex rounded-full bg-line p-1">
             {(["en", "ar"] as const).map((l) => (
               <Link
                 key={l}

@@ -4,18 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useCartLines } from "@/components/cart-view";
-import { GiftWrapToggle, useGiftWrapFee } from "@/components/gift-wrap-toggle";
+import { GiftWrapOption } from "@/components/gift-wrap-toggle";
 import { ChevronIcon, CloseIcon, MinusIcon, PlusIcon } from "@/components/icons";
 import { ProductImage, productHref } from "@/components/product-card";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
 
 /** Cart that slides in from the side when the cart icon is tapped. */
 export function CartDrawer() {
-  const { locale, cartOpen, setCartOpen, setQty, removeFromCart, orderNote, setOrderNote } = useStore();
+  const { locale, cartOpen, setCartOpen, setQty, removeFromCart, setWrap, orderNote, setOrderNote } = useStore();
   const t = useDict();
   const price = usePrice();
   const { lines, subtotal } = useCartLines();
-  const wrapFee = useGiftWrapFee();
   const pathname = usePathname();
   const panelRef = useRef<HTMLDivElement>(null);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -78,7 +77,7 @@ export function CartDrawer() {
         ) : (
           <>
             <ul className="flex-1 overflow-y-auto px-4">
-              {lines.map(({ product, qty }) => (
+              {lines.map(({ product, qty, wrap }) => (
                 <li key={product.id} className="flex gap-3 border-b border-line py-4">
                   <Link href={productHref(locale, product.slug)} className="w-20 flex-none">
                     <ProductImage product={product} iconSize={32} className="aspect-square rounded-xl bg-white" />
@@ -109,6 +108,7 @@ export function CartDrawer() {
                       </div>
                       <span className="font-extrabold">{price(product.priceUsd * qty)}</span>
                     </div>
+                    <GiftWrapOption product={product} checked={wrap} onChange={(on) => setWrap(product.id, on)} compact />
                   </div>
                 </li>
               ))}
@@ -134,10 +134,10 @@ export function CartDrawer() {
                   className="h-20 rounded-xl border border-[#dfe3ea] p-3 text-sm outline-none focus:border-navy"
                 />
               )}
-              <GiftWrapToggle />
+              <p className="rounded-xl bg-brand-blue-soft/60 p-2.5 text-xs font-bold">{t.checkout.confirmNote}</p>
               <div className="flex items-baseline justify-between">
                 <span className="font-extrabold">{t.cartDrawer.estimatedTotal}</span>
-                <span className="text-lg font-extrabold">{price(subtotal + wrapFee)}</span>
+                <span className="text-lg font-extrabold">{price(subtotal)}</span>
               </div>
               <p className="-mt-2 text-xs text-muted">{t.cartDrawer.feesNote}</p>
               <div className="grid grid-cols-2 gap-2.5">

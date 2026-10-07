@@ -20,8 +20,6 @@ export type HomeMedia = {
   active: boolean;
 };
 
-export type GiftWrapSetting = { enabled: boolean; price: number };
-
 type Catalog = {
   products: Product[];
   /** False until products have been loaded (from cache or the database). */
@@ -32,8 +30,6 @@ type Catalog = {
   categoryImages: Record<string, string>;
   /** Real Moments, brand logos and social photos (set in /admin → Home page). */
   homeMedia: HomeMedia[];
-  /** Gift wrap option (set in /admin → Settings). price 0 = free. */
-  giftWrap: GiftWrapSetting;
   reload: () => Promise<void>;
 };
 
@@ -86,7 +82,6 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
   const [recovery, setRecovery] = useState(false);
   const [categoryImages, setCategoryImages] = useState<Record<string, string>>({});
   const [homeMedia, setHomeMedia] = useState<HomeMedia[]>([]);
-  const [giftWrap, setGiftWrap] = useState<GiftWrapSetting>({ enabled: false, price: 0 });
 
   const reload = useCallback(async () => {
     const supabase = getSupabase();
@@ -122,11 +117,6 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
         // ignore
       }
     }
-
-    // Shop settings (optional table).
-    const { data: settings } = await supabase.from("site_settings").select("key, value");
-    const wrap = (settings as { key: string; value: Partial<GiftWrapSetting> }[] | null)?.find((r) => r.key === "gift_wrap")?.value;
-    if (wrap) setGiftWrap({ enabled: Boolean(wrap.enabled), price: Math.max(0, Number(wrap.price) || 0) });
 
     // Category photos are optional: if the table isn't set up yet, the icon tiles stay.
     const { data: images } = await supabase.from("category_images").select("slug, image");
@@ -198,10 +188,9 @@ export function CatalogProvider({ children }: { children: ReactNode }) {
       getBySlug: (slug) => products.find((p) => p.slug === slug),
       categoryImages,
       homeMedia,
-      giftWrap,
       reload,
     }),
-    [products, ready, categoryImages, homeMedia, giftWrap, reload],
+    [products, ready, categoryImages, homeMedia, reload],
   );
 
   const auth = useMemo<Auth>(

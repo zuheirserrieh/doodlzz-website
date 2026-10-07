@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useCatalog } from "@/components/catalog-provider";
 import { ChevronIcon, CloseIcon, MinusIcon, PaymentIcon, PlusIcon, SearchIcon, TruckIcon } from "@/components/icons";
 import { PriceTag, ProductBadge, ProductGrid, ProductImage, WishButton } from "@/components/product-card";
+import { GiftWrapOption } from "@/components/gift-wrap-toggle";
 import { useDict, useStore } from "@/components/store-provider";
 import { ageGroups, getCategory, getColor, getSubcategory } from "@/data/catalog";
 import { isVideo } from "@/lib/media";
@@ -21,6 +22,7 @@ export function ProductView() {
   const product = getBySlug(slug);
   const [photo, setPhoto] = useState(0);
   const [qty, setQty] = useState(1);
+  const [wrap, setWrap] = useState(false);
   const [added, setAdded] = useState(false);
   const router = useRouter();
   const [zoom, setZoom] = useState(false);
@@ -204,6 +206,7 @@ export function ProductView() {
           )}
 
           <div className="flex flex-col gap-2.5 pt-1">
+            <GiftWrapOption product={product} checked={wrap} onChange={setWrap} />
             <div className="flex gap-2.5">
               <div
                 role="group"
@@ -235,7 +238,7 @@ export function ProductView() {
               <button
                 type="button"
                 onClick={() => {
-                  addToCart(product.id, qty);
+                  addToCart(product.id, qty, wrap);
                   setAdded(true);
                   setTimeout(() => setAdded(false), 1400);
                 }}
@@ -247,7 +250,7 @@ export function ProductView() {
             <button
               type="button"
               onClick={() => {
-                addToCart(product.id, qty);
+                addToCart(product.id, qty, wrap);
                 router.push(`/${locale}/checkout`);
               }}
               className="h-[52px] cursor-pointer rounded-full bg-gradient-to-r from-accent to-[#ff7a59] text-base font-extrabold text-white shadow-[0_6px_16px_rgba(235,70,81,0.3)] hover:brightness-105"

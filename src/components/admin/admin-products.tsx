@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ProductForm, emptyRow } from "@/components/admin/product-form";
 import { useCatalog } from "@/components/catalog-provider";
 import { formatPrice } from "@/components/store-provider";
-import { getCategory } from "@/data/catalog";
+import { categories, getCategory } from "@/data/catalog";
 import { sampleProducts, type ProductRow } from "@/data/products";
 import { photosOf } from "@/lib/media";
 import { getSupabase } from "@/lib/supabase";
@@ -15,6 +15,8 @@ export function AdminProducts() {
   const [rows, setRows] = useState<ProductRow[] | null>(null);
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [query, setQuery] = useState("");
+  // "" = all; "cat" = a category; "cat/sub" = one subcategory.
+  const [scope, setScope] = useState("");
   const [error, setError] = useState("");
   const [importing, setImporting] = useState(false);
 
@@ -84,7 +86,10 @@ export function AdminProducts() {
   if (rows === null) return error ? <p className="text-accent-dark">{error}</p> : <div className="h-40 animate-pulse rounded-2xl bg-white" />;
 
   const q = query.trim().toLowerCase();
-  const visible = q ? rows.filter((r) => `${r.name_en} ${r.name_ar} ${r.category}`.toLowerCase().includes(q)) : rows;
+  const [scopeCat, scopeSub] = scope.split("/");
+  const visible = rows
+    .filter((r) => !scopeCat || (r.category === scopeCat && (!scopeSub || r.subcategory === scopeSub)))
+    .filter((r) => !q || `${r.name_en} ${r.name_ar} ${r.brand ?? ""}`.toLowerCase().includes(q));
 
   return (
     <div className="flex flex-col gap-4">
@@ -103,6 +108,26 @@ export function AdminProducts() {
           onChange={(e) => setQuery(e.target.value)}
           className="h-11 min-w-0 flex-1 rounded-full border border-[#dfe3ea] bg-white px-4 text-sm font-semibold outline-none focus:border-navy"
         />
+        <select
+          aria-label="Category"
+          value={scope}
+          onChange={(e) => setScope(e.target.value)}
+          className="h-11 w-full cursor-pointer rounded-full border border-[#dfe3ea] bg-white px-4 text-sm font-bold outline-none focus:border-navy sm:w-auto"
+        >
+          <option value="">All categories ({rows.length})</option>
+          {categories.map((c) => (
+            <optgroup key={c.slug} label={c.name.en}>
+              <option value={c.slug}>
+                All {c.name.en} ({rows.filter((r) => r.category === c.slug).length})
+              </option>
+              {c.subs.map((sub) => (
+                <option key={sub.slug} value={`${c.slug}/${sub.slug}`}>
+                  {sub.name.en} ({rows.filter((r) => r.category === c.slug && r.subcategory === sub.slug).length})
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
       </div>
       {error && <p className="font-bold text-accent-dark">{error}</p>}
 

@@ -27,6 +27,8 @@ export const emptyRow: ProductRow = {
   limited_quantity: false,
   last_piece: false,
   on_offer: false,
+  gift_wrap: false,
+  gift_wrap_price: 0,
   related: [],
   brand: "",
   colors: [],
@@ -216,6 +218,8 @@ export function ProductForm({
       limited_quantity: Boolean(row.limited_quantity),
       last_piece: Boolean(row.last_piece),
       on_offer: Boolean(row.on_offer),
+      gift_wrap: Boolean(row.gift_wrap),
+      gift_wrap_price: Math.max(0, Number(row.gift_wrap_price) || 0),
       brand: (row.brand ?? "").trim(),
       colors: row.colors ?? [],
       related: row.related ?? [],
@@ -426,6 +430,32 @@ export function ProductForm({
         </div>
         <span className="text-xs text-muted">Tick both (or neither) if it suits boys and girls.</span>
       </fieldset>
+
+      <section className={`flex flex-col gap-3 rounded-2xl border-2 p-4 ${row.gift_wrap ? "border-accent/40 bg-accent/5" : "border-dashed border-line"}`}>
+        <label className="flex min-h-10 cursor-pointer items-center gap-2.5 font-extrabold">
+          <input
+            type="checkbox"
+            className="size-5 accent-navy"
+            checked={Boolean(row.gift_wrap)}
+            onChange={(e) => set("gift_wrap", e.target.checked)}
+          />
+          <span aria-hidden>🎁</span> Offer gift wrapping for this product
+        </label>
+        {row.gift_wrap && (
+          <Field label="Gift wrap price per item (USD)" hint="0 = shown as FREE. Customers switch it on per item; it's added to the total and the WhatsApp message.">
+            <input
+              className={`${input} w-36`}
+              type="number"
+              inputMode="decimal"
+              min="0"
+              step="0.5"
+              dir="ltr"
+              value={row.gift_wrap_price ?? 0}
+              onChange={(e) => set("gift_wrap_price", e.target.value)}
+            />
+          </Field>
+        )}
+      </section>
 
       <Field label="Brand" hint="Optional. Shown on the product page only when filled.">
         <input className={input} value={row.brand ?? ""} onChange={(e) => set("brand", e.target.value)} placeholder="e.g. Chicco" />

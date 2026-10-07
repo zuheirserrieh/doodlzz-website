@@ -5,13 +5,15 @@ import { useAuth } from "@/components/catalog-provider";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { getSupabase } from "@/lib/supabase";
 
-export type CartLine = { id: string; qty: number };
+/** wrap = customer asked for gift wrap on this item (only kept if the product offers it). */
+export type CartLine = { id: string; qty: number; wrap?: boolean };
 
 type Store = {
   locale: Locale;
   cart: CartLine[];
   cartCount: number;
-  addToCart: (id: string, qty?: number) => void;
+  addToCart: (id: string, qty?: number, wrap?: boolean) => void;
+  setWrap: (id: string, wrap: boolean) => void;
   setQty: (id: string, qty: number) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
@@ -25,9 +27,6 @@ type Store = {
   /** Note typed in the cart panel; carried into the checkout notes. */
   orderNote: string;
   setOrderNote: (note: string) => void;
-  /** Customer wants the order gift-wrapped. */
-  giftWrap: boolean;
-  setGiftWrap: (on: boolean) => void;
 };
 
 const StoreContext = createContext<Store | null>(null);
@@ -35,7 +34,6 @@ const StoreContext = createContext<Store | null>(null);
 const CART_KEY = "dz-cart";
 const WISHLIST_KEY = "dz-wishlist";
 const NOTE_KEY = "dz-order-note";
-const WRAP_KEY = "dz-gift-wrap";
 
 function readStorage<T>(key: string, fallback: T): T {
   try {
@@ -61,11 +59,7 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const [orderNote, setOrderNoteState] = useState("");
-  const [giftWrap, setGiftWrapState] = useState(false);
-  const setGiftWrap = useCallback((on: boolean) => {
-    setGiftWrapState(on);
-    writeStorage(WRAP_KEY, on);
-  }, []);
+
   const setOrderNote = useCallback((note: string) => {
     setOrderNoteState(note);
     writeStorage(NOTE_KEY, note);
@@ -77,7 +71,6 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
     setCart(readStorage<CartLine[]>(CART_KEY, []));
     setWishlist(readStorage<string[]>(WISHLIST_KEY, []));
     setOrderNoteState(readStorage<string>(NOTE_KEY, ""));
-    setGiftWrapState(readStorage<boolean>(WRAP_KEY, false));
     setHydrated(true);
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
@@ -142,12 +135,16 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
     return () => clearTimeout(timer);
   }, [cart, wishlist, userId, syncedUser]);
 
-  const addToCart = useCallback((id: string, qty = 1) => {
+  const addToCart = useCallback((id: string, qty = 1, wrap?: boolean) => {
     setCart((lines) => {
       const existing = lines.find((l) => l.id === id);
-      if (existing) return lines.map((l) => (l.id === id ? { ...l, qty: l.qty + qty } : l));
-      return [...lines, { id, qty }];
+      if (existing) return lines.map((l) => (l.id === id ? { ...l, qty: l.qty + qty, wrap: wrap ?? l.wrap } : l));
+      return [...lines, { id, qty, wrap: Boolean(wrap) }];
     });
+  }, []);
+
+  const setWrap = useCallback((id: string, wrap: boolean) => {
+    setCart((lines) => lines.map((l) => (l.id === id ? { ...l, wrap } : l)));
   }, []);
 
   const setQty = useCallback((id: string, qty: number) => {
@@ -173,6 +170,7 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
       cart,
       cartCount: cart.reduce((n, l) => n + l.qty, 0),
       addToCart,
+      setWrap,
       setQty,
       removeFromCart,
       clearCart,
@@ -185,10 +183,8 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
       setCartOpen,
       orderNote,
       setOrderNote,
-      giftWrap,
-      setGiftWrap,
     }),
-    [locale, cart, addToCart, setQty, removeFromCart, clearCart, wishlist, isWished, toggleWish, menuOpen, cartOpen, orderNote, setOrderNote, giftWrap, setGiftWrap],
+    [locale, cart, addToCart, setWrap, setQty, removeFromCart, clearCart, wishlist, isWished, toggleWish, menuOpen, cartOpen, orderNote, setOrderNote],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

@@ -3,8 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { useCartLines } from "@/components/cart-view";
-import { useAuth, useCatalog } from "@/components/catalog-provider";
-import { GiftWrapToggle, useGiftWrapFee } from "@/components/gift-wrap-toggle";
+import { useAuth } from "@/components/catalog-provider";
 import { TruckIcon, WhatsAppIcon } from "@/components/icons";
 import { ProductImage, productHref } from "@/components/product-card";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
@@ -34,9 +33,7 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
 }
 
 export function CheckoutView() {
-  const { locale, clearCart, orderNote, setOrderNote, giftWrap, setGiftWrap } = useStore();
-  const { giftWrap: giftWrapSetting } = useCatalog();
-  const wrapFee = useGiftWrapFee();
+  const { locale, clearCart, orderNote, setOrderNote } = useStore();
   const t = useDict();
   const price = usePrice();
   const { lines, subtotal, ready } = useCartLines();
@@ -78,11 +75,9 @@ export function CheckoutView() {
       // WhatsApp turns the address under each item into a tappable link to the product.
       ...lines.flatMap((l) => [
         `• ${l.qty} × ${l.product.name[locale]} — ${price(l.product.priceUsd * l.qty)}`,
+        ...(l.wrap ? [`  🎁 ${t.checkout.msgGiftWrap}: ${l.wrapFee > 0 ? price(l.wrapFee) : t.checkout.free}`] : []),
         `  ${window.location.origin}${productHref(locale, l.product.slug)}`,
       ]),
-      ...(giftWrap && giftWrapSetting.enabled
-        ? [`🎁 ${t.checkout.msgGiftWrap}: ${giftWrapSetting.price > 0 ? price(giftWrapSetting.price) : t.checkout.free}`]
-        : []),
       `${t.checkout.total}: ${price(total)} ${t.checkout.msgDeliveryNote}`,
       "",
       `🚚 ${t.checkout.msgDelivery}: ${delivery.label} (${delivery.time})`,
@@ -106,13 +101,13 @@ export function CheckoutView() {
     setError("");
 
     let orderId: number | null = null;
-    let total = subtotal + wrapFee;
+    let total = subtotal;
     const supabase = getSupabase();
     if (supabase) {
       // Saved in the database first so the manager also sees it in the admin panel.
       const { data, error: rpcError } = await supabase.rpc("place_order", {
-        customer: { ...form, payment, gift_wrap: giftWrap && giftWrapSetting.enabled },
-        cart: lines.map((l) => ({ id: l.product.id, qty: l.qty })),
+        customer: { ...form, payment },
+        cart: lines.map((l) => ({ id: l.product.id, qty: l.qty, wrap: l.wrap })),
         order_locale: locale,
       });
       const row = Array.isArray(data) ? data[0] : null;
@@ -134,7 +129,6 @@ export function CheckoutView() {
     }
     clearCart();
     setOrderNote("");
-    setGiftWrap(false);
     setDone({ id: orderId, link });
     setBusy(null);
     window.location.href = link;
@@ -254,11 +248,16 @@ export function CheckoutView() {
       <aside className="flex h-fit flex-col gap-4 rounded-3xl bg-surface p-5 md:sticky md:top-28">
         <h2 className="text-lg font-extrabold">{t.checkout.summary}</h2>
         <ul className="flex flex-col gap-3">
-          {lines.map(({ product, qty }) => (
+          {lines.map(({ product, qty, wrap, wrapFee }) => (
             <li key={product.id} className="flex items-center gap-3">
               <ProductImage product={product} iconSize={28} className="size-14 flex-none rounded-xl" />
-              <span className="min-w-0 flex-1 text-sm leading-snug font-bold">
+              <span className="flex min-w-0 flex-1 flex-col text-sm leading-snug font-bold">
                 {qty} × {product.name[locale]}
+                {wrap && (
+                  <span className="text-xs font-bold text-accent">
+                    🎁 {t.checkout.giftWrap} · {wrapFee > 0 ? `+${price(wrapFee)}` : t.checkout.free}
+                  </span>
+                )}
               </span>
               <span className="text-sm font-extrabold">{price(product.priceUsd * qty)}</span>
             </li>
@@ -266,9 +265,8 @@ export function CheckoutView() {
         </ul>
         <div className="flex items-baseline justify-between border-t border-[#dfe3ea] pt-3 text-lg font-extrabold">
           <span>{t.checkout.total}</span>
-          <span>{price(subtotal + wrapFee)}</span>
+          <span>{price(subtotal)}</span>
         </div>
-        <GiftWrapToggle className="bg-white" />
         <p className="rounded-xl bg-white p-3 text-sm font-bold">{t.checkout.confirmNote}</p>
         {error && (
           <p role="alert" className="rounded-xl bg-pastel-peach p-3 text-sm font-bold text-accent-dark">

@@ -6,6 +6,7 @@ import { ArrowIcon, MinusIcon, PlusIcon } from "@/components/icons";
 import { ProductImage, productHref } from "@/components/product-card";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
 import type { Product } from "@/data/products";
+import { GiftWrapOption, wrapFee } from "@/components/gift-wrap-toggle";
 
 /** Cart lines joined with their products (lines whose product was removed are skipped). */
 export function useCartLines() {
@@ -13,14 +14,18 @@ export function useCartLines() {
   const { getById, ready } = useCatalog();
   const lines = cart.flatMap((l) => {
     const product = getById(l.id);
-    return product ? [{ product, qty: l.qty }] : [];
+    if (!product) return [];
+    const wrap = Boolean(l.wrap && product.giftWrap);
+    return [{ product, qty: l.qty, wrap, wrapFee: wrapFee(product, l.qty, wrap) }];
   });
-  const subtotal = lines.reduce((sum, l) => sum + l.product.priceUsd * l.qty, 0);
-  return { lines, subtotal, ready };
+  const itemsTotal = lines.reduce((sum, l) => sum + l.product.priceUsd * l.qty, 0);
+  const wrapTotal = lines.reduce((sum, l) => sum + l.wrapFee, 0);
+  // subtotal = products + gift wrap (delivery is confirmed on WhatsApp).
+  return { lines, itemsTotal, wrapTotal, subtotal: itemsTotal + wrapTotal, ready };
 }
 
 export function CartView() {
-  const { locale, setQty, removeFromCart } = useStore();
+  const { locale, setQty, removeFromCart, setWrap } = useStore();
   const t = useDict();
   const price = usePrice();
   const { lines, subtotal, ready } = useCartLines();
@@ -47,7 +52,7 @@ export function CartView() {
       <div>
         <h1 className="font-display text-[28px] font-bold">{t.cart.title}</h1>
         <ul className="mt-4 flex flex-col rounded-3xl bg-white/90 px-4 shadow-sm">
-          {lines.map(({ product, qty }) => renderLine(product, qty))}
+          {lines.map(({ product, qty, wrap }) => renderLine(product, qty, wrap))}
         </ul>
       </div>
 
@@ -71,7 +76,7 @@ export function CartView() {
     </div>
   );
 
-  function renderLine(product: Product, qty: number) {
+  function renderLine(product: Product, qty: number, wrap: boolean) {
     const stepper = "flex size-10 cursor-pointer items-center justify-center rounded-full hover:bg-white";
     return (
       <li key={product.id} className="flex gap-3 border-b border-line py-4">
@@ -83,6 +88,7 @@ export function CartView() {
             {product.name[locale]}
           </Link>
           <span className="text-base font-extrabold">{price(product.priceUsd * qty)}</span>
+          <GiftWrapOption product={product} checked={wrap} onChange={(on) => setWrap(product.id, on)} compact className="my-1" />
           <div className="mt-auto flex items-center justify-between">
             <div role="group" aria-label={t.cart.quantity} className="flex items-center rounded-full bg-surface">
               <button type="button" aria-label={t.cart.decrease} onClick={() => setQty(product.id, qty - 1)} className={stepper}>

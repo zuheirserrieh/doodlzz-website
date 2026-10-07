@@ -61,7 +61,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
         {/* Entrance animation (CSS only, see globals.css). */}
         <div id="dz-splash" aria-hidden>
           {/* eslint-disable-next-line @next/next/no-img-element -- static brand image */}
-          <img src="/brand/round-logo-2.jpg" alt="" width={1254} height={1254} fetchPriority="high" />
+          <img src="/brand/splash-logo.webp" alt="" width={600} height={575} fetchPriority="high" />
         </div>
         <CatalogProvider>
         <StoreProvider locale={locale}>

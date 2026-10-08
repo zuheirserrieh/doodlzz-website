@@ -259,6 +259,10 @@ export function ProductForm({
       description_ar: row.description_ar.trim(),
       category: row.category,
       subcategory: row.subcategory ?? "",
+      // Extras that repeat the main category/subcategory are dropped.
+      extra_categories: [...new Set(row.extra_categories ?? [])]
+        .filter((s) => s !== (row.subcategory ? `${row.category}/${row.subcategory}` : row.category))
+        .slice(0, 2),
       ages: row.ages,
       genders: row.genders ?? [],
       price_usd: price,
@@ -277,14 +281,25 @@ export function ProductForm({
       active: row.active,
       sort: Number(row.sort) || 0,
     };
-    const { error: err } = isNew
-      ? await supabase.from("products").insert(payload)
-      : await supabase.from("products").update(payload).eq("id", row.id);
-    setSaving(false);
+    const { data: saved, error: err } = isNew
+      ? await supabase.from("products").insert(payload).select("id").single()
+      : await supabase.from("products").update(payload).eq("id", row.id).select("id").single();
     if (err) {
+      setSaving(false);
       setError(err.code === "23505" ? "Another product already uses this link (slug). Change the slug." : err.message);
       return;
     }
+    // The item code lives in its own admin-only table.
+    const code = (row.code ?? "").trim();
+    if (code !== (initial.code ?? "") || (isNew && code)) {
+      const { error: codeErr } = await supabase.from("product_codes").upsert({ product_id: saved.id, code });
+      if (codeErr) {
+        setSaving(false);
+        setError(`Product saved, but the item code wasn't: ${codeErr.message} (run supabase/schema.sql again).`);
+        return;
+      }
+    }
+    setSaving(false);
     onDone();
   }
 
@@ -407,6 +422,46 @@ export function ProductForm({
             </select>
           </Field>
         )}
+
+        <fieldset className="flex flex-col gap-2 sm:col-span-2">
+          <legend className="mb-1.5 text-sm font-bold">Also show in (optional)</legend>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[0, 1].map((n) => {
+              const extras = row.extra_categories ?? [];
+              return (
+                <select
+                  key={n}
+                  aria-label={`Extra category ${n + 1}`}
+                  className={input}
+                  value={extras[n] ?? ""}
+                  onChange={(e) => {
+                    const next = [...extras];
+                    next[n] = e.target.value;
+                    set("extra_categories", next.filter(Boolean));
+                  }}
+                  disabled={n === 1 && !extras[0]}
+                >
+                  <option value="">— None —</option>
+                  {categories.map((c) => (
+                    <optgroup key={c.slug} label={c.name.en}>
+                      <option value={c.slug}>{c.subs.length ? `${c.name.en} (whole category)` : c.name.en}</option>
+                      {c.subs.map((s) => (
+                        <option key={s.slug} value={`${c.slug}/${s.slug}`}>
+                          {c.name.en} → {s.name.en}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              );
+            })}
+          </div>
+          <span className="text-xs text-muted">The same product also appears in up to 2 more categories / subcategories (3 in total).</span>
+        </fieldset>
+
+        <Field label="Item code (private)" hint="Only you see it: in the dashboard, on orders and in the WhatsApp order message. Customers never see it on the site.">
+          <input className={input} dir="ltr" maxLength={40} value={row.code ?? ""} onChange={(e) => set("code", e.target.value)} placeholder="e.g. TNT-014" />
+        </Field>
 
         <Field label="Price (USD) *">
           <input

@@ -6,7 +6,7 @@ import { ProductForm, emptyRow } from "@/components/admin/product-form";
 import { useCatalog } from "@/components/catalog-provider";
 import { formatPrice } from "@/components/store-provider";
 import { categories, getCategory } from "@/data/catalog";
-import { sampleProducts, type ProductRow } from "@/data/products";
+import { inCategory, sampleProducts, type ProductRow } from "@/data/products";
 import { photosOf } from "@/lib/media";
 import { getSupabase } from "@/lib/supabase";
 
@@ -23,16 +23,17 @@ export function AdminProducts() {
   const load = useCallback(async () => {
     const supabase = getSupabase();
     if (!supabase) return;
-    const { data, error: err } = await supabase
-      .from("products")
-      .select("*")
-      .order("sort", { ascending: true })
-      .order("created_at", { ascending: false });
+    const [{ data, error: err }, { data: codeRows }] = await Promise.all([
+      supabase.from("products").select("*").order("sort", { ascending: true }).order("created_at", { ascending: false }),
+      // Missing until schema.sql is re-run; products still load without codes.
+      supabase.from("product_codes").select("product_id, code"),
+    ]);
     if (err) {
       setError(err.message);
       return;
     }
-    setRows(data as ProductRow[]);
+    const codes = new Map((codeRows ?? []).map((c: { product_id: string; code: string }) => [c.product_id, c.code]));
+    setRows((data as ProductRow[]).map((r) => ({ ...r, code: codes.get(r.id) ?? "" })));
   }, []);
 
   useEffect(() => {
@@ -88,8 +89,8 @@ export function AdminProducts() {
   const q = query.trim().toLowerCase();
   const [scopeCat, scopeSub] = scope.split("/");
   const visible = rows
-    .filter((r) => !scopeCat || (r.category === scopeCat && (!scopeSub || r.subcategory === scopeSub)))
-    .filter((r) => !q || `${r.name_en} ${r.name_ar} ${r.brand ?? ""}`.toLowerCase().includes(q));
+    .filter((r) => !scopeCat || inCategory(r, scopeCat, scopeSub))
+    .filter((r) => !q || `${r.name_en} ${r.name_ar} ${r.brand ?? ""} ${r.code ?? ""}`.toLowerCase().includes(q));
 
   return (
     <div className="flex flex-col gap-4">
@@ -103,7 +104,7 @@ export function AdminProducts() {
         </button>
         <input
           type="search"
-          placeholder="Search products…"
+          placeholder="Search name, brand or code…"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="h-11 min-w-0 flex-1 rounded-full border border-[#dfe3ea] bg-white px-4 text-sm font-semibold outline-none focus:border-navy"
@@ -118,11 +119,11 @@ export function AdminProducts() {
           {categories.map((c) => (
             <optgroup key={c.slug} label={c.name.en}>
               <option value={c.slug}>
-                All {c.name.en} ({rows.filter((r) => r.category === c.slug).length})
+                All {c.name.en} ({rows.filter((r) => inCategory(r, c.slug)).length})
               </option>
               {c.subs.map((sub) => (
                 <option key={sub.slug} value={`${c.slug}/${sub.slug}`}>
-                  {sub.name.en} ({rows.filter((r) => r.category === c.slug && r.subcategory === sub.slug).length})
+                  {sub.name.en} ({rows.filter((r) => inCategory(r, c.slug, sub.slug)).length})
                 </option>
               ))}
             </optgroup>
@@ -152,7 +153,10 @@ export function AdminProducts() {
               {photosOf(r.images)[0] && <Image src={photosOf(r.images)[0]} alt="" fill unoptimized sizes="64px" className="object-cover" />}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-extrabold">{r.name_en}</p>
+              <p className="truncate font-extrabold">
+                {r.code && <span className="me-1.5 rounded-md bg-navy px-1.5 py-0.5 text-xs text-white">{r.code}</span>}
+                {r.name_en}
+              </p>
               <p className="truncate text-xs text-muted">
                 {getCategory(r.category)?.name.en ?? r.category}
                 {r.best_seller && " · Best seller"}

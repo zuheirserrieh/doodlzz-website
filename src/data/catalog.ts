@@ -13,6 +13,7 @@ export type CategoryIcon =
   | "camping"
   | "winter"
   | "adult"
+  | "gift"
   // used by the hero slides
   | "stroller"
   | "carSeat"
@@ -197,6 +198,14 @@ export const categories: Category[] = [
     shortName: { en: "Winter", ar: "الشتاء" },
     icon: "winter",
     tint: "bg-pastel-blue",
+    subs: [],
+  },
+  {
+    slug: "gifts-plushies",
+    name: { en: "Gifts & Plushies", ar: "هدايا ودمى" },
+    shortName: { en: "Gifts & Plushies", ar: "هدايا ودمى" },
+    icon: "gift",
+    tint: "bg-pastel-peach",
     subs: [],
   },
 ];

@@ -9,6 +9,8 @@ export type Product = {
   category: string;
   /** Subcategory slug inside the category (see catalog.ts); "" = none. */
   subcategory?: string;
+  /** Up to 2 more places the product also shows in: "category" or "category/subcategory". */
+  extraCategories?: string[];
   /** Age group slugs from catalog.ts. */
   ages: string[];
   /** "boy" and/or "girl"; empty means suitable for both. */
@@ -49,6 +51,7 @@ export type ProductRow = {
   description_ar: string;
   category: string;
   subcategory?: string | null;
+  extra_categories?: string[] | null;
   ages: string[];
   genders?: string[] | null;
   sold_count?: number | null;
@@ -68,7 +71,26 @@ export type ProductRow = {
   related?: string[] | null;
   active: boolean;
   sort: number;
+  /** Owner's item code. Not a products column: kept in the admin-only product_codes table. */
+  code?: string;
 };
+
+/** Every category (and subcategory) a product shows in: its main one plus the extras. */
+export function placements(p: { category: string; subcategory?: string | null; extraCategories?: string[]; extra_categories?: string[] | null }) {
+  const extras = p.extraCategories ?? p.extra_categories ?? [];
+  return [
+    { category: p.category, subcategory: p.subcategory ?? "" },
+    ...extras.map((s) => {
+      const [category, subcategory = ""] = s.split("/");
+      return { category, subcategory };
+    }),
+  ];
+}
+
+/** Is the product in this category (and subcategory, when given)? */
+export function inCategory(p: Parameters<typeof placements>[0], category: string, subcategory?: string) {
+  return placements(p).some((x) => x.category === category && (!subcategory || x.subcategory === subcategory));
+}
 
 export function fromRow(row: ProductRow): Product {
   return {
@@ -79,6 +101,7 @@ export function fromRow(row: ProductRow): Product {
     description: { en: row.description_en, ar: row.description_ar || row.description_en },
     category: row.category,
     subcategory: row.subcategory ?? "",
+    extraCategories: row.extra_categories ?? [],
     ages: row.ages ?? [],
     genders: row.genders ?? [],
     soldCount: row.sold_count ?? 0,

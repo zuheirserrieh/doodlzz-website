@@ -12,6 +12,7 @@ import { GiftWrapOption } from "@/components/gift-wrap-toggle";
 import { ShareButton } from "@/components/share-button";
 import { useDict, useStore } from "@/components/store-provider";
 import { ageGroups, getCategory, getSubcategory } from "@/data/catalog";
+import { inCategory } from "@/data/products";
 import { isVideo } from "@/lib/media";
 
 export function ProductView() {
@@ -64,8 +65,8 @@ export function ProductView() {
 
   const category = getCategory(product.category);
   const sub = getSubcategory(product.category, product.subcategory);
-  const related = products.filter((p) => p.category === product.category && p.id !== product.id);
-  const fill = related.length < 4 ? products.filter((p) => p.category !== product.category && p.bestSeller) : [];
+  const related = products.filter((p) => inCategory(p, product.category) && p.id !== product.id);
+  const fill = related.length < 4 ? products.filter((p) => !inCategory(p, product.category) && p.bestSeller) : [];
   const ages = ageGroups.filter((a) => product.ages.includes(a.slug));
   // Items the owner linked to this product in the admin panel ("Goes well with").
   const goesWith = (product.related ?? []).map((id) => products.find((p) => p.id === id)).filter((p): p is NonNullable<typeof p> => Boolean(p));

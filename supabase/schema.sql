@@ -63,6 +63,21 @@ alter table public.products add column if not exists on_offer boolean not null d
 -- Optional gift wrap per product (price per unit; 0 = free).
 alter table public.products add column if not exists gift_wrap boolean not null default false;
 alter table public.products add column if not exists gift_wrap_price numeric(10, 2) not null default 0 check (gift_wrap_price >= 0);
+-- Up to 2 more places the product also shows in: 'category' or 'category/subcategory'.
+alter table public.products add column if not exists extra_categories text[] not null default '{}';
+
+-- The owner's item code for each product. Kept in its own table that only admins
+-- can read, so customers never see it; it is copied into orders and the WhatsApp message.
+create table if not exists public.product_codes (
+  product_id uuid primary key references public.products (id) on delete cascade,
+  code text not null default ''
+);
+
+alter table public.product_codes enable row level security;
+
+drop policy if exists "product codes: admin only" on public.product_codes;
+create policy "product codes: admin only" on public.product_codes
+  for all using (public.is_admin()) with check (public.is_admin());
 
 -- Data fixes for older setups (safe to repeat: they only touch old values).
 -- The old categories became subcategories of "Baby Essentials".
@@ -161,8 +176,10 @@ create policy "site settings: admin writes" on public.site_settings
 
 -- Customers never insert into orders directly. place_order() looks up the real
 -- prices in the database, so a tampered cart can't change what is charged.
-create or replace function public.place_order(customer jsonb, cart jsonb, order_locale text default 'en')
-returns table (order_id bigint, total numeric)
+-- Dropped first because it now also returns the item codes (a return type can't be changed in place).
+drop function if exists public.place_order(jsonb, jsonb, text);
+create function public.place_order(customer jsonb, cart jsonb, order_locale text default 'en')
+returns table (order_id bigint, total numeric, codes jsonb)
 language plpgsql
 security definer
 set search_path = public
@@ -178,6 +195,8 @@ declare
   line_wrap boolean;
   line_wrap_fee numeric(10, 2);
   line_color text;
+  line_code text;
+  all_codes jsonb := '[]'::jsonb;
 begin
   if jsonb_typeof(cart) <> 'array' or jsonb_array_length(cart) = 0 then
     raise exception 'Cart is empty';
@@ -207,10 +226,13 @@ begin
     line_wrap_fee := case when line_wrap then p.gift_wrap_price * qty else 0 end;
     -- Colour the customer picked; kept only if the product really comes in it.
     line_color := case when (line ->> 'color') = any(coalesce(p.colors, '{}')) then line ->> 'color' end;
+    select nullif(trim(c.code), '') into line_code from public.product_codes c where c.product_id = p.id;
     lines := lines || jsonb_build_object(
       'id', p.id, 'slug', p.slug, 'name', p.name_en, 'name_ar', p.name_ar,
-      'price', p.price_usd, 'qty', qty, 'wrap', line_wrap, 'wrap_fee', line_wrap_fee, 'color', line_color
+      'price', p.price_usd, 'qty', qty, 'wrap', line_wrap, 'wrap_fee', line_wrap_fee, 'color', line_color,
+      'code', line_code
     );
+    all_codes := all_codes || to_jsonb(coalesce(line_code, ''));
     sum_usd := sum_usd + p.price_usd * qty + line_wrap_fee;
     wrap_fee := wrap_fee + line_wrap_fee;
     -- Counted for the "Best selling" sort.
@@ -235,7 +257,7 @@ begin
   )
   returning id into new_id;
 
-  return query select new_id, sum_usd;
+  return query select new_id, sum_usd, all_codes;
 end;
 $$;
 

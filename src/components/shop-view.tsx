@@ -6,7 +6,7 @@ import { Listing } from "@/components/listing";
 import { SearchForm } from "@/components/search-form";
 import { useDict, useStore } from "@/components/store-provider";
 import { ageName, getAgeGroup, getCategory } from "@/data/catalog";
-import { searchProducts } from "@/data/products";
+import { inCategory, searchProducts } from "@/data/products";
 
 /** Filters come from the URL (?q=, ?age=, ?category=, ?tab=) and are applied in the browser. */
 export function ShopView() {
@@ -20,7 +20,7 @@ export function ShopView() {
   const tab = params.get("tab");
 
   let list = searchProducts(products, q);
-  if (category) list = list.filter((p) => p.category === category.slug);
+  if (category) list = list.filter((p) => inCategory(p, category.slug));
   if (tab === "best") list = list.filter((p) => p.bestSeller);
   if (tab === "new") list = list.filter((p) => p.isNew);
   if (tab === "offers") list = list.filter((p) => p.onOffer);

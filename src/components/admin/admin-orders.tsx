@@ -6,7 +6,7 @@ import { formatPrice } from "@/components/store-provider";
 import { getColor } from "@/data/catalog";
 import { getSupabase } from "@/lib/supabase";
 
-type OrderItem = { id: string; name: string; qty: number; price: number; wrap?: boolean; wrap_fee?: number; color?: string | null };
+type OrderItem = { id: string; name: string; qty: number; price: number; wrap?: boolean; wrap_fee?: number; color?: string | null; code?: string | null };
 type Order = {
   id: number;
   created_at: string;
@@ -167,6 +167,7 @@ export function AdminOrders() {
                   {o.items.map((i, n) => (
                     <li key={n} className="flex justify-between gap-2">
                       <span>
+                        {i.code && <span className="me-1 rounded-md bg-navy px-1.5 py-0.5 text-xs font-extrabold text-white">{i.code}</span>}
                         {i.qty} × {i.name}
                         {i.color && getColor(i.color) && (
                           <span className="ms-1 inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-xs font-extrabold">

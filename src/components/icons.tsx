@@ -98,6 +98,13 @@ const categoryPaths: Record<CategoryIconName, ReactNode> = {
       <path d="M8.5 8.5h.01M15.5 15.5h.01M17 21h.01M21 17h.01M23 23h.01" strokeWidth="3" />
     </>
   ),
+  gift: (
+    <>
+      <rect x="4" y="12" width="24" height="6" rx="1.5" />
+      <path d="M6 18v9h20v-9M16 12v15" />
+      <path d="M16 12c-2-5-8-6-8-2.5 0 2 3 2.5 8 2.5zM16 12c2-5 8-6 8-2.5 0 2-3 2.5-8 2.5z" />
+    </>
+  ),
   stroller: (
     <>
       <path d="M4 6h4l3 12h15" />

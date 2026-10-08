@@ -66,15 +66,16 @@ export function CheckoutView() {
 
   const set = <K extends keyof Customer>(key: K, value: Customer[K]) => setForm((f) => ({ ...f, [key]: value }));
 
-  function buildMessage(orderId: number | null, total: number, payment: Payment) {
+  /** codes = the owner's item codes, in cart order (from the database; never shown on the site). */
+  function buildMessage(orderId: number | null, total: number, payment: Payment, codes: string[]) {
     const delivery = t.checkout.deliveryOptions[form.delivery];
     return [
       `🛒 ${t.checkout.msgTitle(orderId)}`,
       "",
       `${t.checkout.msgItems}:`,
       // WhatsApp turns the address under each item into a tappable link to the product.
-      ...lines.flatMap((l) => [
-        `• ${l.qty} × ${l.product.name[locale]} — ${price(l.product.priceUsd * l.qty)}`,
+      ...lines.flatMap((l, i) => [
+        `• ${codes[i] ? `[${codes[i]}] ` : ""}${l.qty} × ${l.product.name[locale]} — ${price(l.product.priceUsd * l.qty)}`,
         ...(l.color ? [`  🎨 ${t.product.color}: ${l.color.name[locale]}`] : []),
         ...(l.wrap ? [`  🎁 ${t.checkout.msgGiftWrap}: ${l.wrapFee > 0 ? price(l.wrapFee) : t.checkout.free}`] : []),
         `  ${window.location.origin}${productHref(locale, l.product.slug)}`,
@@ -108,6 +109,7 @@ export function CheckoutView() {
 
     let orderId: number | null = null;
     let total = subtotal;
+    let codes: string[] = [];
     const supabase = getSupabase();
     if (supabase) {
       // Saved in the database first so the manager also sees it in the admin panel.
@@ -125,9 +127,10 @@ export function CheckoutView() {
       }
       orderId = Number(row.order_id);
       total = Number(row.total);
+      codes = Array.isArray(row.codes) ? row.codes.map(String) : [];
     }
 
-    const link = whatsappLink(buildMessage(orderId, total, payment));
+    const link = whatsappLink(buildMessage(orderId, total, payment, codes));
     try {
       localStorage.setItem(DETAILS_KEY, JSON.stringify({ ...form, notes: "" }));
     } catch {

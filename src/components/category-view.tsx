@@ -9,6 +9,7 @@ import { Listing } from "@/components/listing";
 import { ShareButton } from "@/components/share-button";
 import { useDict, useStore } from "@/components/store-provider";
 import { getCategory, getSubcategory, type Category } from "@/data/catalog";
+import { inCategory } from "@/data/products";
 
 /**
  * Category page.
@@ -22,12 +23,11 @@ export function CategoryView({ slug }: { slug: string }) {
   const { products } = useCatalog();
   const category = getCategory(slug)!;
   const param = useSearchParams().get("sub") ?? "";
-  const inCategory = products.filter((p) => p.category === slug);
 
   if (!param && category.subs.length > 0) return <SubcategoryLanding category={category} />;
 
   const sub = getSubcategory(slug, param === "all" ? undefined : param);
-  const list = sub ? inCategory.filter((p) => p.subcategory === sub.slug) : inCategory;
+  const list = products.filter((p) => inCategory(p, slug, sub?.slug));
 
   return (
     <Listing

@@ -3,13 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type TouchEvent } from "react";
 import { useCatalog } from "@/components/catalog-provider";
-import { ChevronIcon, CloseIcon, MinusIcon, PaymentIcon, PlusIcon, SearchIcon, TruckIcon } from "@/components/icons";
+import { ColorPicker, productColors } from "@/components/color-picker";
+import { ChevronIcon, CloseIcon, MinusIcon, PaymentIcon, PlusIcon, TruckIcon } from "@/components/icons";
 import { PriceTag, ProductBadge, ProductGrid, ProductImage, WishButton } from "@/components/product-card";
 import { GiftWrapOption } from "@/components/gift-wrap-toggle";
+import { ShareButton } from "@/components/share-button";
 import { useDict, useStore } from "@/components/store-provider";
-import { ageGroups, getCategory, getColor, getSubcategory } from "@/data/catalog";
+import { ageGroups, getCategory, getSubcategory } from "@/data/catalog";
 import { isVideo } from "@/lib/media";
 
 export function ProductView() {
@@ -26,6 +28,11 @@ export function ProductView() {
   const [added, setAdded] = useState(false);
   const router = useRouter();
   const [zoom, setZoom] = useState(false);
+  const [color, setColor] = useState<string>();
+  const [colorError, setColorError] = useState(false);
+  const colorsRef = useRef<HTMLDivElement>(null);
+  const touchX = useRef<number | null>(null);
+  const swiped = useRef(false);
 
   useEffect(() => {
     if (product) document.title = `${product.name[locale]} · Doodlzz`;
@@ -64,6 +71,39 @@ export function ProductView() {
   const goesWith = (product.related ?? []).map((id) => products.find((p) => p.id === id)).filter((p): p is NonNullable<typeof p> => Boolean(p));
   const images = product.images ?? [];
   const current = images[Math.min(photo, images.length - 1)];
+  const colors = productColors(product);
+  // With a single colour there is nothing to choose.
+  const chosenColor = color ?? (colors.length === 1 ? colors[0].slug : undefined);
+
+  const step = (forward: boolean) =>
+    setPhoto((p) => (forward ? (p + 1) % images.length : (p - 1 + images.length) % images.length));
+
+  // Swipe left/right on the photo to see the next/previous one.
+  const swipe = {
+    onTouchStart: (e: TouchEvent) => {
+      touchX.current = e.touches[0].clientX;
+    },
+    onTouchEnd: (e: TouchEvent) => {
+      if (touchX.current === null) return;
+      const dx = e.changedTouches[0].clientX - touchX.current;
+      touchX.current = null;
+      if (images.length < 2 || Math.abs(dx) < 40) return;
+      swiped.current = true;
+      setTimeout(() => (swiped.current = false), 400);
+      step(dx < 0 !== (locale === "ar"));
+    },
+  };
+
+  /** Adds to the cart; asks for a colour first when the product has several. */
+  function add() {
+    if (colors.length > 0 && !chosenColor) {
+      setColorError(true);
+      colorsRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return false;
+    }
+    addToCart(product!.id, qty, wrap, chosenColor);
+    return true;
+  }
 
   return (
     <div className="mx-3 mt-3 max-w-6xl rounded-3xl bg-white/90 p-3 shadow-sm sm:mx-4 md:mx-auto md:p-6">
@@ -76,7 +116,7 @@ export function ProductView() {
 
       <div className="mt-2 grid grid-cols-[minmax(0,1fr)] gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:gap-10">
         <div>
-          <div className="relative">
+          <div className="relative touch-pan-y" {...swipe}>
             {current && isVideo(current) ? (
               <div className="aspect-square w-full overflow-hidden rounded-3xl bg-black">
                 <video key={current} src={current} controls playsInline preload="metadata" className="size-full object-contain" />
@@ -84,14 +124,11 @@ export function ProductView() {
             ) : current ? (
               <button
                 type="button"
-                onClick={() => setZoom(true)}
+                onClick={() => !swiped.current && setZoom(true)}
                 aria-label={t.product.zoom}
                 className="relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-3xl bg-white ring-1 ring-line"
               >
                 <Image src={current} alt={product.name[locale]} fill unoptimized sizes="(min-width: 768px) 50vw, 100vw" className="object-contain" />
-                <span className="absolute end-3 bottom-3 flex size-11 items-center justify-center rounded-full bg-white shadow-md" aria-hidden>
-                  <SearchIcon size={22} />
-                </span>
               </button>
             ) : (
               <ProductImage product={product} iconSize={160} className="aspect-square rounded-3xl" />
@@ -105,7 +142,7 @@ export function ProductView() {
                 <button
                   type="button"
                   aria-label="Previous photo"
-                  onClick={() => setPhoto((p) => (p - 1 + images.length) % images.length)}
+                  onClick={() => step(false)}
                   className="absolute start-2 top-1/2 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/90 shadow-md hover:bg-white"
                 >
                   <ChevronIcon size={22} strokeWidth={2.6} className="rotate-180 rtl:rotate-0" />
@@ -113,7 +150,7 @@ export function ProductView() {
                 <button
                   type="button"
                   aria-label="Next photo"
-                  onClick={() => setPhoto((p) => (p + 1) % images.length)}
+                  onClick={() => step(true)}
                   className="absolute end-2 top-1/2 flex size-11 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/90 shadow-md hover:bg-white"
                 >
                   <ChevronIcon size={22} strokeWidth={2.6} className="rtl:rotate-180" />
@@ -161,33 +198,40 @@ export function ProductView() {
                 {product.name[other]}
               </p>
             )}
-            <PriceTag product={product} className="mt-2 text-2xl" />
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <PriceTag product={product} className="text-2xl" />
+              <ShareButton title={product.name[locale]} />
+            </div>
           </div>
 
-          {(product.brand || (product.colors?.length ?? 0) > 0) && (
-            <dl className="flex flex-col gap-2.5 text-sm">
-              {product.brand && (
-                <div className="flex items-center gap-2">
-                  <dt className="font-bold text-muted">{t.product.brand}:</dt>
-                  <dd className="font-extrabold">{product.brand}</dd>
-                </div>
+          {product.brand && (
+            <p className="flex items-center gap-2 text-sm">
+              <span className="font-bold text-muted">{t.product.brand}:</span>
+              <span className="font-extrabold">{product.brand}</span>
+            </p>
+          )}
+
+          {colors.length > 0 && (
+            <div ref={colorsRef} className={`flex flex-col gap-2 rounded-2xl ${colorError && !chosenColor ? "bg-pastel-peach/60 p-3 ring-2 ring-accent" : ""}`}>
+              <p className="text-sm font-bold text-muted">
+                {t.product.colors}
+                {chosenColor && colors.length > 1 && <span className="text-navy">: {colors.find((c) => c.slug === chosenColor)?.name[locale]}</span>}
+              </p>
+              <ColorPicker
+                product={product}
+                value={chosenColor}
+                onChange={(slug) => {
+                  setColor(slug);
+                  setColorError(false);
+                }}
+                label={t.product.colors}
+              />
+              {colorError && !chosenColor && (
+                <p role="alert" className="text-sm font-extrabold text-accent-dark">
+                  {t.product.chooseColor}
+                </p>
               )}
-              {(product.colors?.length ?? 0) > 0 && (
-                <div className="flex flex-wrap items-center gap-2">
-                  <dt className="font-bold text-muted">{t.product.colors}:</dt>
-                  {product.colors!.map((slug) => {
-                    const c = getColor(slug);
-                    if (!c) return null;
-                    return (
-                      <dd key={slug} className="flex items-center gap-1.5 rounded-full border border-line bg-white py-1 ps-1 pe-3 font-bold">
-                        <span className="size-5 rounded-full ring-1 ring-black/15" style={{ background: c.hex }} aria-hidden />
-                        {c.name[locale]}
-                      </dd>
-                    );
-                  })}
-                </div>
-              )}
-            </dl>
+            </div>
           )}
 
           <DescriptionCard en={product.description.en} ar={product.description.ar} locale={locale} />
@@ -197,9 +241,9 @@ export function ProductView() {
               <p className="text-sm font-bold">{t.product.ages}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {ages.map((a) => (
-                  <Link key={a.slug} href={`/${locale}/shop?age=${a.slug}`} className={`rounded-full px-3 py-1.5 text-[13px] font-bold ${a.tint}`}>
+                  <span key={a.slug} className={`rounded-full px-3 py-1.5 text-[13px] font-bold ${a.tint}`}>
                     <span dir="ltr">{a.label}</span> {a.sub[locale]}
-                  </Link>
+                  </span>
                 ))}
               </div>
             </div>
@@ -238,7 +282,7 @@ export function ProductView() {
               <button
                 type="button"
                 onClick={() => {
-                  addToCart(product.id, qty, wrap);
+                  if (!add()) return;
                   setAdded(true);
                   setTimeout(() => setAdded(false), 1400);
                 }}
@@ -250,8 +294,7 @@ export function ProductView() {
             <button
               type="button"
               onClick={() => {
-                addToCart(product.id, qty, wrap);
-                router.push(`/${locale}/checkout`);
+                if (add()) router.push(`/${locale}/checkout`);
               }}
               className="h-[52px] cursor-pointer rounded-full bg-gradient-to-r from-accent to-[#ff7a59] text-base font-extrabold text-white shadow-[0_6px_16px_rgba(235,70,81,0.3)] hover:brightness-105"
             >
@@ -277,7 +320,11 @@ export function ProductView() {
             <button
               type="button"
               onClick={() => {
-                [product, ...goesWith].forEach((p) => addToCart(p.id));
+                // Items with several colours get a "choose a color" reminder in the cart.
+                [product, ...goesWith].forEach((p) => {
+                  const own = productColors(p);
+                  addToCart(p.id, 1, undefined, p.id === product.id ? chosenColor : own.length === 1 ? own[0].slug : undefined);
+                });
                 setAddedAll(true);
                 setTimeout(() => setAddedAll(false), 1600);
               }}
@@ -312,7 +359,7 @@ export function ProductView() {
               <CloseIcon size={28} />
             </button>
           </div>
-          <div className="relative flex-1" onClick={() => setZoom(false)}>
+          <div className="relative flex-1 touch-pan-y" {...swipe} onClick={() => !swiped.current && setZoom(false)}>
             {isVideo(current) ? (
               <video key={current} src={current} controls playsInline className="absolute inset-0 size-full object-contain" onClick={(e) => e.stopPropagation()} />
             ) : (
@@ -324,7 +371,7 @@ export function ProductView() {
               <button
                 type="button"
                 aria-label="Previous"
-                onClick={() => setPhoto((p) => (p - 1 + images.length) % images.length)}
+                onClick={() => step(false)}
                 className="flex size-12 cursor-pointer items-center justify-center rounded-full bg-white/15"
               >
                 <ChevronIcon className="rotate-180 rtl:rotate-0" />
@@ -335,7 +382,7 @@ export function ProductView() {
               <button
                 type="button"
                 aria-label="Next"
-                onClick={() => setPhoto((p) => (p + 1) % images.length)}
+                onClick={() => step(true)}
                 className="flex size-12 cursor-pointer items-center justify-center rounded-full bg-white/15"
               >
                 <ChevronIcon className="rtl:rotate-180" />

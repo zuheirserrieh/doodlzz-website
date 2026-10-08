@@ -75,6 +75,7 @@ export function CheckoutView() {
       // WhatsApp turns the address under each item into a tappable link to the product.
       ...lines.flatMap((l) => [
         `• ${l.qty} × ${l.product.name[locale]} — ${price(l.product.priceUsd * l.qty)}`,
+        ...(l.color ? [`  🎨 ${t.product.color}: ${l.color.name[locale]}`] : []),
         ...(l.wrap ? [`  🎁 ${t.checkout.msgGiftWrap}: ${l.wrapFee > 0 ? price(l.wrapFee) : t.checkout.free}`] : []),
         `  ${window.location.origin}${productHref(locale, l.product.slug)}`,
       ]),
@@ -97,6 +98,11 @@ export function CheckoutView() {
     // Which of the two pay buttons was pressed.
     const submitter = (e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
     const payment: Payment = submitter?.value === "whish" ? "whish" : "cash";
+    const noColor = lines.find((l) => l.needsColor);
+    if (noColor) {
+      setError(t.product.chooseColorFor(noColor.product.name[locale]));
+      return;
+    }
     setBusy(payment);
     setError("");
 
@@ -107,7 +113,7 @@ export function CheckoutView() {
       // Saved in the database first so the manager also sees it in the admin panel.
       const { data, error: rpcError } = await supabase.rpc("place_order", {
         customer: { ...form, payment },
-        cart: lines.map((l) => ({ id: l.product.id, qty: l.qty, wrap: l.wrap })),
+        cart: lines.map((l) => ({ id: l.product.id, qty: l.qty, wrap: l.wrap, color: l.color?.slug ?? null })),
         order_locale: locale,
       });
       const row = Array.isArray(data) ? data[0] : null;
@@ -248,11 +254,22 @@ export function CheckoutView() {
       <aside className="flex h-fit flex-col gap-4 rounded-3xl bg-surface p-5 md:sticky md:top-28">
         <h2 className="text-lg font-extrabold">{t.checkout.summary}</h2>
         <ul className="flex flex-col gap-3">
-          {lines.map(({ product, qty, wrap, wrapFee }) => (
-            <li key={product.id} className="flex items-center gap-3">
+          {lines.map(({ key, product, qty, wrap, wrapFee, color, needsColor }) => (
+            <li key={key} className="flex items-center gap-3">
               <ProductImage product={product} iconSize={28} className="size-14 flex-none rounded-xl" />
               <span className="flex min-w-0 flex-1 flex-col text-sm leading-snug font-bold">
                 {qty} × {product.name[locale]}
+                {color && (
+                  <span className="flex items-center gap-1 text-xs font-bold text-ink-soft">
+                    <span className="size-3.5 rounded-full ring-1 ring-black/15" style={{ background: color.hex }} aria-hidden />
+                    {color.name[locale]}
+                  </span>
+                )}
+                {needsColor && (
+                  <Link href={`/${locale}/cart`} className="text-xs font-extrabold text-accent-dark underline">
+                    {t.product.chooseColor}
+                  </Link>
+                )}
                 {wrap && (
                   <span className="text-xs font-bold text-accent">
                     🎁 {t.checkout.giftWrap} · {wrapFee > 0 ? `+${price(wrapFee)}` : t.checkout.free}

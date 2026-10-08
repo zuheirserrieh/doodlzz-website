@@ -177,6 +177,7 @@ declare
   wrap_fee numeric(10, 2) := 0;
   line_wrap boolean;
   line_wrap_fee numeric(10, 2);
+  line_color text;
 begin
   if jsonb_typeof(cart) <> 'array' or jsonb_array_length(cart) = 0 then
     raise exception 'Cart is empty';
@@ -204,9 +205,11 @@ begin
     -- Gift wrap is per item, only if the product offers it; the price comes from the product.
     line_wrap := coalesce((line ->> 'wrap')::boolean, false) and p.gift_wrap;
     line_wrap_fee := case when line_wrap then p.gift_wrap_price * qty else 0 end;
+    -- Colour the customer picked; kept only if the product really comes in it.
+    line_color := case when (line ->> 'color') = any(coalesce(p.colors, '{}')) then line ->> 'color' end;
     lines := lines || jsonb_build_object(
       'id', p.id, 'slug', p.slug, 'name', p.name_en, 'name_ar', p.name_ar,
-      'price', p.price_usd, 'qty', qty, 'wrap', line_wrap, 'wrap_fee', line_wrap_fee
+      'price', p.price_usd, 'qty', qty, 'wrap', line_wrap, 'wrap_fee', line_wrap_fee, 'color', line_color
     );
     sum_usd := sum_usd + p.price_usd * qty + line_wrap_fee;
     wrap_fee := wrap_fee + line_wrap_fee;

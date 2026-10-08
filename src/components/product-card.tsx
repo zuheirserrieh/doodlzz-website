@@ -2,11 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { getCategory } from "@/data/catalog";
 import type { Product } from "@/data/products";
 import { CategoryIcon, HeartIcon } from "@/components/icons";
 import { useCatalog } from "@/components/catalog-provider";
+import { productColors } from "@/components/color-picker";
 import { useDict, usePrice, useStore } from "@/components/store-provider";
 import { photosOf } from "@/lib/media";
 import type { Locale } from "@/lib/i18n";
@@ -132,15 +134,34 @@ export function PriceTag({ product, className = "" }: { product: Product; classN
   );
 }
 
+/**
+ * Quick "+" add from a card. Products with several colours open their page instead,
+ * so the customer picks the colour first. Returns true when it was added.
+ */
+export function useQuickAdd() {
+  const { addToCart, locale } = useStore();
+  const { getById } = useCatalog();
+  const router = useRouter();
+  return (productId: string) => {
+    const product = getById(productId);
+    if (product && productColors(product).length > 1) {
+      router.push(productHref(locale, product.slug));
+      return false;
+    }
+    addToCart(productId, 1, undefined, product && productColors(product)[0]?.slug);
+    return true;
+  };
+}
+
 export function AddToCartButton({ productId, className = "" }: { productId: string; className?: string }) {
-  const { addToCart } = useStore();
+  const quickAdd = useQuickAdd();
   const t = useDict();
   const [added, setAdded] = useState(false);
   return (
     <button
       type="button"
       onClick={() => {
-        addToCart(productId);
+        if (!quickAdd(productId)) return;
         setAdded(true);
         setTimeout(() => setAdded(false), 1400);
       }}

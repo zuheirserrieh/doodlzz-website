@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState, type FormEvent, type ReactNode } from "react";
-import { ageGroups, categories, colorPalette, getCategory } from "@/data/catalog";
+import { ageGroups, categories, colorPalette, customColorSlug, getCategory, getColor } from "@/data/catalog";
 import type { ProductRow } from "@/data/products";
 import { ImageCropper } from "@/components/admin/image-cropper";
 import { MAX_VIDEO_MB, isVideo } from "@/lib/media";
@@ -79,6 +79,56 @@ function Field({ label, hint, children }: { label: string; hint?: string; childr
       {children}
       {hint && <span className="text-xs text-muted">{hint}</span>}
     </label>
+  );
+}
+
+/** "+ Add a color" — pick any shade and give it a name. */
+function CustomColorAdder({ onAdd }: { onAdd: (slug: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [hex, setHex] = useState("#7fd1b9");
+  const [en, setEn] = useState("");
+  const [ar, setAr] = useState("");
+
+  if (!open) {
+    return (
+      <button type="button" onClick={() => setOpen(true)} className="h-10 w-fit cursor-pointer rounded-full border-2 border-dashed border-navy/40 px-4 text-sm font-extrabold">
+        + Add a color
+      </button>
+    );
+  }
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-3">
+      <div className="flex items-center gap-3">
+        <input type="color" value={hex} onChange={(e) => setHex(e.target.value)} aria-label="Color" className="size-12 cursor-pointer rounded-xl border-0 bg-transparent p-0" />
+        <span className="text-xs text-muted">Tap the square to choose the shade.</span>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Name (English)">
+          <input className={input} value={en} maxLength={30} onChange={(e) => setEn(e.target.value)} placeholder="e.g. Mint" />
+        </Field>
+        <Field label="Name (Arabic, optional)">
+          <input className={input} dir="rtl" value={ar} maxLength={30} onChange={(e) => setAr(e.target.value)} placeholder="مثلاً: نعناعي" />
+        </Field>
+      </div>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          disabled={!en.trim()}
+          onClick={() => {
+            onAdd(customColorSlug(hex, en, ar));
+            setEn("");
+            setAr("");
+            setOpen(false);
+          }}
+          className="h-10 cursor-pointer rounded-full bg-navy px-4 text-sm font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Add color
+        </button>
+        <button type="button" onClick={() => setOpen(false)} className="h-10 cursor-pointer rounded-full px-4 text-sm font-bold text-muted">
+          Cancel
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -465,7 +515,13 @@ export function ProductForm({
       <fieldset className="flex flex-col gap-2">
         <legend className="mb-2 text-sm font-bold">Available colors</legend>
         <div className="flex flex-wrap gap-2">
-          {colorPalette.map((c) => {
+          {[
+            ...colorPalette,
+            // Colours added by hand, on this product or on any other one (so they can be reused).
+            ...[...new Set([...(row.colors ?? []), ...allProducts.flatMap((p) => p.colors ?? [])])]
+              .filter((slug) => slug.startsWith("#"))
+              .map((slug) => getColor(slug)!),
+          ].map((c) => {
             const on = (row.colors ?? []).includes(c.slug);
             return (
               <label
@@ -485,7 +541,10 @@ export function ProductForm({
             );
           })}
         </div>
-        <span className="text-xs text-muted">Tap the colors this product comes in. Leave all empty to hide colors.</span>
+        <span className="text-xs text-muted">
+          Tap the colors this product comes in — the customer must pick one before adding to cart. Leave all empty to hide colors.
+        </span>
+        <CustomColorAdder onAdd={(slug) => !(row.colors ?? []).includes(slug) && set("colors", [...(row.colors ?? []), slug])} />
       </fieldset>
 
       <div className="grid gap-4 sm:grid-cols-2">

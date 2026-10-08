@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { PhoneIcon, WhatsAppIcon } from "@/components/icons";
 import { formatPrice } from "@/components/store-provider";
+import { getColor } from "@/data/catalog";
 import { getSupabase } from "@/lib/supabase";
 
-type OrderItem = { id: string; name: string; qty: number; price: number; wrap?: boolean; wrap_fee?: number };
+type OrderItem = { id: string; name: string; qty: number; price: number; wrap?: boolean; wrap_fee?: number; color?: string | null };
 type Order = {
   id: number;
   created_at: string;
@@ -82,6 +83,17 @@ export function AdminOrders() {
     }
   }
 
+  async function deleteOrder(order: Order) {
+    const supabase = getSupabase();
+    if (!supabase || !confirm(`Delete order #${order.id} from ${order.customer_name}? This can't be undone.`)) return;
+    const { error: err } = await supabase.from("orders").delete().eq("id", order.id);
+    if (err) {
+      setError(err.message);
+      return;
+    }
+    setOrders((list) => list?.filter((o) => o.id !== order.id) ?? null);
+  }
+
   if (orders === null) return error ? <p className="text-accent-dark">{error}</p> : <div className="h-40 animate-pulse rounded-2xl bg-white" />;
 
   const count = (s: string) => orders.filter((o) => o.status === s).length;
@@ -156,6 +168,12 @@ export function AdminOrders() {
                     <li key={n} className="flex justify-between gap-2">
                       <span>
                         {i.qty} × {i.name}
+                        {i.color && getColor(i.color) && (
+                          <span className="ms-1 inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-xs font-extrabold">
+                            <span className="size-3.5 rounded-full ring-1 ring-black/15" style={{ background: getColor(i.color)!.hex }} aria-hidden />
+                            {getColor(i.color)!.name.en}
+                          </span>
+                        )}
                         {i.wrap && (
                           <span className="ms-1 font-bold text-accent">
                             🎁 gift wrap{Number(i.wrap_fee) > 0 ? ` (+${formatPrice(Number(i.wrap_fee))})` : " (free)"}
@@ -173,9 +191,10 @@ export function AdminOrders() {
               </div>
             </div>
 
-            <label className="mt-3 flex items-center gap-2 text-sm font-bold">
-              Status
+            <div className="mt-3 flex items-center gap-2 text-sm font-bold">
+              <label htmlFor={`status-${o.id}`}>Status</label>
               <select
+                id={`status-${o.id}`}
                 value={o.status}
                 onChange={(e) => setStatus(o, e.target.value)}
                 className="h-10 cursor-pointer rounded-xl border border-[#dfe3ea] bg-white px-2 font-bold"
@@ -186,7 +205,14 @@ export function AdminOrders() {
                   </option>
                 ))}
               </select>
-            </label>
+              <button
+                type="button"
+                onClick={() => deleteOrder(o)}
+                className="ms-auto h-10 cursor-pointer rounded-xl px-3 text-sm font-extrabold text-accent-dark hover:bg-pastel-peach"
+              >
+                🗑 Delete
+              </button>
+            </div>
           </article>
         );
       })}

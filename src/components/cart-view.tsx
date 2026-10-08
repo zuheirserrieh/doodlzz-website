@@ -4,9 +4,11 @@ import Link from "next/link";
 import { useCatalog } from "@/components/catalog-provider";
 import { ArrowIcon, MinusIcon, PlusIcon } from "@/components/icons";
 import { ProductImage, productHref } from "@/components/product-card";
-import { useDict, usePrice, useStore } from "@/components/store-provider";
-import type { Product } from "@/data/products";
+import { lineKey, useDict, usePrice, useStore } from "@/components/store-provider";
+import { ColorPicker, productColors } from "@/components/color-picker";
 import { GiftWrapOption, wrapFee } from "@/components/gift-wrap-toggle";
+
+export type CartItem = ReturnType<typeof useCartLines>["lines"][number];
 
 /** Cart lines joined with their products (lines whose product was removed are skipped). */
 export function useCartLines() {
@@ -16,12 +18,38 @@ export function useCartLines() {
     const product = getById(l.id);
     if (!product) return [];
     const wrap = Boolean(l.wrap && product.giftWrap);
-    return [{ product, qty: l.qty, wrap, wrapFee: wrapFee(product, l.qty, wrap) }];
+    const colors = productColors(product);
+    // A colour that was removed from the product is dropped; a single colour is picked automatically.
+    const color = colors.find((c) => c.slug === l.color) ?? (colors.length === 1 ? colors[0] : undefined);
+    return [
+      {
+        key: lineKey(l),
+        product,
+        qty: l.qty,
+        wrap,
+        wrapFee: wrapFee(product, l.qty, wrap),
+        color,
+        needsColor: colors.length > 0 && !color,
+      },
+    ];
   });
   const itemsTotal = lines.reduce((sum, l) => sum + l.product.priceUsd * l.qty, 0);
   const wrapTotal = lines.reduce((sum, l) => sum + l.wrapFee, 0);
   // subtotal = products + gift wrap (delivery is confirmed on WhatsApp).
   return { lines, itemsTotal, wrapTotal, subtotal: itemsTotal + wrapTotal, ready };
+}
+
+/** Colour swatches under a cart line, with a reminder when none is picked yet. */
+export function CartLineColor({ item }: { item: CartItem }) {
+  const { setColor } = useStore();
+  const t = useDict();
+  if (productColors(item.product).length < 2) return null;
+  return (
+    <div className="flex flex-col gap-1">
+      <ColorPicker product={item.product} value={item.color?.slug} onChange={(slug) => setColor(item.key, slug)} compact label={t.product.color} />
+      {item.needsColor && <span className="text-xs font-extrabold text-accent-dark">{t.product.chooseColor}</span>}
+    </div>
+  );
 }
 
 export function CartView() {
@@ -52,7 +80,7 @@ export function CartView() {
       <div>
         <h1 className="font-display text-[28px] font-bold">{t.cart.title}</h1>
         <ul className="mt-4 flex flex-col rounded-3xl bg-white/90 px-4 shadow-sm">
-          {lines.map(({ product, qty, wrap }) => renderLine(product, qty, wrap))}
+          {lines.map((item) => renderLine(item))}
         </ul>
       </div>
 
@@ -76,10 +104,11 @@ export function CartView() {
     </div>
   );
 
-  function renderLine(product: Product, qty: number, wrap: boolean) {
+  function renderLine(item: CartItem) {
+    const { key, product, qty, wrap } = item;
     const stepper = "flex size-10 cursor-pointer items-center justify-center rounded-full hover:bg-white";
     return (
-      <li key={product.id} className="flex gap-3 border-b border-line py-4">
+      <li key={key} className="flex gap-3 border-b border-line py-4">
         <Link href={productHref(locale, product.slug)} className="w-24 flex-none">
           <ProductImage product={product} iconSize={40} className="aspect-square rounded-2xl" />
         </Link>
@@ -88,20 +117,21 @@ export function CartView() {
             {product.name[locale]}
           </Link>
           <span className="text-base font-extrabold">{price(product.priceUsd * qty)}</span>
-          <GiftWrapOption product={product} checked={wrap} onChange={(on) => setWrap(product.id, on)} compact className="my-1" />
+          <CartLineColor item={item} />
+          <GiftWrapOption product={product} checked={wrap} onChange={(on) => setWrap(key, on)} compact className="my-1" />
           <div className="mt-auto flex items-center justify-between">
             <div role="group" aria-label={t.cart.quantity} className="flex items-center rounded-full bg-surface">
-              <button type="button" aria-label={t.cart.decrease} onClick={() => setQty(product.id, qty - 1)} className={stepper}>
+              <button type="button" aria-label={t.cart.decrease} onClick={() => setQty(key, qty - 1)} className={stepper}>
                 <MinusIcon />
               </button>
               <span className="min-w-6 text-center text-sm font-extrabold" aria-live="polite">
                 {qty}
               </span>
-              <button type="button" aria-label={t.cart.increase} onClick={() => setQty(product.id, qty + 1)} className={stepper}>
+              <button type="button" aria-label={t.cart.increase} onClick={() => setQty(key, qty + 1)} className={stepper}>
                 <PlusIcon />
               </button>
             </div>
-            <button type="button" onClick={() => removeFromCart(product.id)} className="min-h-10 cursor-pointer px-2 text-sm font-bold text-muted underline">
+            <button type="button" onClick={() => removeFromCart(key)} className="min-h-10 cursor-pointer px-2 text-sm font-bold text-muted underline">
               {t.cart.remove}
             </button>
           </div>

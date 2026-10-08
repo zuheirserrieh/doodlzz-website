@@ -5,17 +5,25 @@ import { useAuth } from "@/components/catalog-provider";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { getSupabase } from "@/lib/supabase";
 
-/** wrap = customer asked for gift wrap on this item (only kept if the product offers it). */
-export type CartLine = { id: string; qty: number; wrap?: boolean };
+/**
+ * wrap = customer asked for gift wrap on this item (only kept if the product offers it).
+ * color = colour the customer picked; the same product in two colours is two lines.
+ */
+export type CartLine = { id: string; qty: number; wrap?: boolean; color?: string };
+
+/** Identifies a cart line (product + chosen colour). */
+export const lineKey = (l: { id: string; color?: string }) => (l.color ? `${l.id}|${l.color}` : l.id);
 
 type Store = {
   locale: Locale;
   cart: CartLine[];
   cartCount: number;
-  addToCart: (id: string, qty?: number, wrap?: boolean) => void;
-  setWrap: (id: string, wrap: boolean) => void;
-  setQty: (id: string, qty: number) => void;
-  removeFromCart: (id: string) => void;
+  addToCart: (id: string, qty?: number, wrap?: boolean, color?: string) => void;
+  /** The functions below take a line key (see lineKey). */
+  setWrap: (key: string, wrap: boolean) => void;
+  setColor: (key: string, color: string) => void;
+  setQty: (key: string, qty: number) => void;
+  removeFromCart: (key: string) => void;
   clearCart: () => void;
   wishlist: string[];
   isWished: (id: string) => boolean;
@@ -109,9 +117,12 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
         if (data) {
           const saved = data as { cart: CartLine[]; wishlist: string[] };
           setCart((local) => {
-            const merged = new Map(local.map((l) => [l.id, l.qty]));
-            for (const l of saved.cart ?? []) merged.set(l.id, Math.max(merged.get(l.id) ?? 0, l.qty));
-            return [...merged].map(([id, qty]) => ({ id, qty }));
+            const merged = new Map(local.map((l) => [lineKey(l), l]));
+            for (const l of saved.cart ?? []) {
+              const mine = merged.get(lineKey(l));
+              merged.set(lineKey(l), mine ? { ...mine, qty: Math.max(mine.qty, l.qty) } : l);
+            }
+            return [...merged.values()];
           });
           setWishlist((local) => [...new Set([...local, ...(saved.wishlist ?? [])])]);
         }
@@ -135,26 +146,43 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
     return () => clearTimeout(timer);
   }, [cart, wishlist, userId, syncedUser]);
 
-  const addToCart = useCallback((id: string, qty = 1, wrap?: boolean) => {
+  const addToCart = useCallback((id: string, qty = 1, wrap?: boolean, color?: string) => {
     setCart((lines) => {
-      const existing = lines.find((l) => l.id === id);
-      if (existing) return lines.map((l) => (l.id === id ? { ...l, qty: l.qty + qty, wrap: wrap ?? l.wrap } : l));
-      return [...lines, { id, qty, wrap: Boolean(wrap) }];
+      const key = lineKey({ id, color });
+      if (lines.some((l) => lineKey(l) === key)) {
+        return lines.map((l) => (lineKey(l) === key ? { ...l, qty: l.qty + qty, wrap: wrap ?? l.wrap } : l));
+      }
+      return [...lines, { id, qty, wrap: Boolean(wrap), ...(color ? { color } : {}) }];
     });
   }, []);
 
-  const setWrap = useCallback((id: string, wrap: boolean) => {
-    setCart((lines) => lines.map((l) => (l.id === id ? { ...l, wrap } : l)));
+  const setWrap = useCallback((key: string, wrap: boolean) => {
+    setCart((lines) => lines.map((l) => (lineKey(l) === key ? { ...l, wrap } : l)));
   }, []);
 
-  const setQty = useCallback((id: string, qty: number) => {
+  // Picking a colour in the cart; joins an existing line of that colour if there is one.
+  const setColor = useCallback((key: string, color: string) => {
+    setCart((lines) => {
+      const line = lines.find((l) => lineKey(l) === key);
+      if (!line) return lines;
+      const target = lineKey({ id: line.id, color });
+      if (target === key) return lines;
+      const twin = lines.find((l) => lineKey(l) === target);
+      if (twin) {
+        return lines.filter((l) => lineKey(l) !== key).map((l) => (l === twin ? { ...l, qty: l.qty + line.qty } : l));
+      }
+      return lines.map((l) => (l === line ? { ...l, color } : l));
+    });
+  }, []);
+
+  const setQty = useCallback((key: string, qty: number) => {
     setCart((lines) =>
-      qty <= 0 ? lines.filter((l) => l.id !== id) : lines.map((l) => (l.id === id ? { ...l, qty } : l)),
+      qty <= 0 ? lines.filter((l) => lineKey(l) !== key) : lines.map((l) => (lineKey(l) === key ? { ...l, qty } : l)),
     );
   }, []);
 
-  const removeFromCart = useCallback((id: string) => {
-    setCart((lines) => lines.filter((l) => l.id !== id));
+  const removeFromCart = useCallback((key: string) => {
+    setCart((lines) => lines.filter((l) => lineKey(l) !== key));
   }, []);
 
   const clearCart = useCallback(() => setCart([]), []);
@@ -171,6 +199,7 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
       cartCount: cart.reduce((n, l) => n + l.qty, 0),
       addToCart,
       setWrap,
+      setColor,
       setQty,
       removeFromCart,
       clearCart,
@@ -184,7 +213,7 @@ export function StoreProvider({ locale, children }: { locale: Locale; children: 
       orderNote,
       setOrderNote,
     }),
-    [locale, cart, addToCart, setWrap, setQty, removeFromCart, clearCart, wishlist, isWished, toggleWish, menuOpen, cartOpen, orderNote, setOrderNote],
+    [locale, cart, addToCart, setWrap, setColor, setQty, removeFromCart, clearCart, wishlist, isWished, toggleWish, menuOpen, cartOpen, orderNote, setOrderNote],
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

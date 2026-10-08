@@ -222,6 +222,17 @@ export function SearchIcon({ size = 20, ...props }: IconProps) {
   );
 }
 
+export function ShareIcon({ size = 20, ...props }: IconProps) {
+  return (
+    <svg {...stroke(size, "0 0 24 24", 2, props)}>
+      <circle cx="18" cy="5" r="2.6" />
+      <circle cx="6" cy="12" r="2.6" />
+      <circle cx="18" cy="19" r="2.6" />
+      <path d="M8.3 10.8l7.4-4.4M8.3 13.2l7.4 4.4" />
+    </svg>
+  );
+}
+
 /** Points "forward" — flip with `rtl:rotate-180` where direction matters. */
 export function ChevronIcon({ size = 18, strokeWidth = 2, ...props }: IconProps) {
   return (

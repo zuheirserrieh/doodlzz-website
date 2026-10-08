@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useCatalog } from "@/components/catalog-provider";
 import { CategoryIcon } from "@/components/icons";
 import { Listing } from "@/components/listing";
+import { ShareButton } from "@/components/share-button";
 import { useDict, useStore } from "@/components/store-provider";
 import { getCategory, getSubcategory, type Category } from "@/data/catalog";
 
@@ -66,7 +67,10 @@ function SubcategoryLanding({ category }: { category: Category }) {
   return (
     <div className="mx-auto max-w-6xl px-4 pt-6">
       <div className="rounded-3xl bg-white/85 p-4 shadow-sm md:p-6">
-        <h1 className="font-display text-[28px] leading-tight font-bold">{category.name[locale]}</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="font-display text-[28px] leading-tight font-bold">{category.name[locale]}</h1>
+          <ShareButton title={category.name[locale]} />
+        </div>
         <div className="mt-5 grid grid-cols-3 gap-x-3 gap-y-5 sm:grid-cols-4 md:grid-cols-6">
           {tile(`${base}?sub=all`, t.listing.viewAll, categoryImages[category.slug], "all")}
           {category.subs.map((s) => tile(`${base}?sub=${s.slug}`, s.name[locale], categoryImages[s.slug], s.slug))}

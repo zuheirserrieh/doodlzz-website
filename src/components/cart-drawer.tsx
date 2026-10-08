@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useCartLines } from "@/components/cart-view";
+import { CartLineColor, useCartLines } from "@/components/cart-view";
 import { GiftWrapOption } from "@/components/gift-wrap-toggle";
 import { ChevronIcon, CloseIcon, MinusIcon, PlusIcon } from "@/components/icons";
 import { ProductImage, productHref } from "@/components/product-card";
@@ -77,8 +77,10 @@ export function CartDrawer() {
         ) : (
           <>
             <ul className="flex-1 overflow-y-auto px-4">
-              {lines.map(({ product, qty, wrap }) => (
-                <li key={product.id} className="flex gap-3 border-b border-line py-4">
+              {lines.map((item) => {
+                const { key, product, qty, wrap } = item;
+                return (
+                <li key={key} className="flex gap-3 border-b border-line py-4">
                   <Link href={productHref(locale, product.slug)} className="w-20 flex-none">
                     <ProductImage product={product} iconSize={32} className="aspect-square rounded-xl bg-white" />
                   </Link>
@@ -90,7 +92,7 @@ export function CartDrawer() {
                       <button
                         type="button"
                         aria-label={`${t.cart.remove}: ${product.name[locale]}`}
-                        onClick={() => removeFromCart(product.id)}
+                        onClick={() => removeFromCart(key)}
                         className="flex size-8 flex-none cursor-pointer items-center justify-center rounded-full hover:bg-white"
                       >
                         <CloseIcon size={18} />
@@ -98,20 +100,22 @@ export function CartDrawer() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div role="group" aria-label={t.cart.quantity} className="flex items-center rounded-full border border-[#dfe3ea] bg-white">
-                        <button type="button" aria-label={t.cart.decrease} onClick={() => setQty(product.id, qty - 1)} className={stepper}>
+                        <button type="button" aria-label={t.cart.decrease} onClick={() => setQty(key, qty - 1)} className={stepper}>
                           <MinusIcon size={16} />
                         </button>
                         <span className="min-w-6 text-center text-sm font-extrabold">{qty}</span>
-                        <button type="button" aria-label={t.cart.increase} onClick={() => setQty(product.id, qty + 1)} className={stepper}>
+                        <button type="button" aria-label={t.cart.increase} onClick={() => setQty(key, qty + 1)} className={stepper}>
                           <PlusIcon size={16} />
                         </button>
                       </div>
                       <span className="font-extrabold">{price(product.priceUsd * qty)}</span>
                     </div>
-                    <GiftWrapOption product={product} checked={wrap} onChange={(on) => setWrap(product.id, on)} compact />
+                    <CartLineColor item={item} />
+                    <GiftWrapOption product={product} checked={wrap} onChange={(on) => setWrap(key, on)} compact />
                   </div>
                 </li>
-              ))}
+                );
+              })}
             </ul>
 
             <div className="flex flex-none flex-col gap-3 border-t border-line bg-white p-4">

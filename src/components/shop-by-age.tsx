@@ -5,13 +5,14 @@ import { useRef, useState } from "react";
 import { useCatalog } from "@/components/catalog-provider";
 import { ScrollArrows } from "@/components/scroll-row";
 import { AgeIcon, ArrowIcon, PlusIcon } from "@/components/icons";
-import { PriceTag, ProductImage, productHref } from "@/components/product-card";
+import { PriceTag, ProductImage, productHref, useQuickAdd } from "@/components/product-card";
 import { useDict, useStore } from "@/components/store-provider";
 import { ageGroups } from "@/data/catalog";
 
 /** Pick an age, then swipe through the matching products. */
 export function ShopByAge({ title }: { title?: string }) {
-  const { locale, addToCart } = useStore();
+  const { locale } = useStore();
+  const quickAdd = useQuickAdd();
   const t = useDict();
   const { products, ready } = useCatalog();
   const [active, setActive] = useState(ageGroups[0].slug);
@@ -96,7 +97,7 @@ export function ShopByAge({ title }: { title?: string }) {
                       <button
                         type="button"
                         aria-label={`${t.product.addToCart}: ${p.name[locale]}`}
-                        onClick={() => addToCart(p.id)}
+                        onClick={() => quickAdd(p.id)}
                         className="flex size-10 flex-none cursor-pointer items-center justify-center rounded-xl bg-accent text-white hover:bg-accent-dark"
                       >
                         <PlusIcon />

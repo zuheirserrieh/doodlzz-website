@@ -264,6 +264,19 @@ export const colorPalette: ColorOption[] = [
   { slug: "multicolor", name: { en: "Multicolor", ar: "متعدد الألوان" }, hex: "conic-gradient(#E53935,#FFD233,#2E9E58,#1E63D6,#8E44AD,#E53935)" },
 ];
 
-export function getColor(slug: string) {
+/**
+ * Colours the owner adds in the admin are saved inside the product as
+ * "#hex|English name|Arabic name" (Arabic optional).
+ */
+export function customColorSlug(hex: string, en: string, ar: string) {
+  const clean = (s: string) => s.replace(/\|/g, " ").trim();
+  return [hex, clean(en), clean(ar)].filter(Boolean).join("|");
+}
+
+export function getColor(slug: string): ColorOption | undefined {
+  if (slug.startsWith("#")) {
+    const [hex, en = "", ar = ""] = slug.split("|");
+    return { slug, hex, name: { en: en || hex, ar: ar || en || hex } };
+  }
   return colorPalette.find((c) => c.slug === slug);
 }

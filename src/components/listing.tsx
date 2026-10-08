@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useCatalog } from "@/components/catalog-provider";
 import { CategoryIcon, CloseIcon } from "@/components/icons";
 import { ProductGrid } from "@/components/product-card";
+import { ShareButton } from "@/components/share-button";
 import { ageGroups, categories, getCategory } from "@/data/catalog";
 import type { Product } from "@/data/products";
 import { usePrice } from "@/components/store-provider";
@@ -119,7 +120,10 @@ export function Listing({
       </nav>
 
       <div className="px-4 pt-6">
-        <h1 className="font-display text-[28px] leading-tight font-bold">{title}</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="font-display text-[28px] leading-tight font-bold">{title}</h1>
+          <ShareButton title={title} />
+        </div>
 
         {/* Subcategories as round pictures, "View all" first. */}
         {category && category.subs.length > 0 && (

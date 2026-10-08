@@ -117,7 +117,7 @@ export function MenuDrawer() {
           <Expandable label={t.menu.shopByAge}>
             {ageGroups.map((a) => (
               <Link key={a.slug} href={href(`/shop?age=${a.slug}`)} onClick={close} className={subRow}>
-                <AgeIcon slug={a.slug} size={26} />
+                <AgeIcon slug={a.slug} size={30} />
                 <span>
                   <span dir="ltr">{a.label}</span> {a.sub[locale]}
                 </span>

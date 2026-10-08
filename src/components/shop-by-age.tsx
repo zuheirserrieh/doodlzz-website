@@ -64,7 +64,7 @@ export function ShopByAge({ title }: { title?: string }) {
                   selected ? "border-navy shadow-[0_4px_0_#1E2742]" : "border-transparent opacity-80 hover:opacity-100"
                 }`}
               >
-                <AgeIcon slug={a.slug} size={34} />
+                <AgeIcon slug={a.slug} size={46} />
                 <span dir="ltr" className="text-[15px] leading-tight font-extrabold">
                   {a.label}
                 </span>
